@@ -17,6 +17,13 @@ SaaS B2B para conferir a execução de obra contra o projeto **antes** da etapa 
   - extrator isolado (`services/dwg-extractor`, GPL-3.0, só HTTP);
   - interpretação nossa (`packages/extracao`): textos limpos, camadas, blocos, ambientes com área, cotas de nível, carimbo e notas, com pré-filtro de pendência;
   - tela de extração.
+- **Etapa 3 (pendências e pontos com IA):**
+  - notas que passam no pré-filtro ("a definir", "aguardando"…) são classificadas por um modelo pequeno em pendência, com a etapa que bloqueia e o risco;
+  - o modelo principal sugere pontos de controle, com ênfase em interfaces e sempre citando `trecho_origem`;
+  - cada sugestão é conferida contra o texto real do projeto: trecho inventado, valor ilegível ou tolerância negativa são descartados;
+  - nada entra no checklist sem a aprovação do engenheiro;
+  - fallback conversacional: texto ou áudio do encarregado → medida e ponto prováveis → "Confirma?" → verificação não estruturada, e a comparação continua no `core`;
+  - o custo de tokens e de transcrição vai para a obra.
 - **Etapa 6 (liberação e relatório):**
   - painel da obra com o que aguarda decisão e o custo acumulado;
   - linha do tempo;
@@ -98,6 +105,7 @@ packages/servicos   casos de uso (obras, execuções, conferência, liberação,
 packages/whatsapp   Cloud API, assinatura, cripto do Flow e da mídia, Flow JSON, templates, simulador
 packages/queue      catálogo de filas e jobs (payloads zod) · packages/storage: S3 com URL assinada
 packages/reports    PDFs (@react-pdf/renderer): execução (medidas, fotos, decisão) e obra
+packages/ai         LLM com saída estruturada (zod) atrás de uma interface, prompts versionados, transcrição; IA falsa para testes
 packages/extracao   interpretação do DWG: MTEXT limpo, ambientes + área, níveis, carimbo, notas (código nosso, sem GPL)
 services/dwg-extractor  leitura do DWG com libredwg-web (GPL-3.0, container próprio, fora do workspace pnpm)
 packages/config     tsconfig base
@@ -135,6 +143,23 @@ O fluxo:
 **Aceite com ressalva:** ainda não há DWG real. A amostra (`services/dwg-extractor/test/fixtures`) foi escrita à mão em DXF e convertida para DWG R2000. Confirmar com um DWG de interiores de verdade (R2004 ou mais novo) antes de fechar a etapa. Limitações conhecidas no README do extrator.
 
 **Licença:** o `libredwg-web` é GPL-3.0. O extrator roda isolado, como serviço próprio que só fala HTTP. Valide com o jurídico antes de produção; a alternativa comercial é o ODA SDK.
+
+## IA
+
+Coloque `ANTHROPIC_API_KEY` no `.env` (e `OPENAI_API_KEY`, para áudio). Sem chave tudo funciona, com dois limites:
+- as pendências vêm só do pré-filtro, marcadas "revisão humana";
+- não há pontos sugeridos; o engenheiro cadastra à mão.
+
+| Tarefa | Modelo padrão | Esforço |
+|---|---|---|
+| Sugerir pontos de controle | `claude-opus-5-5` (fallback de recusa no servidor) | alto |
+| Classificar notas e mensagens | `claude-haiku-5-5` | baixo |
+
+Os prompts e schemas estão em `packages/ai/src/tarefas.ts`, versionados (`pontos-v1` etc.), e a versão fica gravada em cada resultado.
+
+**Garantias:**
+- A saída é validada por zod. Se falhar, há 1 nova tentativa; se falhar de novo, vai para revisão humana.
+- A IA nunca decide tolerância: a comparação é do `core`.
 
 ## WhatsApp: de simulado para a Meta
 

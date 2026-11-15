@@ -361,3 +361,39 @@ export async function reprocessarProjeto(ctx: Contexto, projetoId: string) {
     { jobId: idJob("dwg", projetoId, Date.now()) },
   );
 }
+
+// ─────────────────────────── Pendências (resolução pelo engenheiro) ───────────────────────────
+
+export async function resolverPendencia(
+  ctx: Contexto,
+  entrada: { pendenciaId: string; status: "resolvida" | "descartada"; nota?: string | null },
+) {
+  exigirPapel(ctx, ["admin", "engenheiro"]);
+  if (!uuid.safeParse(entrada.pendenciaId).success) throw new ErroDominio("invalido", "Pendência inválida.");
+  const nota = entrada.nota?.trim() || null;
+  if (entrada.status === "resolvida" && !nota)
+    throw new ErroDominio("invalido", "Diga como a pendência foi resolvida.");
+  await withTenant(ctx.tenantId, async (tx) => {
+    const [antes] = await tx.select().from(pendencia).where(eq(pendencia.id, entrada.pendenciaId));
+    if (!antes) throw new ErroDominio("nao_encontrado", "Pendência não encontrada.");
+    if (antes.status !== "aberta") throw new ErroDominio("conflito", "Esta pendência já foi tratada.");
+    await tx
+      .update(pendencia)
+      .set({
+        status: entrada.status,
+        resolvidaPorId: ctx.usuarioId,
+        resolvidaEm: new Date(),
+        notaResolucao: nota,
+      })
+      .where(eq(pendencia.id, antes.id));
+    await registrarAuditoria(tx, {
+      tenantId: ctx.tenantId,
+      ator: ator(ctx),
+      acao: `pendencia.${entrada.status}`,
+      entidade: "pendencia",
+      entidadeId: antes.id,
+      antes: { status: antes.status },
+      depois: { status: entrada.status, nota },
+    });
+  });
+}

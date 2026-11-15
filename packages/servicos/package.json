@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@canteirocheck/ai": "workspace:*",
     "@canteirocheck/core": "workspace:*",
     "@canteirocheck/db": "workspace:*",
     "@canteirocheck/extracao": "workspace:*",

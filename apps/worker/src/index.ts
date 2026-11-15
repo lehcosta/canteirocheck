@@ -5,12 +5,16 @@ import {
   anuncioDiario,
   avisarPendencia,
   baixarMidia,
+  detectarPendencias,
   enviarMensagemPendente,
+  gerarPontosSugeridos,
   gerarRelatorio,
+  interpretarMensagem,
   notificarEncarregado,
   notificarEngenheiro,
   processarExtracao,
   processarMensagemRecebida,
+  transcreverAudio,
 } from "@canteirocheck/servicos";
 import { garantirBucket } from "@canteirocheck/storage";
 import { encerrarClienteWhatsapp } from "@canteirocheck/whatsapp";
@@ -76,6 +80,17 @@ subir("execucao", {
 subir("agenda", { anuncio_diario: (p) => anuncioDiario(p.tenantId, p.obraId) });
 subir("relatorios", { gerar_pdf: (p) => gerarRelatorio(p) }, { concorrencia: 2 });
 subir("dwg", { extrair_dwg: (p) => processarExtracao(p.tenantId, p.projetoId) }, { concorrencia: 2 });
+// IA: sem chave, os jobs registram a falta e caem no caminho de revisão humana.
+subir(
+  "ia",
+  {
+    detectar_pendencias: (p) => detectarPendencias(p.tenantId, p.projetoId),
+    gerar_pontos: (p) => gerarPontosSugeridos(p.tenantId, p.projetoId),
+    transcrever_audio: (p) => transcreverAudio(p.tenantId, p.mensagemId),
+    interpretar_mensagem: (p) => interpretarMensagem(p.tenantId, p.mensagemId),
+  },
+  { concorrencia: 2, limite: { max: 10, duracaoMs: 60_000 } },
+);
 
 await garantirBucket().catch((e) => log("warn", "s3.indisponivel", { erro: String(e) }));
 await sincronizarAgendamentos(fila).catch((e) => log("error", "agenda.falhou", { erro: String(e) }));

@@ -1,8 +1,11 @@
+import { llmPadrao } from "@canteirocheck/ai";
 import { aguardaDecisao, liberacaoExigeJustificativa } from "@canteirocheck/core";
 import { schema, type Tx } from "@canteirocheck/db";
+import { idJob } from "@canteirocheck/queue";
 import type { ConteudoEntrada } from "@canteirocheck/whatsapp";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { type Contexto, ErroDominio } from "../contexto";
+import { confirmarMedidaDaConversa } from "../conversa";
 import { decidirExecucao } from "../execucoes/anuncio-e-decisao";
 import { comSavepoint, type Efeitos, emTransacao } from "../transacao";
 import { liberarMensagensEsperando, prepararMensagem } from "./saida";
@@ -14,7 +17,7 @@ import {
   rotuloExecucao,
 } from "./sessoes";
 
-const { mensagemWhatsapp, usuario, execucaoEtapa, obraMembro, obra, etapa, local } = schema;
+const { mensagemWhatsapp, usuario, execucaoEtapa, obraMembro, obra, etapa, local, midia } = schema;
 
 /**
  * Job `processar_mensagem`: a mensagem já está gravada (webhook). Aqui: abre a janela (libera o que
@@ -54,10 +57,46 @@ export async function processarMensagemRecebida(
         case "flow":
           return { acao: "flow:resposta_recebida" }; // já tratado de forma síncrona no endpoint
         case "texto":
-        case "imagem":
-        case "audio":
+          // Com IA: tenta extrair medida (fallback conversacional); a resposta sai do job.
+          if (llmPadrao()) {
+            efeitos.enfileirar(
+              "interpretar_mensagem",
+              { tenantId, mensagemId: m.id },
+              { jobId: idJob("int", m.id) },
+            );
+            return { acao: "ia:interpretar" };
+          }
           await mandarMenu(tx, efeitos, ctx, u.nome);
-          return { acao: `menu:${conteudo.tipo}` };
+          return { acao: "menu:texto" };
+        case "audio":
+          efeitos.enfileirar(
+            "transcrever_audio",
+            { tenantId, mensagemId: m.id },
+            { jobId: idJob("aud", m.id) },
+          );
+          return { acao: "ia:transcrever" };
+        case "imagem": {
+          const [foto] = await tx
+            .insert(midia)
+            .values({
+              tenantId,
+              origem: "whatsapp_media",
+              fonte: { media_id: conteudo.mediaId, file_name: null },
+              mimeType: conteudo.mimeType,
+              mensagemId: m.id,
+            })
+            .returning({ id: midia.id });
+          if (foto)
+            efeitos.enfileirar(
+              "baixar_midia",
+              { tenantId, midiaId: foto.id },
+              { jobId: idJob("midia", foto.id) },
+            );
+          await responder(
+            "Foto recebida e guardada. Para ligar a foto a uma medida, envie pela conferência (formulário).",
+          );
+          return { acao: "foto:guardada" };
+        }
         default:
           await mandarMenu(tx, efeitos, ctx, u.nome);
           return { acao: "menu:outro" };
@@ -83,6 +122,10 @@ async function tratarBotao(tx: Tx, efeitos: Efeitos, ctx: Contexto, id: string):
       if (alvo === "conferir") return oferecerConferencias(tx, efeitos, ctx);
       if (alvo === "pendentes") return oferecerDecisoes(tx, efeitos, ctx);
       break;
+    case "conf": {
+      if (!alvo) break;
+      return confirmarMedidaDaConversa(tx, efeitos, ctx, alvo, Number(rodadaTexto ?? 0));
+    }
     case "conferir": {
       if (!alvo) break;
       const r = await enviarFlowChecklist(tx, efeitos, { usuarioId: ctx.usuarioId, execucaoId: alvo });

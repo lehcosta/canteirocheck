@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { reprocessarAction } from "@/features/projetos/actions";
+import { reprocessarAction, resolverPendenciaAction } from "@/features/projetos/actions";
 import { STATUS_EXTRACAO } from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
 
@@ -76,6 +76,26 @@ export default async function Projeto({
                   <span className="text-muted-foreground">
                     → bloqueia {pd.etapaNome ?? "—"} · {pd.status} · {pd.classificadoPor}
                   </span>
+                  {pd.status === "aberta" && (
+                    <FormularioAcao
+                      acao={resolverPendenciaAction}
+                      className="flex w-full flex-wrap items-center gap-2"
+                    >
+                      <input type="hidden" name="obraId" value={obraId} />
+                      <input type="hidden" name="pendenciaId" value={pd.id} />
+                      <input
+                        name="nota"
+                        placeholder="Como foi resolvida (ex.: definido porcelanato 60x60, rev. R03)"
+                        className="h-8 min-w-64 flex-1 rounded-lg border border-input px-2.5 text-sm"
+                      />
+                      <Button type="submit" name="status" value="resolvida" size="sm" variant="outline">
+                        Resolvida
+                      </Button>
+                      <Button type="submit" name="status" value="descartada" size="sm" variant="ghost">
+                        Não é pendência
+                      </Button>
+                    </FormularioAcao>
+                  )}
                 </li>
               ))}
             </ul>

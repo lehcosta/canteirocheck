@@ -252,7 +252,7 @@ export async function registrarMedida(
       canal: entrada.canal,
       estruturada: entrada.estruturada ?? true,
       usuarioId: sessao.usuarioId,
-      flowToken: sessao.token,
+      flowToken: sessao.token || null, // "" = medida confirmada pela conversa (sem Flow)
     })
     .returning({ id: verificacao.id });
   if (!v) throw new Error("falha ao gravar verificação");

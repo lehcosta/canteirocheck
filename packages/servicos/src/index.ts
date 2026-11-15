@@ -1,4 +1,5 @@
 export { type Contexto, ErroDominio, type PapelPainel } from "./contexto";
+export { confirmarMedidaDaConversa, interpretarMensagem, transcreverAudio } from "./conversa";
 export {
   anunciarExecucoes,
   decidirExecucao,
@@ -17,6 +18,13 @@ export {
   resumoDaExecucao,
   type TentativaNoResumo,
 } from "./execucoes/consultas";
+export {
+  detectarPendencias,
+  gerarPontosSugeridos,
+  type ResultadoGeracao,
+  trechoExiste,
+  validarSugestao,
+} from "./ia";
 export { baixarMidia, urlDaMidia } from "./midias";
 export {
   adicionarMembro,
@@ -47,6 +55,7 @@ export {
   processarExtracao,
   registrarProjeto,
   reprocessarProjeto,
+  resolverPendencia,
   TAMANHO_MAXIMO_PROJETO,
   tipoDoArquivo,
   urlDoArquivoProjeto,
