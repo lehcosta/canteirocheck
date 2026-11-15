@@ -2,7 +2,17 @@
 
 SaaS B2B para conferir a execução de obra contra o projeto **antes** da etapa que não tem volta (concretagem, fechamento de drywall, piso, forro). Spec do MVP: [docs/prompt-gabarito-mvp.md](docs/prompt-gabarito-mvp.md) · Arquitetura: [docs/arquitetura.md](docs/arquitetura.md).
 
-**Estado:** etapa 1 (fundação) — monorepo, banco com isolamento por construtora (RLS), login por magic link, cadastro de obras, locais, equipe e usuários, log de auditoria.
+**Estado:**
+
+- **Etapa 1 (fundação):** monorepo, banco com isolamento por construtora (RLS), login por magic link, cadastro de obras, locais, equipe e usuários, log de auditoria.
+- **Etapas 4 e 5 (WhatsApp e Flows):**
+  - webhook e endpoint de Flows com a assinatura e a criptografia da Meta;
+  - anúncio da execução e checklist dinâmico (medir → refazer → causa + foto → bloqueio);
+  - alerta ao engenheiro, que libera ou recusa com justificativa, e aviso ao encarregado;
+  - regra da janela de 24h com template;
+  - fotos decifradas e guardadas no S3;
+  - contador de custo por obra.
+- **Sem conta na Meta:** um simulador em `/dev/whatsapp` faz o papel do WhatsApp.
 
 ## Rodar localmente
 
@@ -11,13 +21,38 @@ Pré-requisitos: Node 22, pnpm 10, Docker.
 ```bash
 cp .env.example .env                       # e troque BETTER_AUTH_SECRET: openssl rand -base64 32
 pnpm install
-pnpm infra:up                              # Postgres 18 (porta 54329) + Mailpit (1025/8025)
+pnpm infra:up                              # Postgres 18, Redis, S3 local (RustFS) e Mailpit
 pnpm db:migrate
 pnpm db:seed                               # cenário da §10 do prompt (Construtora Exemplo, Edifício Teste)
-pnpm dev                                   # http://localhost:3000
+pnpm dev                                   # painel (http://localhost:3000) + worker das filas
 ```
 
 Entre com **admin@exemplo.test** (admin) ou **ana@exemplo.test** (engenheira). O link de acesso chega no Mailpit: <http://localhost:8025>.
+
+Para gerar a chave do endpoint de Flows no seu `.env` (o `.env.example` vem sem):
+
+```bash
+pnpm --filter @canteirocheck/whatsapp gerar-chave >> .env
+```
+
+### Testar o WhatsApp sem a Meta
+
+Com `WHATSAPP_MODO=simulado` (o padrão), abra <http://localhost:3000/dev/whatsapp>. A lateral tem o celular do **João** (encarregado, +55 11 90000-0003) e o da **Eng. Ana** (+55 11 90000-0002).
+
+O simulador chama o webhook e o endpoint do Flow de verdade, assinados e cifrados como a Meta faz. As respostas vêm do worker.
+
+Cenário da §10 do prompt:
+
+1. **No celular do João**, mande "oi" → toque em **Anunciar execução** → no formulário, escolha *Concretagem*, *L4*, *Amanhã*.
+2. **Ainda no João:** **Conferir L4** → **Começar**. A interface vem primeiro:
+   - lado executado `6,000`, lado novo `6,040`, mesma RN *Sim*, com foto → ❌;
+   - meça de novo `6,040` → escolha a causa e anexe a foto;
+   - eixo A `6,005` ✅, eixo B `6,000` ✅;
+   - **Enviar conferência** → a execução fica **BLOQUEADA**.
+3. **No celular da Ana**, chega o template de aviso (a janela de 24h dela está fechada) → toque em **Ver** → resumo 🔴 → **Recusar** → escreva a justificativa.
+4. **No celular do João**, chega "RECUSADA… reenvie a conferência" com o botão para conferir de novo.
+
+O mesmo roteiro roda sozinho contra o sistema no ar: `pnpm --filter @canteirocheck/whatsapp fumaca`.
 
 Nova construtora de verdade (onboarding manual, sem cadastro aberto):
 
@@ -36,14 +71,20 @@ pnpm criar-tenant --nome "Construtora X" --cnpj 12.345.678/0001-90 \
 | `pnpm typecheck` · `pnpm lint` · `pnpm format` | TypeScript, Biome (check) e Biome (corrige) |
 | `pnpm db:generate` | gera migration SQL a partir do schema (revise o SQL antes de commitar) |
 | `pnpm db:migrate` · `pnpm db:seed` · `pnpm db:reset` | aplica migrations · seed idempotente · zera + migra + seed (só localhost) |
-| `pnpm infra:up` · `pnpm infra:down` | sobe/derruba Postgres e Mailpit |
+| `pnpm infra:up` · `pnpm infra:down` | sobe/derruba Postgres, Redis, S3 local e Mailpit |
+| `pnpm --filter @canteirocheck/whatsapp fumaca` | cenário L3/L4 contra o sistema rodando (`pnpm dev`), pelo webhook e pelo Flow |
+| `pnpm --filter @canteirocheck/whatsapp gerar-chave` | gera a chave RSA do endpoint de Flows (linha para o `.env`) |
 
 ## Estrutura
 
 ```
-apps/web            Next.js 16 — painel, /api/auth (Better Auth). Webhooks e Flow entram na etapa 4–5.
+apps/web            Next.js 16 — painel, /api/auth, /api/whatsapp/{webhook,flow}, /api/health, simulador /dev/whatsapp
+apps/worker         filas BullMQ: entrada/saída do WhatsApp, mídia, notificações, anúncio diário (cron por obra)
+packages/core       regras puras: tolerância, interface, máquina de estados da execução, motor do checklist
 packages/db         schema Drizzle, migrations, withTenant(), funções de sistema, seed, testes de RLS
-packages/servicos   casos de uso (obras, locais, equipe, usuários) com validação zod e auditoria
+packages/servicos   casos de uso (obras, execuções, conferência, liberação, WhatsApp) com zod e auditoria
+packages/whatsapp   Cloud API, assinatura, cripto do Flow e da mídia, Flow JSON, templates, simulador
+packages/queue      catálogo de filas e jobs (payloads zod) · packages/storage: S3 com URL assinada
 packages/config     tsconfig base
 infra/              docker-compose e script de papéis/bancos do Postgres
 docs/               spec, arquitetura e rascunhos revisados
@@ -67,8 +108,33 @@ Regras para quem mexe no banco:
 - Medidas são `numeric` (string no TypeScript). Nunca `float`.
 - Tabelas do Better Auth (`auth_*`) são geradas pelo CLI: `cd apps/web && npx auth generate --output ../../packages/db/src/schema/auth.ts`.
 
+## WhatsApp: de simulado para a Meta
+
+| | `simulado` (padrão) | `cloud` |
+|---|---|---|
+| Envio | caixa do simulador (Redis) | Graph API (`POST /{phone-number-id}/messages`) |
+| Webhook e Flow | o simulador chama as rotas | a Meta chama as rotas (precisa de HTTPS público) |
+| Credenciais | App Secret, verify token e chave do Flow locais | + `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_WABA_ID` |
+
+Para ligar na Meta:
+
+1. Crie um app **Business** e adicione o produto WhatsApp. O token deve ser de um **System User**, porque o temporário expira em 24 h.
+2. Cadastre o webhook em `https://SEU_HOST/api/whatsapp/webhook`, com o `WHATSAPP_VERIFY_TOKEN`, no campo `messages`. Para testar local: `cloudflared tunnel --url http://localhost:3000`.
+3. Suba a chave pública do Flow (`POST /{phone-number-id}/whatsapp_business_encryption`).
+4. Publique os 3 Flows de `packages/whatsapp/src/flows`, com o endpoint em `https://SEU_HOST/api/whatsapp/flow`.
+5. Peça a aprovação dos templates UTILITY de `packages/whatsapp/src/templates.ts`: `canteiro_aviso` e `canteiro_anuncio_diario`.
+
+Detalhes e fontes em [docs/referencia-meta-whatsapp.md](docs/referencia-meta-whatsapp.md).
+
+**Custo:**
+- Cada mensagem cobrada vira um `evento_custo` da obra quando o webhook de status traz `pricing.type = regular`.
+- Os preços são estimados: ajuste em `WHATSAPP_PRECOS_USD`.
+- Desde out/2026, utility dentro da janela também é cobrada, e mensagens de serviço são cobradas a partir da 1.001ª do mês.
+
 ## Versões fixadas e por quê
 
 - **TypeScript 5.9** — o `latest` no npm já é o 7.0 (reescrita em Go); o Next e as ferramentas ainda dependem da API JS do 5.x.
 - **Drizzle 0.45 / drizzle-kit 0.31** — o 1.0 está em RC. Só usamos o query builder estilo SQL, que não muda no 1.0.
 - **Postgres 18** — `uuidv7()` nativo nas chaves primárias.
+- **S3 local = RustFS** — as imagens do MinIO saíram do Docker Hub em 2025; o RustFS fala a mesma API S3 (produção: AWS S3 ou compatível).
+- **Flow JSON 7.3 + data API 3.0** — a criptografia está documentada para a 3.0; sessões de até 9 pontos (limite de 10 ramos por tela).

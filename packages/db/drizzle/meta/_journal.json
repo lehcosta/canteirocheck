@@ -15,6 +15,13 @@
       "when": 1794762758432,
       "tag": "0001_imutavel_e_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794771285595,
+      "tag": "0002_whatsapp_entrega",
+      "breakpoints": true
     }
   ]
 }

@@ -65,7 +65,12 @@ export const direcaoMensagem = pgEnum("direcao_mensagem", ["entrada", "saida"]);
 export const tipoFlowSessao = pgEnum("tipo_flow_sessao", ["anuncio", "checklist", "recusa"]);
 export const origemMidia = pgEnum("origem_midia", ["flow_cdn", "whatsapp_media", "upload_painel"]);
 export const statusMidia = pgEnum("status_midia", ["pendente", "armazenada", "falhou"]);
-export const tipoCusto = pgEnum("tipo_custo", ["whatsapp_template", "llm_tokens", "transcricao_audio"]);
+export const tipoCusto = pgEnum("tipo_custo", [
+  "whatsapp_template",
+  "whatsapp_servico", // não-template: cobrada a partir da 1.001ª do mês por número (out/2026)
+  "llm_tokens",
+  "transcricao_audio",
+]);
 export const atorTipo = pgEnum("ator_tipo", ["usuario", "sistema", "ia"]);
 
 export type Papel = (typeof papel.enumValues)[number];

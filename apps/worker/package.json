@@ -1,0 +1,25 @@
+{
+  "name": "@canteirocheck/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@canteirocheck/db": "workspace:*",
+    "@canteirocheck/queue": "workspace:*",
+    "@canteirocheck/servicos": "workspace:*",
+    "@canteirocheck/storage": "workspace:*",
+    "@canteirocheck/whatsapp": "workspace:*",
+    "bullmq": "6.7.6",
+    "tsx": "4.23.15"
+  },
+  "devDependencies": {
+    "@canteirocheck/config": "workspace:*",
+    "@types/node": "^22",
+    "typescript": "5.9.3"
+  }
+}

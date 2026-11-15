@@ -39,6 +39,8 @@ export const usuario = pgTable(
     email: text("email"),
     // Único global: o número da Meta é compartilhado entre construtoras (decisão Q1 do docs/arquitetura.md).
     whatsappE164: text("whatsapp_e164").notNull().unique(),
+    // wa_id como a Meta manda (só dígitos). Pode diferir do cadastro (BR sem o 9). Preenchido na 1ª mensagem.
+    whatsappWaId: text("whatsapp_wa_id"),
     papel: papel("papel").notNull(),
     ativo: boolean("ativo").notNull().default(true),
     // Só admin/engenheiro têm login no painel (Better Auth). Sem FK para não acoplar ao schema de auth.

@@ -1,4 +1,17 @@
 export { type Ator, type EventoAuditoria, registrarAuditoria } from "./auditoria";
-export { type Db, encerrarDb, type Tx, withTenant } from "./cliente";
+export { type Db, encerrarDb, type Tx, verificarBanco, withTenant } from "./cliente";
 export * as schema from "./schema";
-export { podeEntrarNoPainel, resolverUsuarioDoPainel, type UsuarioDoPainel } from "./sistema";
+export {
+  atualizarStatusEntrega,
+  type EntradaRegistrada,
+  type EntradaWhatsapp,
+  listarObrasParaAgenda,
+  type ObraParaAgenda,
+  podeEntrarNoPainel,
+  registrarEntradaWhatsapp,
+  resolverSessaoFlow,
+  resolverUsuarioDoPainel,
+  type SessaoFlowResolvida,
+  type UsuarioDoPainel,
+  variantesWhatsapp,
+} from "./sistema";

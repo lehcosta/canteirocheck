@@ -47,3 +47,8 @@ export async function withTenant<T>(tenantId: string, fn: (tx: Tx) => Promise<T>
     return fn(tx);
   });
 }
+
+/** Health check: uma consulta trivial com o usuário de runtime. */
+export async function verificarBanco(): Promise<void> {
+  await obterDb().execute(sql`select 1`);
+}

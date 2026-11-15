@@ -10,6 +10,7 @@ import {
   tipoFlowSessao,
 } from "./comum";
 import { divergencia, execucaoEtapa, verificacao } from "./execucao";
+import { obra } from "./obra";
 import { pontoControle } from "./ponto";
 import { colunaTenantId, tenant, usuario } from "./tenant";
 
@@ -24,7 +25,10 @@ export const mensagemWhatsapp = pgTable(
     direcao: direcaoMensagem("direcao").notNull(),
     tipo: text("tipo").notNull(), // text, audio, image, interactive, button, nfm_reply, template…
     payload: jsonb("payload").notNull(),
-    statusEntrega: text("status_entrega"), // sent/delivered/read/failed — atualizado pelos webhooks de status
+    // saída: pendente → (aguardando_janela) → sent → delivered → read | failed (webhooks de status)
+    statusEntrega: text("status_entrega"),
+    erroEntrega: jsonb("erro_entrega"),
+    obraId: uuid("obra_id").references(() => obra.id), // custo por obra
     classificacao: text("classificacao"), // medida | ocorrencia | pergunta | outro
     interpretacao: jsonb("interpretacao"), // fallback: valor extraído + ponto provável, aguardando confirmação
     pontoId: uuid("ponto_id").references(() => pontoControle.id),

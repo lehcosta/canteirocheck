@@ -11,8 +11,15 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: raiz,
   // Pacotes do monorepo exportam TypeScript-fonte.
-  transpilePackages: ["@canteirocheck/db", "@canteirocheck/servicos"],
-  serverExternalPackages: ["pg"],
+  transpilePackages: [
+    "@canteirocheck/core",
+    "@canteirocheck/db",
+    "@canteirocheck/queue",
+    "@canteirocheck/servicos",
+    "@canteirocheck/storage",
+    "@canteirocheck/whatsapp",
+  ],
+  serverExternalPackages: ["pg", "sharp", "bullmq", "ioredis"],
   poweredByHeader: false,
 };
 

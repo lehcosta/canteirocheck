@@ -28,5 +28,42 @@ services:
       timeout: 3s
       retries: 30
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"] # BullMQ exige noeviction
+    ports:
+      - "63799:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # S3 local. As imagens do MinIO saíram do Docker Hub em 2025; o RustFS é compatível com a API S3.
+  s3:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: canteiro
+      RUSTFS_SECRET_KEY: canteiro_dev_secret
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "59000:9000" # API S3
+      - "59001:9001" # console: http://localhost:59001
+    volumes:
+      - s3data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9000/health || wget -qO- http://localhost:9000/health || exit 1",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
 volumes:
   pgdata:
+  redisdata:
+  s3data:

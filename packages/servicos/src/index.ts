@@ -1,5 +1,24 @@
 export { type Contexto, ErroDominio, type PapelPainel } from "./contexto";
 export {
+  anunciarExecucoes,
+  decidirExecucao,
+  type EntradaAnuncio,
+  type EntradaDecisao,
+  opcoesDeAnuncio,
+} from "./execucoes/anuncio-e-decisao";
+export { abrirConferencia, type EstadoSessaoChecklist } from "./execucoes/conferencia";
+export {
+  type ItemLinhaDoTempo,
+  linhaDoTempo,
+  obterExecucao,
+  type PontoNoResumo,
+  type ResumoExecucao,
+  type RodadaNoResumo,
+  resumoDaExecucao,
+  type TentativaNoResumo,
+} from "./execucoes/consultas";
+export { baixarMidia, urlDaMidia } from "./midias";
+export {
   adicionarMembro,
   criarLocal,
   criarObra,
@@ -9,5 +28,24 @@ export {
   type ResumoObra,
   removerMembro,
 } from "./obras";
+export { comSavepoint, Efeitos, emTransacao } from "./transacao";
 export { criarUsuario, definirAtivo, listarUsuarios, type UsuarioListado } from "./usuarios";
 export { normalizarWhatsapp } from "./validacao";
+export { type RespostaHttp, receberPedidoFlow, receberWebhook, verificarWebhook } from "./whatsapp/endpoint";
+export { processarMensagemRecebida } from "./whatsapp/entrada";
+export { type PedidoFlow, type RespostaFlow, tratarPedidoFlow } from "./whatsapp/flow";
+export {
+  anuncioDiario,
+  avisarPendencia,
+  notificarEncarregado,
+  notificarEngenheiro,
+} from "./whatsapp/notificacoes";
+export {
+  enviarMensagemPendente,
+  janelaAberta,
+  type PayloadSaida,
+  prepararMensagem,
+  type ResultadoEnvio,
+} from "./whatsapp/saida";
+export { enviarFlowAnuncio, enviarFlowChecklist, enviarFlowJustificativa } from "./whatsapp/sessoes";
+export { registrarStatus } from "./whatsapp/status";

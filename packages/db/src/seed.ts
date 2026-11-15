@@ -7,13 +7,9 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { criarTenantComAdmin, type DbDono, semearEtapas } from "./plataforma";
 import * as schema from "./schema";
+import { SEED } from "./seed-dados";
 
-export const SEED = {
-  cnpj: "00000000000191",
-  admin: { nome: "Admin Exemplo", email: "admin@exemplo.test", whatsappE164: "+5511900000001" },
-  ana: { nome: "Eng. Ana", email: "ana@exemplo.test", whatsappE164: "+5511900000002" },
-  joao: { nome: "João", whatsappE164: "+5511900000003" },
-} as const;
+export { SEED };
 
 export async function semearCenario(db: DbDono): Promise<{ tenantId: string; criado: boolean }> {
   await semearEtapas(db);
