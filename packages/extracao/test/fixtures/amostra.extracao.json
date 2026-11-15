@@ -1,0 +1,231 @@
+{
+  "versao": {
+    "extrator": "0.1.0",
+    "libredwgWeb": "0.9.0"
+  },
+  "dwg": {
+    "versao": "AC1015",
+    "unidades": "6"
+  },
+  "camadas": [
+    {
+      "nome": "0",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 1
+    },
+    {
+      "nome": "A-TEXTO",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 4
+    },
+    {
+      "nome": "A-AMBIENTE",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 2
+    },
+    {
+      "nome": "A-NIVEL",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 2
+    },
+    {
+      "nome": "CARIMBO",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 1
+    },
+    {
+      "nome": "A-COTA",
+      "desligada": false,
+      "congelada": false,
+      "entidades": 1
+    },
+    {
+      "nome": "A-OCULTA",
+      "desligada": true,
+      "congelada": false,
+      "entidades": 0
+    }
+  ],
+  "textos": [
+    {
+      "tipo": "TEXT",
+      "conteudo": "SALA",
+      "camada": "A-TEXTO",
+      "x": 2,
+      "y": 1.8,
+      "altura": 0.25,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "\u00c1REA: 18,50 m\u00b2",
+      "camada": "A-TEXTO",
+      "x": 2,
+      "y": 1.4,
+      "altura": 0.15,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "MTEXT",
+      "conteudo": "{\\fArial|b1;NOTA:} PISO A DEFINIR\\PAGUARDANDO PROJETO DE AR CONDICIONADO",
+      "camada": "A-TEXTO",
+      "x": 6,
+      "y": 3,
+      "altura": 0,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "+6,00",
+      "camada": "A-NIVEL",
+      "x": 7,
+      "y": 0.5,
+      "altura": 0.2,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "N.A. +3,05",
+      "camada": "A-NIVEL",
+      "x": 7,
+      "y": 0,
+      "altura": 0.2,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "PILAR %%c30",
+      "camada": "A-TEXTO",
+      "x": 1,
+      "y": 3,
+      "altura": 0.15,
+      "bloco": null,
+      "tag": null
+    },
+    {
+      "tipo": "ATTRIB",
+      "conteudo": "CONSTRUTORA EXEMPLO LTDA",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 1.5,
+      "altura": 0.2,
+      "bloco": "CARIMBO",
+      "tag": "CLIENTE"
+    },
+    {
+      "tipo": "ATTRIB",
+      "conteudo": "EXECUTIVO",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 1,
+      "altura": 0.2,
+      "bloco": "CARIMBO",
+      "tag": "FASE"
+    },
+    {
+      "tipo": "ATTRIB",
+      "conteudo": "R02",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 0.5,
+      "altura": 0.2,
+      "bloco": "CARIMBO",
+      "tag": "REVISAO"
+    },
+    {
+      "tipo": "ATTRIB",
+      "conteudo": "15/11/2026",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 0,
+      "altura": 0.2,
+      "bloco": "CARIMBO",
+      "tag": "DATA"
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "PROJETO EXECUTIVO DE ARQUITETURA",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 2,
+      "altura": 0.25,
+      "bloco": "CARIMBO",
+      "tag": null
+    },
+    {
+      "tipo": "TEXT",
+      "conteudo": "FOLHA 01/01",
+      "camada": "CARIMBO",
+      "x": 1,
+      "y": 1,
+      "altura": 0.3,
+      "bloco": null,
+      "tag": null
+    }
+  ],
+  "insercoes": [
+    {
+      "bloco": "CARIMBO",
+      "camada": "CARIMBO",
+      "x": 10,
+      "y": 0,
+      "atributos": [
+        {
+          "tag": "CLIENTE",
+          "valor": "CONSTRUTORA EXEMPLO LTDA"
+        },
+        {
+          "tag": "FASE",
+          "valor": "EXECUTIVO"
+        },
+        {
+          "tag": "REVISAO",
+          "valor": "R02"
+        },
+        {
+          "tag": "DATA",
+          "valor": "15/11/2026"
+        }
+      ]
+    }
+  ],
+  "polilinhas": [
+    {
+      "camada": "A-AMBIENTE",
+      "fechada": true,
+      "vertices": [[0, 0], [5, 0], [5, 3.7], [0, 3.7]],
+      "arcos": 0
+    },
+    {
+      "camada": "0",
+      "fechada": false,
+      "vertices": [[5, 1], [5, 2], [6, 2]],
+      "arcos": 1
+    },
+    {
+      "camada": "A-AMBIENTE",
+      "fechada": true,
+      "vertices": [[0, 4], [3, 4], [3, 6], [0, 6]],
+      "arcos": 0
+    }
+  ],
+  "cotas": [
+    {
+      "camada": "A-COTA",
+      "texto": null,
+      "medida": 5,
+      "x": 2.5,
+      "y": -0.65
+    }
+  ]
+}

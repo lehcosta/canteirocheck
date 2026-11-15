@@ -66,3 +66,11 @@ export function formatarData(iso: string): string {
 export function formatarDataHora(d: Date): string {
   return d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 }
+
+export const STATUS_EXTRACAO: Record<string, string> = {
+  pendente: "Na fila",
+  processando: "Extraindo…",
+  concluida: "Extraído",
+  falhou: "Falhou",
+  nao_aplicavel: "Referência (PDF)",
+};

@@ -9,6 +9,7 @@ import {
   gerarRelatorio,
   notificarEncarregado,
   notificarEngenheiro,
+  processarExtracao,
   processarMensagemRecebida,
 } from "@canteirocheck/servicos";
 import { garantirBucket } from "@canteirocheck/storage";
@@ -74,6 +75,7 @@ subir("execucao", {
 });
 subir("agenda", { anuncio_diario: (p) => anuncioDiario(p.tenantId, p.obraId) });
 subir("relatorios", { gerar_pdf: (p) => gerarRelatorio(p) }, { concorrencia: 2 });
+subir("dwg", { extrair_dwg: (p) => processarExtracao(p.tenantId, p.projetoId) }, { concorrencia: 2 });
 
 await garantirBucket().catch((e) => log("warn", "s3.indisponivel", { erro: String(e) }));
 await sincronizarAgendamentos(fila).catch((e) => log("error", "agenda.falhou", { erro: String(e) }));

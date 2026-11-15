@@ -63,6 +63,9 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Extrator de DWG (GPL, fora do workspace)
+        working-directory: services/dwg-extractor
+        run: pnpm install --ignore-workspace --frozen-lockfile && pnpm typecheck && pnpm test
       - name: Migrations aplicam do zero
         run: pnpm --filter @canteirocheck/db exec tsx src/scripts/migrar.ts
       - run: pnpm build

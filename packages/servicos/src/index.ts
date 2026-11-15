@@ -39,6 +39,19 @@ export {
   revisarPonto,
 } from "./pontos";
 export {
+  chamarExtrator,
+  type DetalheProjeto,
+  listarProjetos,
+  obterProjeto,
+  type ProjetoListado,
+  processarExtracao,
+  registrarProjeto,
+  reprocessarProjeto,
+  TAMANHO_MAXIMO_PROJETO,
+  tipoDoArquivo,
+  urlDoArquivoProjeto,
+} from "./projetos";
+export {
   gerarRelatorio,
   listarRelatorios,
   type RelatorioListado,

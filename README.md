@@ -12,6 +12,11 @@ SaaS B2B para conferir a execução de obra contra o projeto **antes** da etapa 
   - regra da janela de 24h com template;
   - fotos decifradas e guardadas no S3;
   - contador de custo por obra.
+- **Etapa 2 (ingestão de DWG):**
+  - upload de DWG ou PDF por obra, com revisões;
+  - extrator isolado (`services/dwg-extractor`, GPL-3.0, só HTTP);
+  - interpretação nossa (`packages/extracao`): textos limpos, camadas, blocos, ambientes com área, cotas de nível, carimbo e notas, com pré-filtro de pendência;
+  - tela de extração.
 - **Etapa 6 (liberação e relatório):**
   - painel da obra com o que aguarda decisão e o custo acumulado;
   - linha do tempo;
@@ -28,7 +33,7 @@ Pré-requisitos: Node 22, pnpm 10, Docker.
 ```bash
 cp .env.example .env                       # e troque BETTER_AUTH_SECRET: openssl rand -base64 32
 pnpm install
-pnpm infra:up                              # Postgres 18, Redis, S3 local (RustFS) e Mailpit
+pnpm infra:up                              # Postgres 18, Redis, S3 local (RustFS), Mailpit e o extrator de DWG
 pnpm db:migrate
 pnpm db:seed                               # cenário da §10 do prompt (Construtora Exemplo, Edifício Teste)
 pnpm dev                                   # painel (http://localhost:3000) + worker das filas
@@ -93,6 +98,8 @@ packages/servicos   casos de uso (obras, execuções, conferência, liberação,
 packages/whatsapp   Cloud API, assinatura, cripto do Flow e da mídia, Flow JSON, templates, simulador
 packages/queue      catálogo de filas e jobs (payloads zod) · packages/storage: S3 com URL assinada
 packages/reports    PDFs (@react-pdf/renderer): execução (medidas, fotos, decisão) e obra
+packages/extracao   interpretação do DWG: MTEXT limpo, ambientes + área, níveis, carimbo, notas (código nosso, sem GPL)
+services/dwg-extractor  leitura do DWG com libredwg-web (GPL-3.0, container próprio, fora do workspace pnpm)
 packages/config     tsconfig base
 infra/              docker-compose e script de papéis/bancos do Postgres
 docs/               spec, arquitetura e rascunhos revisados
@@ -115,6 +122,19 @@ Regras para quem mexe no banco:
 - **`audit_log`, `liberacao`, `verificacao` e `divergencia` são append-only** (sem grant de UPDATE/DELETE + trigger). Correção é uma linha nova.
 - Medidas são `numeric` (string no TypeScript). Nunca `float`.
 - Tabelas do Better Auth (`auth_*`) são geradas pelo CLI: `cd apps/web && npx auth generate --output ../../packages/db/src/schema/auth.ts`.
+
+## DWG
+
+`pnpm infra:up` sobe o extrator na porta 58090 (`DWG_EXTRACTOR_URL`).
+
+O fluxo:
+1. Em **Obra › Projetos**, envie o DWG.
+2. O worker manda o arquivo ao extrator e interpreta a resposta.
+3. O resultado aparece na tela do projeto.
+
+**Aceite com ressalva:** ainda não há DWG real. A amostra (`services/dwg-extractor/test/fixtures`) foi escrita à mão em DXF e convertida para DWG R2000. Confirmar com um DWG de interiores de verdade (R2004 ou mais novo) antes de fechar a etapa. Limitações conhecidas no README do extrator.
+
+**Licença:** o `libredwg-web` é GPL-3.0. O extrator roda isolado, como serviço próprio que só fala HTTP. Valide com o jurídico antes de produção; a alternativa comercial é o ODA SDK.
 
 ## WhatsApp: de simulado para a Meta
 

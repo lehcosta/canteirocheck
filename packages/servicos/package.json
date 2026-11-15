@@ -13,6 +13,7 @@
   "dependencies": {
     "@canteirocheck/core": "workspace:*",
     "@canteirocheck/db": "workspace:*",
+    "@canteirocheck/extracao": "workspace:*",
     "@canteirocheck/queue": "workspace:*",
     "@canteirocheck/reports": "workspace:*",
     "@canteirocheck/storage": "workspace:*",

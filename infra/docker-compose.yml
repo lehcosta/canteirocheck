@@ -63,6 +63,26 @@ services:
       timeout: 3s
       retries: 30
 
+  # Leitura de DWG (GPL-3.0, isolado: só HTTP). Ver services/dwg-extractor/README.md
+  dwg-extractor:
+    build: ../services/dwg-extractor
+    environment:
+      EXTRAIR_TIMEOUT_MS: "60000"
+      EXTRAIR_CONCORRENCIA: "2"
+    ports:
+      - "58090:8090"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8090/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
 volumes:
   pgdata:
   redisdata:
