@@ -41,9 +41,15 @@ export const JOBS = {
   avisar_pendencia: { fila: "execucao", payload: z.object({ ...comTenant, execucaoId: uuid }) },
   /** Cron por obra (Job Scheduler no fuso da obra). */
   anuncio_diario: { fila: "agenda", payload: z.object({ ...comTenant, obraId: uuid }) },
+  /** PDF de uma execução (execucaoId) ou da obra inteira (execucaoId null). */
   gerar_pdf: {
     fila: "relatorios",
-    payload: z.object({ ...comTenant, execucaoId: uuid, solicitadoPorId: uuid.nullable() }),
+    payload: z.object({
+      ...comTenant,
+      obraId: uuid,
+      execucaoId: uuid.nullable(),
+      solicitadoPorId: uuid.nullable(),
+    }),
   },
   extrair_dwg: { fila: "dwg", payload: z.object({ ...comTenant, projetoId: uuid }) },
   detectar_pendencias: { fila: "ia", payload: z.object({ ...comTenant, projetoId: uuid }) },

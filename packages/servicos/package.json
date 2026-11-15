@@ -14,6 +14,7 @@
     "@canteirocheck/core": "workspace:*",
     "@canteirocheck/db": "workspace:*",
     "@canteirocheck/queue": "workspace:*",
+    "@canteirocheck/reports": "workspace:*",
     "@canteirocheck/storage": "workspace:*",
     "@canteirocheck/whatsapp": "workspace:*",
     "drizzle-orm": "0.45.4",

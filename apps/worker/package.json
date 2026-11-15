@@ -11,6 +11,7 @@
   "dependencies": {
     "@canteirocheck/db": "workspace:*",
     "@canteirocheck/queue": "workspace:*",
+    "@canteirocheck/reports": "workspace:*",
     "@canteirocheck/servicos": "workspace:*",
     "@canteirocheck/storage": "workspace:*",
     "@canteirocheck/whatsapp": "workspace:*",

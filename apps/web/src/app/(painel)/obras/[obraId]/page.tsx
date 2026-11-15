@@ -1,5 +1,6 @@
-import { listarUsuarios, obterObra } from "@canteirocheck/servicos";
+import { listarUsuarios, obterObra, painelDaObra } from "@canteirocheck/servicos";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Campo, CampoSelect } from "@/components/campos";
 import { FormularioAcao } from "@/components/formulario-acao";
@@ -8,7 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { adicionarMembroAction, criarLocalAction, removerMembroAction } from "@/features/obras/actions";
-import { formatarWhatsapp, PAPEL, STATUS_OBRA, TIPO_LOCAL } from "@/lib/rotulos";
+import {
+  COR_STATUS_EXECUCAO,
+  formatarData,
+  formatarWhatsapp,
+  PAPEL,
+  STATUS_EXECUCAO,
+  TIPO_LOCAL,
+} from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
 
 export const metadata: Metadata = { title: "Obra" };
@@ -20,15 +28,73 @@ export default async function DetalheObra({ params }: { params: Promise<{ obraId
   if (!obra) notFound();
 
   const usuarios = await listarUsuarios(s.contexto);
+  const painel = await painelDaObra(s.contexto, obraId);
   const naEquipe = new Set(obra.membros.map((m) => m.usuarioId));
   const candidatos = usuarios.filter((u) => u.ativo && !naEquipe.has(u.id));
   const nomeLocal = new Map(obra.locais.map((l) => [l.id, `${TIPO_LOCAL[l.tipo]} ${l.nome}`]));
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold">{obra.nome}</h1>
-        <Badge variant={obra.status === "ativa" ? "default" : "secondary"}>{STATUS_OBRA[obra.status]}</Badge>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Aguardando decisão</CardTitle>
+            <CardDescription>
+              Conferências concluídas que só seguem com a liberação do engenheiro responsável.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {painel?.aguardandoDecisao.length ? (
+              <ul className="divide-y text-sm">
+                {painel.aguardandoDecisao.map((e) => (
+                  <li key={e.id} className="flex items-center justify-between py-2">
+                    <Link
+                      href={`/obras/${obra.id}/execucoes/${e.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {e.etapaNome} · {e.localNome}
+                    </Link>
+                    <span className="flex items-center gap-3 text-muted-foreground">
+                      {formatarData(e.dataPrevista)}
+                      <Badge variant={COR_STATUS_EXECUCAO[e.status as keyof typeof STATUS_EXECUCAO]}>
+                        {STATUS_EXECUCAO[e.status as keyof typeof STATUS_EXECUCAO]}
+                      </Badge>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Nada aguardando decisão.{" "}
+                {painel?.emAndamento ? `${painel.emAndamento} execução(ões) em andamento.` : ""}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Custo acumulado</CardTitle>
+            <CardDescription>Mensagens do WhatsApp e IA (estimado, em US$).</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <p className="text-2xl font-semibold tabular-nums">
+              US$ {Number(painel?.custo.total ?? 0).toFixed(2)}
+            </p>
+            {painel?.custo.porTipo.map((c) => (
+              <p key={c.tipo} className="flex justify-between text-muted-foreground">
+                <span>
+                  {c.tipo.replace("_", " ")} ({Number(c.quantidade).toLocaleString("pt-BR")})
+                </span>
+                <span className="tabular-nums">US$ {Number(c.total).toFixed(4)}</span>
+              </p>
+            ))}
+            {painel?.pendenciasAbertas ? (
+              <p className="pt-2 text-destructive">
+                {painel.pendenciasAbertas} pendência(s) de projeto aberta(s)
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

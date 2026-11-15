@@ -12,6 +12,13 @@ SaaS B2B para conferir a execução de obra contra o projeto **antes** da etapa 
   - regra da janela de 24h com template;
   - fotos decifradas e guardadas no S3;
   - contador de custo por obra.
+- **Etapa 6 (liberação e relatório):**
+  - painel da obra com o que aguarda decisão e o custo acumulado;
+  - linha do tempo;
+  - tela da execução, com medidas e fotos de cada rodada e os botões Liberar/Recusar;
+  - pontos de controle manuais com aprovação do engenheiro;
+  - tolerâncias padrão;
+  - PDF por execução, gerado a cada decisão, e PDF da obra, servidos por URL assinada.
 - **Sem conta na Meta:** um simulador em `/dev/whatsapp` faz o papel do WhatsApp.
 
 ## Rodar localmente
@@ -85,6 +92,7 @@ packages/db         schema Drizzle, migrations, withTenant(), funções de siste
 packages/servicos   casos de uso (obras, execuções, conferência, liberação, WhatsApp) com zod e auditoria
 packages/whatsapp   Cloud API, assinatura, cripto do Flow e da mídia, Flow JSON, templates, simulador
 packages/queue      catálogo de filas e jobs (payloads zod) · packages/storage: S3 com URL assinada
+packages/reports    PDFs (@react-pdf/renderer): execução (medidas, fotos, decisão) e obra
 packages/config     tsconfig base
 infra/              docker-compose e script de papéis/bancos do Postgres
 docs/               spec, arquitetura e rascunhos revisados

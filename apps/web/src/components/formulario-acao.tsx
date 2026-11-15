@@ -27,7 +27,8 @@ export function FormularioAcao({
       onSubmit={(evento) => {
         evento.preventDefault();
         const form = evento.currentTarget;
-        const dados = new FormData(form);
+        // inclui o botão que enviou (ex.: Liberar × Recusar com o mesmo name)
+        const dados = new FormData(form, (evento.nativeEvent as SubmitEvent).submitter);
         iniciar(async () => {
           const r = await acao(undefined, dados);
           setEstado(r);

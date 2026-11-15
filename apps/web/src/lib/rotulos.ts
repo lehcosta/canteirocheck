@@ -12,3 +12,57 @@ export function formatarWhatsapp(e164: string): string {
   const m = /^\+55(\d{2})(\d{4,5})(\d{4})$/.exec(e164);
   return m ? `+55 (${m[1]}) ${m[2]}-${m[3]}` : e164;
 }
+
+export const STATUS_EXECUCAO = {
+  anunciada: "Anunciada",
+  em_conferencia: "Em conferência",
+  bloqueada: "Bloqueada",
+  aguardando_liberacao: "Aguardando liberação",
+  liberada: "Liberada",
+  recusada: "Recusada",
+  cancelada: "Cancelada",
+} as const;
+
+/** Variante do Badge por status: vermelho para o que pede atenção. */
+export const COR_STATUS_EXECUCAO: Record<
+  keyof typeof STATUS_EXECUCAO,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  anunciada: "outline",
+  em_conferencia: "secondary",
+  bloqueada: "destructive",
+  aguardando_liberacao: "default",
+  liberada: "secondary",
+  recusada: "destructive",
+  cancelada: "outline",
+};
+
+export const GRANDEZA = {
+  nivel: "Nível",
+  distancia: "Distância",
+  prumo: "Prumo",
+  esquadro: "Esquadro",
+  existencia: "Existência",
+} as const;
+
+export const UNIDADE = { m: "m", cm: "cm", mm: "mm", booleano: "sim/não" } as const;
+
+export const STATUS_REVISAO = {
+  sugerido: "Sugerido",
+  aprovado: "Aprovado",
+  descartado: "Descartado",
+} as const;
+
+export const CANAL = {
+  flow: "WhatsApp (formulário)",
+  conversa: "WhatsApp (conversa)",
+  painel: "Painel",
+} as const;
+
+export function formatarData(iso: string): string {
+  return iso.split("-").reverse().join("/");
+}
+
+export function formatarDataHora(d: Date): string {
+  return d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
+}

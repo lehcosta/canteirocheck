@@ -22,9 +22,19 @@ describe("identificação pelo número do WhatsApp", () => {
     const semNove = admin.whatsappE164.replace(/^\+55(\d{2})9/, "55$1");
     const wamid = `wamid.${Date.now()}`;
 
-    const r1 = await registrarEntradaWhatsapp({ waMessageId: wamid, waId: semNove, tipo: "text", payload: {} });
+    const r1 = await registrarEntradaWhatsapp({
+      waMessageId: wamid,
+      waId: semNove,
+      tipo: "text",
+      payload: {},
+    });
     expect(r1).toMatchObject({ tenantId: t.tenantId, usuarioId: admin.id, duplicada: false });
-    const r2 = await registrarEntradaWhatsapp({ waMessageId: wamid, waId: semNove, tipo: "text", payload: {} });
+    const r2 = await registrarEntradaWhatsapp({
+      waMessageId: wamid,
+      waId: semNove,
+      tipo: "text",
+      payload: {},
+    });
     expect(r2).toMatchObject({ mensagemId: r1.mensagemId, duplicada: true });
 
     const [depois] = await withTenant(t.tenantId, (tx) =>

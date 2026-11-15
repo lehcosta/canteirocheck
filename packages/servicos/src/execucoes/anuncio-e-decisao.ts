@@ -271,7 +271,7 @@ export async function decidirExecucao(
   );
   efeitos.enfileirar(
     "gerar_pdf",
-    { tenantId: exec.tenantId, execucaoId: exec.id, solicitadoPorId: null },
+    { tenantId: exec.tenantId, obraId: exec.obraId, execucaoId: exec.id, solicitadoPorId: null },
     { jobId: idJob("pdf", exec.id, exec.rodadaAtual) },
   );
   return { liberacaoId: lib.id, status: exec.status };

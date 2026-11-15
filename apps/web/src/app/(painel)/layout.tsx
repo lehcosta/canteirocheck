@@ -19,6 +19,9 @@ export default async function LayoutPainel({ children }: { children: React.React
             <Link href="/configuracoes/usuarios" className="hover:text-foreground">
               Usuários
             </Link>
+            <Link href="/configuracoes/tolerancias" className="hover:text-foreground">
+              Tolerâncias
+            </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">

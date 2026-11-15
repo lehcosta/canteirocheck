@@ -1,0 +1,24 @@
+{
+  "name": "@canteirocheck/reports",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "4.9.0",
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@canteirocheck/config": "workspace:*",
+    "@types/node": "^22",
+    "@types/react": "19.3.0",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}

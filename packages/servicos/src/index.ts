@@ -28,6 +28,23 @@ export {
   type ResumoObra,
   removerMembro,
 } from "./obras";
+export { decidirPeloPainel, type PainelObra, painelDaObra } from "./painel";
+export {
+  criarPontoManual,
+  definirTolerancia,
+  listarPontos,
+  listarTolerancias,
+  opcoesEtapas,
+  type PontoListado,
+  revisarPonto,
+} from "./pontos";
+export {
+  gerarRelatorio,
+  listarRelatorios,
+  type RelatorioListado,
+  solicitarRelatorio,
+  urlDoRelatorio,
+} from "./relatorios";
 export { comSavepoint, Efeitos, emTransacao } from "./transacao";
 export { criarUsuario, definirAtivo, listarUsuarios, type UsuarioListado } from "./usuarios";
 export { normalizarWhatsapp } from "./validacao";
