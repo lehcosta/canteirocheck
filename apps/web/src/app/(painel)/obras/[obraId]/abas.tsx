@@ -9,6 +9,7 @@ const ABAS = [
   { caminho: "/linha-do-tempo", rotulo: "Linha do tempo" },
   { caminho: "/projetos", rotulo: "Projetos" },
   { caminho: "/pontos", rotulo: "Pontos de controle" },
+  { caminho: "/indicadores", rotulo: "Indicadores" },
   { caminho: "/relatorios", rotulo: "Relatórios" },
 ];
 

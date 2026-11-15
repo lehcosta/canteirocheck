@@ -53,10 +53,7 @@ export function FlowSimulado({ tel, nome, token, wamid, telas, aoFechar }: Props
     if (r.corpo.screen === "SUCCESS") {
       const params =
         (r.corpo.data?.extension_message_response as { params?: Record<string, unknown> })?.params ?? {};
-      iniciar(async () => {
-        await concluirFlow(tel, nome, params, wamid);
-        aoFechar();
-      });
+      void concluirFlow(tel, nome, params, wamid).then(aoFechar);
       return;
     }
     const { error_message, ...resto } = r.corpo.data ?? {};

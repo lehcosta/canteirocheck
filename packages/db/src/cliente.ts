@@ -20,7 +20,14 @@ export function obterDb(): Db {
   if (!globalThis.__canteiroDb) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL não definida");
-    const pool = new Pool({ connectionString: url, max: Number(process.env.DATABASE_POOL_MAX ?? 10) });
+    // Timeouts: consulta presa não segura conexão do pool (o endpoint do Flow tem 10 s da Meta).
+    const pool = new Pool({
+      connectionString: url,
+      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+      connectionTimeoutMillis: Number(process.env.DATABASE_CONNECT_TIMEOUT_MS ?? 5_000),
+      statement_timeout: Number(process.env.DATABASE_STATEMENT_TIMEOUT_MS ?? 15_000),
+      idle_in_transaction_session_timeout: Number(process.env.DATABASE_IDLE_TX_TIMEOUT_MS ?? 60_000),
+    });
     globalThis.__canteiroDb = { db: drizzle({ client: pool, schema }), pool };
   }
   return globalThis.__canteiroDb.db;

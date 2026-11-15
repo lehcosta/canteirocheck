@@ -7,6 +7,7 @@ import {
   decifrarPedido,
   type PedidoCifrado,
 } from "@canteirocheck/whatsapp/transporte";
+import { contar, logar, observarDuracao } from "../metricas";
 import { type PedidoFlow, tratarPedidoFlow } from "./flow";
 import { registrarStatus } from "./status";
 
@@ -70,11 +71,23 @@ export async function receberWebhook(corpo: string, assinatura: string | null): 
     );
   }
   for (const s of lido.status) await registrarStatus(s);
+  contar("canteiro_webhook_mensagens_total", {}, lido.mensagens.length);
+  contar("canteiro_webhook_status_total", {}, lido.status.length);
   return json(200, { ok: true });
 }
 
 /** POST do endpoint de Flows: 432 assinatura, 421 não decifra, 427 token inválido, 200 cifrado. */
 export async function receberPedidoFlow(corpo: string, assinatura: string | null): Promise<RespostaHttp> {
+  const inicio = performance.now();
+  const r = await receberPedidoFlowSemMedir(corpo, assinatura);
+  const ms = performance.now() - inicio;
+  observarDuracao("canteiro_flow_endpoint_ms", ms, { status: String(r.status) });
+  // A Meta derruba o Flow acima de 10 s e alerta no p90 > 1 s.
+  if (ms > 1000) logar("warn", "flow.lento", { ms: Math.round(ms), status: r.status });
+  return r;
+}
+
+async function receberPedidoFlowSemMedir(corpo: string, assinatura: string | null): Promise<RespostaHttp> {
   const cfg = configWhatsapp();
   if (!assinaturaValida(corpo, assinatura, cfg.WHATSAPP_APP_SECRET))
     return json(432, { erro: "assinatura inválida" });

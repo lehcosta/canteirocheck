@@ -25,6 +25,15 @@ export {
   trechoExiste,
   validarSugestao,
 } from "./ia";
+export {
+  contar,
+  exporMetricas,
+  type IndicadorEtapa,
+  indicadoresDaObra,
+  logar,
+  observarDuracao,
+  varrerParados,
+} from "./metricas";
 export { baixarMidia, urlDaMidia } from "./midias";
 export {
   adicionarMembro,

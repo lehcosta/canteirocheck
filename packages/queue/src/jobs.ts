@@ -39,6 +39,8 @@ export const JOBS = {
   notificar_encarregado: { fila: "execucao", payload: z.object({ ...comTenant, liberacaoId: uuid }) },
   /** Pendência aberta bloqueia uma etapa recém-anunciada → aviso ao engenheiro. */
   avisar_pendencia: { fila: "execucao", payload: z.object({ ...comTenant, execucaoId: uuid }) },
+  /** A cada 2 min: reenfileira o que ficou parado em `pendente` (mensagem, mídia, extração). */
+  varredura: { fila: "agenda", payload: z.object({}) },
   /** Cron por obra (Job Scheduler no fuso da obra). */
   anuncio_diario: { fila: "agenda", payload: z.object({ ...comTenant, obraId: uuid }) },
   /** PDF de uma execução (execucaoId) ou da obra inteira (execucaoId null). */

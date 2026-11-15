@@ -3,7 +3,7 @@
 import type { ItemCaixaSimulada } from "@canteirocheck/whatsapp";
 import type { NomeFlow } from "@canteirocheck/whatsapp/flows";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   confirmarEntregas,
   enviarFoto,
@@ -33,9 +33,10 @@ interface Props {
 /** Conversa simulada: bolhas, botões tocáveis, Flow embutido e caixa de texto/foto. */
 export function Chat({ tel, itens, flows, templates }: Props) {
   const router = useRouter();
-  const [texto, setTexto] = useState("");
   const [flowAberto, setFlowAberto] = useState<{ nome: NomeFlow; token: string; wamid: string } | null>(null);
-  const [pendente, iniciar] = useTransition();
+  // Estado próprio (não useTransition): com o refresh periódico, uma transição com router.refresh
+  // dentro nunca termina e deixaria os botões desabilitados.
+  const [pendente, setPendente] = useState(false);
   const fim = useRef<HTMLDivElement>(null);
 
   // A Meta confirma a entrega; o worker responde em segundo plano → atualiza a cada 2 s.
@@ -52,11 +53,15 @@ export function Chat({ tel, itens, flows, templates }: Props) {
     if (quantidade > 0) fim.current?.scrollIntoView({ behavior: "smooth" });
   }, [quantidade]);
 
-  const agir = (fn: () => Promise<unknown>) =>
-    iniciar(async () => {
+  const agir = async (fn: () => Promise<unknown>) => {
+    setPendente(true);
+    try {
       await fn();
+    } finally {
+      setPendente(false);
       router.refresh();
-    });
+    }
+  };
 
   return (
     <div className="grid gap-3">
@@ -90,7 +95,7 @@ export function Chat({ tel, itens, flows, templates }: Props) {
                         type="button"
                         disabled={pendente}
                         className="rounded py-1 text-center text-sky-700 hover:bg-sky-50"
-                        onClick={() => agir(() => tocarBotao(tel, b.id, b.titulo, i.id))}
+                        onClick={() => void agir(() => tocarBotao(tel, b.id, b.titulo, i.id))}
                       >
                         {b.titulo}
                       </button>
@@ -131,7 +136,7 @@ export function Chat({ tel, itens, flows, templates }: Props) {
                         disabled={pendente}
                         className="rounded py-1 text-center text-sky-700 hover:bg-sky-50"
                         onClick={() =>
-                          agir(() =>
+                          void agir(() =>
                             tocarRespostaTemplate(
                               tel,
                               payload,
@@ -175,17 +180,14 @@ export function Chat({ tel, itens, flows, templates }: Props) {
         className="flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          const t = texto;
-          setTexto("");
-          agir(() => enviarTexto(tel, t));
+          // lê do formulário (não do estado): robusto mesmo se o campo foi preenchido antes da hidratação
+          const form = e.currentTarget;
+          const t = String(new FormData(form).get("texto") ?? "");
+          form.reset();
+          void agir(() => enviarTexto(tel, t));
         }}
       >
-        <input
-          className="flex-1 rounded-full border px-4 py-2 text-sm"
-          placeholder="Mensagem"
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-        />
+        <input name="texto" className="flex-1 rounded-full border px-4 py-2 text-sm" placeholder="Mensagem" />
         <button
           type="submit"
           disabled={pendente}
@@ -206,11 +208,11 @@ export function Chat({ tel, itens, flows, templates }: Props) {
               if (!f) return;
               const fd = new FormData();
               fd.set("foto", f);
-              agir(() => enviarFoto(tel, fd));
+              void agir(() => enviarFoto(tel, fd));
             }}
           />
         </label>
-        <button type="button" className="underline" onClick={() => agir(() => limparConversa(tel))}>
+        <button type="button" className="underline" onClick={() => void agir(() => limparConversa(tel))}>
           Limpar conversa
         </button>
       </div>

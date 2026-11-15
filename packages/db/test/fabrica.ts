@@ -3,7 +3,8 @@ import { comDono, criarTenantComAdmin, type TenantCriado } from "../src/platafor
 import { urlsDeTeste } from "../src/testing";
 
 export const digitos = (n: number) => Array.from({ length: n }, () => randomInt(10)).join("");
-export const whatsappAleatorio = () => `+55119${digitos(8)}`;
+/** Celular brasileiro realista: 9 + número antigo de 8 dígitos começando em 6–9. */
+export const whatsappAleatorio = () => `+55119${randomInt(6, 10)}${digitos(7)}`;
 
 export async function novoTenant(nome = "Construtora Teste"): Promise<TenantCriado & { adminEmail: string }> {
   const adminEmail = `admin.${digitos(10)}@teste.test`;

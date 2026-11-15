@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { comoSistema } from "./interno/como-sistema";
 import { auth_user as authUser } from "./schema/auth";
 import type { Papel } from "./schema/comum";
@@ -240,4 +240,66 @@ export async function listarObrasParaAgenda(): Promise<ObraParaAgenda[]> {
       .innerJoin(tenant, eq(tenant.id, obra.tenantId))
       .where(eq(obra.status, "ativa")),
   );
+}
+
+// ─────────────────────────── Endurecimento (worker e métricas) ───────────────────────────
+
+export interface ItemParado {
+  tenantId: string;
+  tipo: "mensagem" | "midia" | "extracao";
+  id: string;
+}
+
+/**
+ * Varredura do worker: o que ficou parado em `pendente` (processo caiu entre o commit e o
+ * enfileiramento, ou o job esgotou as tentativas). Só ids e tenant; o reprocessamento é com RLS.
+ */
+export async function itensParados(minutos = 3, limite = 200): Promise<ItemParado[]> {
+  return comoSistema(async (tx) => {
+    const r = await tx.execute<{ tenant_id: string; tipo: ItemParado["tipo"]; id: string }>(sql`
+      (select tenant_id, 'mensagem' as tipo, id from mensagem_whatsapp
+        where direcao = 'saida' and status_entrega = 'pendente' and tenant_id is not null
+          and criado_em < now() - make_interval(mins => ${minutos}) and criado_em > now() - interval '2 days'
+        limit ${limite})
+      union all
+      (select tenant_id, 'midia', id from midia
+        where status = 'pendente' and criado_em < now() - make_interval(mins => ${minutos})
+          and criado_em > now() - interval '15 days'
+        limit ${limite})
+      union all
+      (select tenant_id, 'extracao', id from projeto
+        where status_extracao = 'pendente' and tipo_arquivo = 'dwg' and criado_em < now() - make_interval(mins => ${minutos * 3})
+        limit ${limite})`);
+    return r.rows.map((l) => ({ tenantId: l.tenant_id, tipo: l.tipo, id: l.id }));
+  });
+}
+
+export interface MetricaEtapa {
+  etapa: string;
+  status: string;
+  quantidade: number;
+}
+
+/** Métricas agregadas por etapa e status, de todas as construtoras (sem identificar nenhuma). */
+export async function metricasPorEtapa(): Promise<{
+  execucoes: MetricaEtapa[];
+  divergencias: { etapa: string; quantidade: number }[];
+  horasAteLiberacao: { etapa: string; p50: number | null; p90: number | null }[];
+}> {
+  return comoSistema(async (tx) => {
+    const execucoes = await tx.execute<{ etapa: string; status: string; quantidade: number }>(sql`
+      select e.codigo as etapa, x.status::text as status, count(*)::int as quantidade
+      from execucao_etapa x join etapa e on e.id = x.etapa_id group by 1, 2 order by 1, 2`);
+    const divergencias = await tx.execute<{ etapa: string; quantidade: number }>(sql`
+      select e.codigo as etapa, count(*)::int as quantidade
+      from divergencia d join execucao_etapa x on x.id = d.execucao_id join etapa e on e.id = x.etapa_id
+      group by 1 order by 1`);
+    const tempos = await tx.execute<{ etapa: string; p50: number | null; p90: number | null }>(sql`
+      select e.codigo as etapa,
+        percentile_cont(0.5) within group (order by extract(epoch from l.criado_em - x.criado_em) / 3600) as p50,
+        percentile_cont(0.9) within group (order by extract(epoch from l.criado_em - x.criado_em) / 3600) as p90
+      from liberacao l join execucao_etapa x on x.id = l.execucao_id join etapa e on e.id = x.etapa_id
+      where l.decisao = 'liberada' group by 1 order by 1`);
+    return { execucoes: execucoes.rows, divergencias: divergencias.rows, horasAteLiberacao: tempos.rows };
+  });
 }

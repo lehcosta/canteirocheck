@@ -31,6 +31,15 @@ SaaS B2B para conferir a execução de obra contra o projeto **antes** da etapa 
   - pontos de controle manuais com aprovação do engenheiro;
   - tolerâncias padrão;
   - PDF por execução, gerado a cada decisão, e PDF da obra, servidos por URL assinada.
+- **Etapa 7 (endurecimento):**
+  - varredura a cada 2 min devolve à fila mensagens, fotos e extrações paradas (outbox);
+  - timeouts no banco (`statement_timeout` 15 s) e nas chamadas externas;
+  - limite de tamanho no webhook e no Flow;
+  - isolamento testado pelos casos de uso;
+  - idempotência do Flow e do envio;
+  - logs JSON, latência do endpoint do Flow e métricas por etapa (`/api/metricas`, Prometheus, com token);
+  - aba **Indicadores** por obra;
+  - testes ponta a ponta com Playwright (simulador + painel).
 - **Sem conta na Meta:** um simulador em `/dev/whatsapp` faz o papel do WhatsApp.
 
 ## Rodar localmente
@@ -92,6 +101,7 @@ pnpm criar-tenant --nome "Construtora X" --cnpj 12.345.678/0001-90 \
 | `pnpm db:migrate` · `pnpm db:seed` · `pnpm db:reset` | aplica migrations · seed idempotente · zera + migra + seed (só localhost) |
 | `pnpm infra:up` · `pnpm infra:down` | sobe/derruba Postgres, Redis, S3 local e Mailpit |
 | `pnpm --filter @canteirocheck/whatsapp fumaca` | cenário L3/L4 contra o sistema rodando (`pnpm dev`), pelo webhook e pelo Flow |
+| `pnpm --filter @canteirocheck/web e2e` | Playwright: cenário da §10 no simulador e decisão no painel. Usa o Google Chrome instalado; rode com `pnpm dev` no ar e logo após `pnpm db:reset` |
 | `pnpm --filter @canteirocheck/whatsapp gerar-chave` | gera a chave RSA do endpoint de Flows (linha para o `.env`) |
 
 ## Estrutura
@@ -183,6 +193,19 @@ Detalhes e fontes em [docs/referencia-meta-whatsapp.md](docs/referencia-meta-wha
 - Cada mensagem cobrada vira um `evento_custo` da obra quando o webhook de status traz `pricing.type = regular`.
 - Os preços são estimados: ajuste em `WHATSAPP_PRECOS_USD`.
 - Desde out/2026, utility dentro da janela também é cobrada, e mensagens de serviço são cobradas a partir da 1.001ª do mês.
+
+## Observabilidade
+
+- **Logs:** JSON, uma linha por evento (`job.ok`, `job.falhou`, `flow.lento`, `varredura.reenfileirou`…).
+- **Métricas:** com `METRICAS_TOKEN` definido, `GET /api/metricas` responde no formato Prometheus (`Authorization: Bearer …`), com:
+  - execuções por etapa e status;
+  - divergências por etapa;
+  - horas até a liberação (p50/p90);
+  - histograma de latência do endpoint do Flow;
+  - contadores do webhook.
+- **Nenhuma construtora é identificada nas métricas.**
+
+**Dica de desenvolvimento:** não rode `next build` com o `pnpm dev` no ar. O hash do HMR fica divergente e o navegador entra em loop de recarga. Se acontecer, pare o dev, apague `apps/web/.next` e suba de novo.
 
 ## Versões fixadas e por quê
 

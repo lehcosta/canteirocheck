@@ -15,6 +15,7 @@ import {
   processarExtracao,
   processarMensagemRecebida,
   transcreverAudio,
+  varrerParados,
 } from "@canteirocheck/servicos";
 import { garantirBucket } from "@canteirocheck/storage";
 import { encerrarClienteWhatsapp } from "@canteirocheck/whatsapp";
@@ -77,7 +78,10 @@ subir("execucao", {
   notificar_encarregado: (p) => notificarEncarregado(p.tenantId, p.liberacaoId),
   avisar_pendencia: (p) => avisarPendencia(p.tenantId, p.execucaoId),
 });
-subir("agenda", { anuncio_diario: (p) => anuncioDiario(p.tenantId, p.obraId) });
+subir("agenda", {
+  anuncio_diario: (p) => anuncioDiario(p.tenantId, p.obraId),
+  varredura: () => varrerParados(),
+});
 subir("relatorios", { gerar_pdf: (p) => gerarRelatorio(p) }, { concorrencia: 2 });
 subir("dwg", { extrair_dwg: (p) => processarExtracao(p.tenantId, p.projetoId) }, { concorrencia: 2 });
 // IA: sem chave, os jobs registram a falta e caem no caminho de revisão humana.
@@ -94,6 +98,11 @@ subir(
 
 await garantirBucket().catch((e) => log("warn", "s3.indisponivel", { erro: String(e) }));
 await sincronizarAgendamentos(fila).catch((e) => log("error", "agenda.falhou", { erro: String(e) }));
+// Varredura de itens parados (outbox): a cada 2 minutos.
+await fila
+  .fila("agenda")
+  .upsertJobScheduler("varredura", { every: 120_000 }, { name: "varredura", data: {} })
+  .catch((e) => log("error", "varredura.agendamento_falhou", { erro: String(e) }));
 const relogio = setInterval(
   () => sincronizarAgendamentos(fila).catch((e) => log("error", "agenda.falhou", { erro: String(e) })),
   10 * 60 * 1000,
