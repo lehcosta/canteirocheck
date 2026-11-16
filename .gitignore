@@ -10,3 +10,6 @@ next-env.d.ts
 !.env.example
 .DS_Store
 
+
+# Flow JSON exportado (gerado de packages/whatsapp/src/flows)
+packages/whatsapp/flows-json/

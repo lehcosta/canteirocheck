@@ -66,7 +66,15 @@ export class ClienteCloud implements ClienteWhatsapp {
   async enviar(destino: string, mensagem: MensagemSaida) {
     const corpo = (await this.graph(`${this.cfg.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
       method: "POST",
-      body: JSON.stringify(paraGraph(destino, mensagem)),
+      // Flows ainda em DRAFT na Meta só abrem com mode "draft" (teste antes de publicar).
+      body: JSON.stringify(
+        paraGraph(
+          destino,
+          mensagem.tipo === "flow" && process.env.WHATSAPP_FLOWS_RASCUNHO === "1"
+            ? { ...mensagem, rascunho: true }
+            : mensagem,
+        ),
+      ),
     })) as { messages?: { id: string }[] };
     const id = corpo?.messages?.[0]?.id;
     if (!id) throw new ErroGraph(200, null, corpo);

@@ -183,8 +183,12 @@ Para ligar na Meta:
 
 1. Crie um app **Business** e adicione o produto WhatsApp. O token deve ser de um **System User**, porque o temporário expira em 24 h.
 2. Cadastre o webhook em `https://SEU_HOST/api/whatsapp/webhook`, com o `WHATSAPP_VERIFY_TOKEN`, no campo `messages`. Para testar local: `cloudflared tunnel --url http://localhost:3000`.
-3. Suba a chave pública do Flow (`POST /{phone-number-id}/whatsapp_business_encryption`).
-4. Publique os 3 Flows de `packages/whatsapp/src/flows`, com o endpoint em `https://SEU_HOST/api/whatsapp/flow`.
+3. Suba a chave pública do Flow: `pnpm --filter @canteirocheck/whatsapp publicar -- --chave`.
+4. Crie os 3 Flows em DRAFT: `pnpm --filter @canteirocheck/whatsapp publicar`.
+   - O endpoint vai como `APP_URL/api/whatsapp/flow` e o app como `WHATSAPP_APP_ID`.
+   - O script mostra os erros de validação da Meta e o link de preview.
+   - Para testar no celular antes de publicar, use `WHATSAPP_FLOWS_RASCUNHO=1`. Depois: `pnpm --filter @canteirocheck/whatsapp publicar -- --publicar`.
+   - Sem conta ainda: `publicar -- --exportar` grava os JSON em `packages/whatsapp/flows-json/`, para colar no Flow Builder.
 5. Peça a aprovação dos templates UTILITY de `packages/whatsapp/src/templates.ts`: `canteiro_aviso` e `canteiro_anuncio_diario`.
 
 Detalhes e fontes em [docs/referencia-meta-whatsapp.md](docs/referencia-meta-whatsapp.md).
