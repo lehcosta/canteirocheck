@@ -196,6 +196,37 @@ export async function enviarMensagemPendente(
             erroEntrega: { status: e.status, codigo: e.codigo, corpo: e.corpo } as never,
           })
           .where(eq(mensagemWhatsapp.id, m.id));
+        // Formulário recusado pela Meta (ex.: 139000, empresa não verificada): não deixar a pessoa
+        // sem resposta. Avisa por texto, que costuma passar quando o Flow não passa.
+        if (payload.mensagem.tipo === "flow") {
+          const [aviso] = await tx
+            .insert(mensagemWhatsapp)
+            .values({
+              tenantId,
+              usuarioId: m.usuarioId,
+              obraId: m.obraId,
+              execucaoId: m.execucaoId,
+              direcao: "saida",
+              tipo: "texto",
+              payload: {
+                assunto: payload.assunto,
+                mensagem: {
+                  tipo: "texto",
+                  texto:
+                    "Não consegui abrir o formulário agora (o WhatsApp recusou o envio). Tente de novo em alguns minutos; se continuar, avise o engenheiro responsável.",
+                },
+              } satisfies PayloadSaida,
+              statusEntrega: "pendente",
+            })
+            .returning({ id: mensagemWhatsapp.id });
+          if (aviso) {
+            efeitos.enfileirar(
+              "enviar_mensagem",
+              { tenantId, mensagemId: aviso.id },
+              { jobId: idJob("env", aviso.id) },
+            );
+          }
+        }
         return { tipo: "falhou", erro: e.message };
       }
       throw e; // transitório: o BullMQ tenta de novo

@@ -3,7 +3,7 @@ import { aguardaDecisao, liberacaoExigeJustificativa } from "@canteirocheck/core
 import { schema, type Tx } from "@canteirocheck/db";
 import { idJob } from "@canteirocheck/queue";
 import type { ConteudoEntrada } from "@canteirocheck/whatsapp";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, exists, inArray } from "drizzle-orm";
 import { type Contexto, ErroDominio } from "../contexto";
 import { confirmarMedidaDaConversa } from "../conversa";
 import { decidirExecucao } from "../execucoes/anuncio-e-decisao";
@@ -17,7 +17,16 @@ import {
   rotuloExecucao,
 } from "./sessoes";
 
-const { mensagemWhatsapp, usuario, execucaoEtapa, obraMembro, obra, etapa, local, midia } = schema;
+const { mensagemWhatsapp, usuario, execucaoEtapa, obraMembro, obra, etapa, local, midia, pontoControle } =
+  schema;
+
+/** Título de botão (máx. 20): "Concretagem L4"; se não couber, encurta a etapa e mantém o local. */
+export function tituloBotao(etapaNome: string, localNome: string): string {
+  const inteiro = `${etapaNome} ${localNome}`;
+  if (inteiro.length <= 20) return inteiro;
+  const espaco = Math.max(20 - localNome.length - 2, 3);
+  return `${etapaNome.slice(0, espaco).trimEnd()}. ${localNome}`.slice(0, 20);
+}
 
 /**
  * Job `processar_mensagem`: a mensagem já está gravada (webhook). Aqui: abre a janela (libera o que
@@ -230,7 +239,24 @@ async function oferecerConferencias(tx: Tx, efeitos: Efeitos, ctx: Contexto) {
     )
     .innerJoin(etapa, eq(etapa.id, execucaoEtapa.etapaId))
     .innerJoin(local, eq(local.id, execucaoEtapa.localId))
-    .where(inArray(execucaoEtapa.status, ["anunciada", "em_conferencia", "recusada"]))
+    .where(
+      and(
+        inArray(execucaoEtapa.status, ["anunciada", "em_conferencia", "recusada"]),
+        // só oferece o que tem ponto aprovado para conferir
+        exists(
+          tx
+            .select({ id: pontoControle.id })
+            .from(pontoControle)
+            .where(
+              and(
+                eq(pontoControle.etapaId, execucaoEtapa.etapaId),
+                eq(pontoControle.localId, execucaoEtapa.localId),
+                eq(pontoControle.statusRevisao, "aprovado"),
+              ),
+            ),
+        ),
+      ),
+    )
     .orderBy(asc(execucaoEtapa.dataPrevista))
     .limit(3);
   if (abertas.length === 0) {
@@ -263,7 +289,7 @@ async function oferecerConferencias(tx: Tx, efeitos: Efeitos, ctx: Contexto) {
         texto: `Qual conferência?\n${abertas.map((a) => `• ${a.etapa} · ${a.local}`).join("\n")}`,
         botoes: abertas.map((a) => ({
           id: `conferir:${a.id}`,
-          titulo: `${a.etapa.slice(0, 10)} ${a.local}`.slice(0, 20),
+          titulo: tituloBotao(a.etapa, a.local),
         })),
       },
     },
