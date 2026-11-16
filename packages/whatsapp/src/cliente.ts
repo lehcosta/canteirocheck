@@ -39,6 +39,26 @@ async function lerComLimite(r: Response): Promise<Uint8Array> {
   return dados;
 }
 
+/**
+ * Flows na Meta: em DRAFT só abrem com mode "draft" (WHATSAPP_FLOWS_RASCUNHO=1), e o envio pode ir
+ * por id (WHATSAPP_FLOW_IDS='{"canteiro_checklist_v1":"123",...}', impresso pelo `publicar`).
+ */
+function ajustarFlow(m: MensagemSaida): MensagemSaida {
+  if (m.tipo !== "flow") return m;
+  let ids: Record<string, string> = {};
+  try {
+    ids = JSON.parse(process.env.WHATSAPP_FLOW_IDS ?? "{}") as Record<string, string>;
+  } catch {
+    ids = {};
+  }
+  const flowId = ids[m.flowNome];
+  return {
+    ...m,
+    ...(flowId ? { flowId } : {}),
+    ...(process.env.WHATSAPP_FLOWS_RASCUNHO === "1" ? { rascunho: true } : {}),
+  };
+}
+
 export class ClienteCloud implements ClienteWhatsapp {
   readonly modo = "cloud" as const;
 
@@ -66,15 +86,7 @@ export class ClienteCloud implements ClienteWhatsapp {
   async enviar(destino: string, mensagem: MensagemSaida) {
     const corpo = (await this.graph(`${this.cfg.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
       method: "POST",
-      // Flows ainda em DRAFT na Meta só abrem com mode "draft" (teste antes de publicar).
-      body: JSON.stringify(
-        paraGraph(
-          destino,
-          mensagem.tipo === "flow" && process.env.WHATSAPP_FLOWS_RASCUNHO === "1"
-            ? { ...mensagem, rascunho: true }
-            : mensagem,
-        ),
-      ),
+      body: JSON.stringify(paraGraph(destino, ajustarFlow(mensagem))),
     })) as { messages?: { id: string }[] };
     const id = corpo?.messages?.[0]?.id;
     if (!id) throw new ErroGraph(200, null, corpo);

@@ -170,3 +170,19 @@ describe("leitura do webhook", () => {
     });
   });
 });
+
+describe("Flow por id", () => {
+  it("flow_id no lugar de flow_name quando informado", () => {
+    const p = paraGraph("1", {
+      tipo: "flow",
+      texto: "x",
+      flowNome: "canteiro_checklist_v1",
+      flowId: "123",
+      flowToken: "tok",
+      cta: "Conferir",
+      rascunho: true,
+    }) as { interactive: { action: { parameters: Record<string, unknown> } } };
+    expect(p.interactive.action.parameters).toMatchObject({ flow_id: "123", mode: "draft" });
+    expect(p.interactive.action.parameters).not.toHaveProperty("flow_name");
+  });
+});

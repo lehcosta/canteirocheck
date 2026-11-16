@@ -122,6 +122,7 @@ do {
   depois = pagina.paging?.next ? pagina.paging.cursors?.after : undefined;
 } while (depois);
 
+const idsCriados: Record<string, string> = {};
 for (const nome of Object.values(FLOWS) as NomeFlow[]) {
   const json = JSON.stringify(jsonDoFlow(nome));
   const atual = existentes.find((f) => f.name === nome);
@@ -163,6 +164,7 @@ for (const nome of Object.values(FLOWS) as NomeFlow[]) {
     continue;
   }
   if (!id) continue;
+  idsCriados[nome] = id;
   await chamar(id, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -174,6 +176,9 @@ for (const nome of Object.values(FLOWS) as NomeFlow[]) {
   if (p.preview?.preview_url) console.log(`  preview: ${p.preview.preview_url}`);
 }
 
+if (Object.keys(idsCriados).length) {
+  console.log(`\nCole no .env:\nWHATSAPP_FLOW_IDS='${JSON.stringify(idsCriados)}'`);
+}
 console.log(
   args.has("--publicar")
     ? "\nPronto. Mensagens agora usam os Flows publicados."

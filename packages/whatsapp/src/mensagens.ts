@@ -17,6 +17,8 @@ export type MensagemSaida =
       cabecalho?: string;
       rodape?: string;
       flowNome: string;
+      /** Se informado, vai `flow_id` no lugar de `flow_name` (mapa WHATSAPP_FLOW_IDS). */
+      flowId?: string;
       flowToken: string;
       cta: string; // até 30, sem emoji
       /** Rascunho: só para testes com Flow em DRAFT. */
@@ -94,7 +96,7 @@ export function paraGraph(destino: string, m: MensagemSaida): Record<string, unk
             parameters: {
               flow_message_version: "3",
               flow_token: m.flowToken,
-              flow_name: m.flowNome,
+              ...(m.flowId ? { flow_id: m.flowId } : { flow_name: m.flowNome }),
               flow_cta: m.cta,
               // INIT vai para o endpoint, que escolhe a primeira tela (flow_action_payload omitido)
               flow_action: "data_exchange",
