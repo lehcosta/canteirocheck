@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+test
+scripts
+*.md
+*.tsbuildinfo
+.DS_Store

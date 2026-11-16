@@ -1,0 +1,31 @@
+{
+  "name": "@canteirocheck/whatsapp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./transporte": "./src/transporte/index.ts",
+    "./simulador": "./src/simulador/index.ts",
+    "./flows": "./src/flows/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "gerar-chave": "tsx scripts/gerar-chave.ts",
+    "publicar": "tsx --env-file=../../.env scripts/publicar.ts",
+    "fumaca": "tsx --env-file=../../.env scripts/fumaca.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.7",
+    "ioredis": "6.0.0"
+  },
+  "devDependencies": {
+    "@canteirocheck/config": "workspace:*",
+    "@types/node": "^22",
+    "sharp": "0.35.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}

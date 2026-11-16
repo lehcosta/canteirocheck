@@ -1,0 +1,35 @@
+{
+  "name": "@canteirocheck/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./auth-adapter": "./src/auth-adapter.ts",
+    "./testing": "./src/testing.ts",
+    "./seed-dados": "./src/seed-dados.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file=../../.env src/scripts/migrar.ts",
+    "db:seed": "tsx --env-file=../../.env src/scripts/seed.ts",
+    "db:reset": "tsx --env-file=../../.env src/scripts/resetar.ts && pnpm db:migrate && pnpm db:seed",
+    "criar-tenant": "tsx --env-file=../../.env src/scripts/criar-tenant.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@canteirocheck/config": "workspace:*",
+    "@types/node": "^22",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}

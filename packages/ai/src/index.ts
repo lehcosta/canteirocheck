@@ -1,0 +1,37 @@
+export {
+  comNovaTentativa,
+  custoEstimado,
+  definirLlm,
+  type Esforco,
+  type Llm,
+  LlmClaude,
+  LlmFalso,
+  llmPadrao,
+  type ResultadoLlm,
+  type TarefaEstruturada,
+  type UsoLlm,
+} from "./llm";
+export {
+  CODIGOS_ETAPA,
+  esquemaInterpretacao,
+  esquemaPendencias,
+  esquemaPontos,
+  type MaterialPontos,
+  modelos,
+  type SaidaInterpretacao,
+  type SaidaPendencias,
+  type SaidaPontos,
+  tarefaInterpretacao,
+  tarefaPendencias,
+  tarefaPontos,
+  VERSAO_INTERPRETACAO,
+  VERSAO_PENDENCIAS,
+  VERSAO_PONTOS,
+} from "./tarefas";
+export {
+  custoTranscricao,
+  definirTranscritor,
+  type Transcritor,
+  TranscritorOpenAI,
+  transcritorPadrao,
+} from "./transcricao";

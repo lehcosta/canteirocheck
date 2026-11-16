@@ -1,0 +1,32 @@
+{
+  "name": "@canteirocheck/servicos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@canteirocheck/ai": "workspace:*",
+    "@canteirocheck/core": "workspace:*",
+    "@canteirocheck/db": "workspace:*",
+    "@canteirocheck/extracao": "workspace:*",
+    "@canteirocheck/queue": "workspace:*",
+    "@canteirocheck/reports": "workspace:*",
+    "@canteirocheck/storage": "workspace:*",
+    "@canteirocheck/whatsapp": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@canteirocheck/config": "workspace:*",
+    "@types/node": "^22",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}

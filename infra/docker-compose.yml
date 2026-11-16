@@ -1,0 +1,89 @@
+name: canteirocheck
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev
+    ports:
+      - "54329:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d canteirocheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # UI e API: http://localhost:8025
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"] # BullMQ exige noeviction
+    ports:
+      - "63799:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # S3 local. As imagens do MinIO saíram do Docker Hub em 2025; o RustFS é compatível com a API S3.
+  s3:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: canteiro
+      RUSTFS_SECRET_KEY: canteiro_dev_secret
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "59000:9000" # API S3
+      - "59001:9001" # console: http://localhost:59001
+    volumes:
+      - s3data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9000/health || wget -qO- http://localhost:9000/health || exit 1",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Leitura de DWG (GPL-3.0, isolado: só HTTP). Ver services/dwg-extractor/README.md
+  dwg-extractor:
+    build: ../services/dwg-extractor
+    environment:
+      EXTRAIR_TIMEOUT_MS: "60000"
+      EXTRAIR_CONCORRENCIA: "2"
+    ports:
+      - "58090:8090"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8090/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:
+  redisdata:
+  s3data:

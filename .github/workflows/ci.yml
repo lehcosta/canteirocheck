@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 2s --health-timeout 3s --health-retries 30
+      s3:
+        image: rustfs/rustfs:latest
+        env:
+          RUSTFS_ACCESS_KEY: canteiro
+          RUSTFS_SECRET_KEY: canteiro_ci_secret
+        ports: ["9000:9000"]
+    env:
+      DATABASE_URL: postgres://canteiro_runtime:runtime_dev@localhost:5432/canteirocheck
+      DATABASE_URL_MIGRATOR: postgres://canteiro_owner:owner_dev@localhost:5432/canteirocheck
+      DATABASE_URL_TEST: postgres://canteiro_runtime:runtime_dev@localhost:5432/canteirocheck_test
+      DATABASE_URL_TEST_MIGRATOR: postgres://canteiro_owner:owner_dev@localhost:5432/canteirocheck_test
+      BETTER_AUTH_SECRET: ci-segredo-apenas-para-build-com-32-caracteres-ou-mais
+      BETTER_AUTH_URL: http://localhost:3000
+      SMTP_HOST: localhost
+      SMTP_PORT: "1025"
+      EMAIL_FROM: "CanteiroCheck <ci@canteirocheck.local>"
+      REDIS_URL: redis://localhost:6379
+      S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: canteiro
+      S3_SECRET_KEY: canteiro_ci_secret
+      S3_BUCKET: canteirocheck-ci
+      WHATSAPP_MODO: simulado
+      WHATSAPP_APP_SECRET: segredo-do-app-no-ci
+      WHATSAPP_VERIFY_TOKEN: verificacao-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Papéis e bancos (mesmo script do docker-compose)
+        run: PGPASSWORD=postgres_ci psql -h localhost -U postgres -v ON_ERROR_STOP=1 -f infra/postgres/init.sql
+      - name: Chave do endpoint de Flows (só para o CI)
+        run: pnpm --filter @canteirocheck/whatsapp exec tsx scripts/gerar-chave.ts 2>/dev/null >> "$GITHUB_ENV"
+      - name: Espera o S3 local
+        run: for i in $(seq 1 30); do curl -sf http://localhost:9000/health && break; sleep 2; done
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Extrator de DWG (GPL, fora do workspace)
+        working-directory: services/dwg-extractor
+        run: pnpm install --ignore-workspace --frozen-lockfile && pnpm typecheck && pnpm test
+      - name: Migrations aplicam do zero
+        run: pnpm --filter @canteirocheck/db exec tsx src/scripts/migrar.ts
+      - run: pnpm build
