@@ -21,7 +21,8 @@ const esquema = z.discriminatedUnion("WHATSAPP_MODO", [
     WHATSAPP_MODO: z.literal("cloud"),
     WHATSAPP_TOKEN: z.string().min(1),
     WHATSAPP_PHONE_NUMBER_ID: z.string().min(1),
-    WHATSAPP_WABA_ID: z.string().min(1),
+    // Só o script `publicar` (Flows API) usa; o envio e o webhook não precisam.
+    WHATSAPP_WABA_ID: z.string().optional(),
     WHATSAPP_APP_ID: z.string().optional(),
     WHATSAPP_GRAPH_VERSION: z.string().default("v27.0"),
     ...comum,
