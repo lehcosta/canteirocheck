@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Logotipo } from "@/components/marca";
+import { LogotipoVivo } from "@/components/logotipo-vivo";
 import { obterSessao } from "@/lib/sessao";
 import { FormularioLogin } from "./formulario-login";
 
@@ -33,7 +33,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   return (
     <main className="flex min-h-dvh flex-wrap bg-background">
       <section className="flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-12 px-6 py-10 sm:px-16 sm:py-12">
-        <Logotipo className="h-8 self-start text-foreground" />
+        <LogotipoVivo className="h-8 self-start text-foreground" />
         <div className="w-full max-w-[400px] space-y-6">
           <FormularioLogin erroInicial={erro ? (ERROS[erro] ?? ERROS.link) : undefined} />
         </div>

@@ -9,6 +9,8 @@ const esquema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   EMAIL_FROM: z.string().min(1),
+  /** Quem recebe os pedidos de demonstração da landing page. */
+  CONTATO_EMAIL: z.email().optional(),
 });
 
 /** Variáveis de ambiente do servidor, validadas na primeira leitura. */

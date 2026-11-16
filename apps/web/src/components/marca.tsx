@@ -2,10 +2,20 @@ import { cn } from "@/lib/utils";
 
 /**
  * Logotipo e marca da Prumo (DS: https://claude.ai/artifact/CzNJEY7N18zLcxur1Ys5G9).
- * O "o" é uma régua de nível: contorno da cor do texto, líquido `liquido`, bolha branca sempre no centro.
+ * O "o" é uma régua de nível: contorno da cor do texto, líquido `liquido`, bolha branca no centro.
+ * Em repouso a bolha fica no centro; só o `LogotipoVivo` (logotipo-vivo.tsx) a move, seguindo o mouse ou a inclinação do celular.
  * Desenhados em curvas (não dependem de fonte). Cor das letras = `currentColor`.
  */
-export function Logotipo({ className, titulo = "Prumo" }: { className?: string; titulo?: string }) {
+export function Logotipo({
+  className,
+  titulo = "Prumo",
+  refBolha,
+}: {
+  className?: string;
+  titulo?: string;
+  /** Grupo da bolha, para o LogotipoVivo deslocar (translate) sem re-renderizar. */
+  refBolha?: React.Ref<SVGGElement>;
+}) {
   return (
     <svg viewBox="0 0 181 56" role="img" aria-label={titulo} className={cn("h-7 w-auto", className)}>
       <path
@@ -22,6 +32,7 @@ export function Logotipo({ className, titulo = "Prumo" }: { className?: string; 
         traco={7}
         riscos={[147.24, 161.96]}
         bolha={[150.56, 17.74, 10.88, 7.41]}
+        refBolha={refBolha}
       />
     </svg>
   );
@@ -52,6 +63,7 @@ function Regua({
   traco,
   riscos,
   bolha,
+  refBolha,
 }: {
   x: number;
   y: number;
@@ -60,6 +72,7 @@ function Regua({
   traco: number;
   riscos: [number, number];
   bolha: [number, number, number, number];
+  refBolha?: React.Ref<SVGGElement>;
 }) {
   const r = altura / 2;
   const t = traco * 0.4;
@@ -78,7 +91,9 @@ function Regua({
         stroke="currentColor"
         strokeWidth={traco}
       />
-      <rect x={bolha[0]} y={bolha[1]} width={bolha[2]} height={bolha[3]} rx={bolha[3] / 2} fill="#ffffff" />
+      <g ref={refBolha}>
+        <rect x={bolha[0]} y={bolha[1]} width={bolha[2]} height={bolha[3]} rx={bolha[3] / 2} fill="#ffffff" />
+      </g>
       {riscos.map((rx) => (
         <rect key={rx} x={rx} y={yi} width={t} height={hi} fill="currentColor" />
       ))}

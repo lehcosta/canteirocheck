@@ -1,14 +1,13 @@
 import { listarUsuarios } from "@canteirocheck/servicos";
 import type { Metadata } from "next";
+import { CabecalhoPagina, TituloSecao } from "@/components/cabecalho-pagina";
 import { Campo, CampoSelect } from "@/components/campos";
 import { FormularioAcao } from "@/components/formulario-acao";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { criarUsuarioAction, definirAtivoAction } from "@/features/usuarios/actions";
-import { formatarWhatsapp, PAPEL } from "@/lib/rotulos";
+import { criarUsuarioAction } from "@/features/usuarios/actions";
+import { PAPEL } from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
+import { Equipe } from "./equipe";
 
 export const metadata: Metadata = { title: "Usuários" };
 
@@ -16,66 +15,36 @@ export default async function Usuarios() {
   const s = await exigirSessao();
   const usuarios = await listarUsuarios(s.contexto);
   const ehAdmin = s.papel === "admin";
+  const ativos = usuarios.filter((u) => u.ativo).length;
+  const inativos = usuarios.length - ativos;
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Usuários</CardTitle>
-          <CardDescription>
-            Admin e engenheiro entram no painel com o e-mail. Encarregado usa só o WhatsApp.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Papel</TableHead>
-                <TableHead>E-mail</TableHead>
-                <TableHead>WhatsApp</TableHead>
-                <TableHead>Situação</TableHead>
-                {ehAdmin && <TableHead />}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {usuarios.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.nome}</TableCell>
-                  <TableCell>{PAPEL[u.papel]}</TableCell>
-                  <TableCell>{u.email ?? "—"}</TableCell>
-                  <TableCell className="tabular-nums">{formatarWhatsapp(u.whatsappE164)}</TableCell>
-                  <TableCell>
-                    <Badge variant={u.ativo ? "outline" : "secondary"}>{u.ativo ? "Ativo" : "Inativo"}</Badge>
-                  </TableCell>
-                  {ehAdmin && (
-                    <TableCell className="text-right">
-                      {u.id !== s.usuarioId && (
-                        <FormularioAcao acao={definirAtivoAction}>
-                          <input type="hidden" name="usuarioId" value={u.id} />
-                          <input type="hidden" name="ativo" value={String(!u.ativo)} />
-                          <Button type="submit" variant="ghost" size="sm">
-                            {u.ativo ? "Desativar" : "Reativar"}
-                          </Button>
-                        </FormularioAcao>
-                      )}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <CabecalhoPagina
+        titulo="Usuários"
+        descricao="Admin e engenheiro entram no painel com o e-mail. Encarregado usa só o WhatsApp."
+      />
 
-      {ehAdmin && (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Novo usuário</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FormularioAcao acao={criarUsuarioAction} className="grid gap-4 sm:grid-cols-2">
-              <Campo rotulo="Nome" nome="nome" required />
+      <div className="flex flex-wrap items-start gap-6">
+        <section aria-labelledby="titulo-equipe" className="flex min-w-0 flex-[999_1_560px] flex-col gap-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <TituloSecao id="titulo-equipe">Equipe</TituloSecao>
+            <p className="text-sm text-muted-foreground">
+              {ativos} {ativos === 1 ? "ativo" : "ativos"} · {inativos}{" "}
+              {inativos === 1 ? "inativo" : "inativos"}
+            </p>
+          </div>
+          <Equipe usuarios={usuarios} usuarioId={s.usuarioId} ehAdmin={ehAdmin} idTitulo="titulo-equipe" />
+        </section>
+
+        {ehAdmin && (
+          <section
+            aria-labelledby="titulo-novo"
+            className="flex min-w-0 flex-[1_1_340px] flex-col gap-5 rounded-md border bg-card p-6"
+          >
+            <TituloSecao id="titulo-novo">Novo usuário</TituloSecao>
+            <FormularioAcao acao={criarUsuarioAction} className="flex flex-col gap-4 space-y-0">
+              <Campo rotulo="Nome" nome="nome" required autoComplete="off" />
               <CampoSelect
                 rotulo="Papel"
                 nome="papel"
@@ -83,21 +52,41 @@ export default async function Usuarios() {
                 defaultValue="encarregado"
                 opcoes={Object.entries(PAPEL).map(([valor, rotulo]) => ({ valor, rotulo }))}
               />
-              <Campo rotulo="E-mail (obrigatório para admin e engenheiro)" nome="email" type="email" />
-              <Campo
-                rotulo="WhatsApp"
-                nome="whatsapp"
-                required
-                inputMode="tel"
-                placeholder="(11) 99999-8888"
-              />
-              <div className="sm:col-span-2">
-                <Button type="submit">Criar usuário</Button>
+              <div className="grid gap-2">
+                <Campo
+                  rotulo="E-mail"
+                  nome="email"
+                  type="email"
+                  autoComplete="off"
+                  aria-describedby="dica-email"
+                />
+                <p id="dica-email" className="text-[13px] leading-[18px] text-muted-foreground">
+                  Obrigatório para admin e engenheiro.
+                </p>
               </div>
+              <div className="grid gap-2">
+                <Campo
+                  rotulo="WhatsApp"
+                  nome="whatsapp"
+                  required
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="off"
+                  placeholder="(11) 99999-8888"
+                  aria-describedby="dica-whatsapp"
+                  className="[&_input]:font-mono [&_input]:tabular-nums"
+                />
+                <p id="dica-whatsapp" className="text-[13px] leading-[18px] text-muted-foreground">
+                  O encarregado recebe as conferências neste número.
+                </p>
+              </div>
+              <Button type="submit" size="lg" className="w-full">
+                Criar usuário
+              </Button>
             </FormularioAcao>
-          </CardContent>
-        </Card>
-      )}
+          </section>
+        )}
+      </div>
     </>
   );
 }

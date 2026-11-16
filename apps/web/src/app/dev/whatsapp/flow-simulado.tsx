@@ -72,7 +72,16 @@ export function FlowSimulado({ tel, nome, token, wamid, telas, aoFechar }: Props
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: o Flow abre (INIT) uma vez por token
   useEffect(() => {
-    iniciar(async () => aplicar(await chamarFlow(token, "INIT")));
+    // Em dev o StrictMode roda o efeito duas vezes: a resposta do INIT descartado chegava depois
+    // e zerava o que a pessoa já tinha marcado na tela. Só a última montagem aplica a resposta.
+    let ativo = true;
+    iniciar(async () => {
+      const r = await chamarFlow(token, "INIT");
+      if (ativo) aplicar(r);
+    });
+    return () => {
+      ativo = false;
+    };
   }, [token]);
 
   const atual = telas.find((t) => t.id === tela);

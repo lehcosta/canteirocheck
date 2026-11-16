@@ -1,6 +1,7 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource react */
 import { Document, Image, Page, renderToBuffer, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Cabecalho, COR, Faixa, FONTE, Icone, Rodape, Rotulo, Selo, statusExecucao } from "./marca";
 
 /**
  * Relatório da execução (prompt §3.12): pontos, medidas, fotos, quem conferiu e quem liberou.
@@ -67,16 +68,6 @@ export interface FotoRelatorio {
   sha256: string;
 }
 
-const STATUS: Record<string, string> = {
-  anunciada: "Anunciada",
-  em_conferencia: "Em conferência",
-  bloqueada: "BLOQUEADA",
-  aguardando_liberacao: "Aguardando liberação",
-  liberada: "LIBERADA",
-  recusada: "RECUSADA",
-  cancelada: "Cancelada",
-};
-
 const CANAL: Record<string, string> = {
   flow: "WhatsApp (formulário)",
   conversa: "WhatsApp (conversa)",
@@ -98,31 +89,87 @@ const fmtData = (d: Date) =>
   d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 
 const s = StyleSheet.create({
-  pagina: { padding: 36, fontSize: 9, fontFamily: "Helvetica", color: "#111" },
-  titulo: { fontSize: 16, fontFamily: "Helvetica-Bold", marginBottom: 2 },
-  sub: { fontSize: 10, color: "#555", marginBottom: 10 },
-  caixa: { borderWidth: 1, borderColor: "#ddd", borderRadius: 3, padding: 8, marginBottom: 10 },
-  linha: { flexDirection: "row", gap: 16, marginBottom: 2 },
-  rotulo: { color: "#666", width: 120 },
-  h2: { fontSize: 12, fontFamily: "Helvetica-Bold", marginTop: 8, marginBottom: 6 },
-  ponto: { borderBottomWidth: 1, borderBottomColor: "#eee", paddingVertical: 6 },
-  pontoTitulo: { fontFamily: "Helvetica-Bold", marginBottom: 2 },
-  ok: { color: "#047857", fontFamily: "Helvetica-Bold" },
-  ruim: { color: "#b91c1c", fontFamily: "Helvetica-Bold" },
-  neutro: { color: "#555" },
-  fotos: { flexDirection: "row", gap: 6, marginTop: 4, flexWrap: "wrap" },
-  foto: { width: 120, height: 90, objectFit: "cover" },
-  legenda: { fontSize: 6, color: "#777", width: 120 },
-  rodape: {
-    position: "absolute",
-    bottom: 20,
-    left: 36,
-    right: 36,
-    fontSize: 7,
-    color: "#888",
-    textAlign: "center",
+  pagina: {
+    paddingTop: 32,
+    paddingBottom: 64,
+    paddingHorizontal: 40,
+    fontSize: 9,
+    fontFamily: FONTE.texto,
+    color: COR.ink,
+    backgroundColor: COR.branco,
   },
+  obra: { fontSize: 9, color: COR.inkMuted, marginBottom: 2 },
+  tituloLinha: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
+  titulo: { fontSize: 20, lineHeight: 1.1, fontFamily: FONTE.forte, letterSpacing: -0.2 },
+  ficha: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: COR.line,
+    borderRadius: 4,
+    marginBottom: 18,
+  },
+  fichaItem: { flexGrow: 1, flexBasis: 0, paddingVertical: 8, paddingHorizontal: 10, gap: 3 },
+  fichaDivisa: { borderLeftWidth: 1, borderLeftColor: COR.line },
+  rodadaCab: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: COR.ink,
+  },
+  h2: { fontSize: 12, fontFamily: FONTE.forte },
+  resumo: { flexDirection: "row", alignItems: "center", gap: 10, fontSize: 8.5 },
+  resumoItem: { flexDirection: "row", alignItems: "center", gap: 3 },
+  ponto: {
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COR.line,
+  },
+  pontoSituacao: { width: 62, paddingTop: 1 },
+  pontoCorpo: { flex: 1, gap: 4 },
+  pontoTitulo: { fontFamily: FONTE.forte, fontSize: 9.5 },
+  esperadoLinha: { flexDirection: "row", alignItems: "baseline", gap: 6 },
+  medida: { fontFamily: FONTE.medida, fontSize: 9 },
+  tentativa: { gap: 2 },
+  tentativaLinha: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
+  situacaoTexto: { flexDirection: "row", alignItems: "center", gap: 3 },
+  palavra: { fontFamily: FONTE.forte, fontSize: 7, letterSpacing: 0.6, textTransform: "uppercase" },
+  meta: { fontSize: 8, lineHeight: 1.35, color: COR.inkMuted },
+  corrido: { fontSize: 9, lineHeight: 1.35 },
+  causa: { borderLeftWidth: 2, borderLeftColor: COR.divergencia, paddingLeft: 6, gap: 2 },
+  decisao: {
+    borderWidth: 1,
+    borderColor: COR.line,
+    borderRadius: 4,
+    backgroundColor: COR.surface,
+    padding: 8,
+    marginTop: 8,
+    marginBottom: 18,
+    gap: 4,
+  },
+  decisaoLinha: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
+  fotos: { flexDirection: "row", gap: 6, marginTop: 2, flexWrap: "wrap" },
+  foto: { width: 120, height: 90, objectFit: "cover", borderRadius: 2 },
+  legenda: { fontFamily: FONTE.codigo, fontSize: 6, color: COR.inkMuted, width: 120, marginTop: 2 },
 });
+
+/** Situação do ponto: ✓ Dentro / ✕ Fora / Sem resposta, sempre com a palavra. */
+function SituacaoPonto({ situacao }: { situacao: "ok" | "divergente" | "pendente" }) {
+  if (situacao === "pendente") {
+    return <Text style={[s.palavra, { color: COR.inkMuted }]}>Sem resposta</Text>;
+  }
+  const ok = situacao === "ok";
+  const cor = ok ? COR.nivel : COR.divergencia;
+  return (
+    <View style={s.situacaoTexto}>
+      <Icone tipo={ok ? "ok" : "fora"} cor={cor} />
+      <Text style={[s.palavra, { color: cor }]}>{ok ? "Dentro" : "Fora"}</Text>
+    </View>
+  );
+}
 
 function Fotos({ midias, fotos }: { midias: MidiaRelatorio[]; fotos: Map<string, FotoRelatorio> }) {
   const presentes = midias.filter((m) => fotos.has(m.id));
@@ -143,6 +190,15 @@ function Fotos({ midias, fotos }: { midias: MidiaRelatorio[]; fotos: Map<string,
   );
 }
 
+function ItemFicha({ rotulo, valor, primeiro }: { rotulo: string; valor: string; primeiro?: boolean }) {
+  return (
+    <View style={primeiro ? s.fichaItem : [s.fichaItem, s.fichaDivisa]}>
+      <Rotulo>{rotulo}</Rotulo>
+      <Text style={s.corrido}>{textoPdf(valor)}</Text>
+    </View>
+  );
+}
+
 export function RelatorioExecucao({
   r,
   fotos,
@@ -152,100 +208,130 @@ export function RelatorioExecucao({
   fotos: Map<string, FotoRelatorio>;
   geradoEm: Date;
 }) {
-  const statusEstilo =
-    r.status === "liberada" ? s.ok : r.status === "bloqueada" || r.status === "recusada" ? s.ruim : s.neutro;
+  const status = statusExecucao(r.status);
   return (
-    <Document title={textoPdf(`${r.etapaNome} · ${r.localNome} — ${r.obraNome}`)} author="Prumo">
+    <Document
+      title={textoPdf(`${r.etapaNome} · ${r.localNome} — ${r.obraNome}`)}
+      author="Prumo"
+      creator="Prumo"
+      producer="Prumo"
+    >
       <Page size="A4" style={s.pagina}>
-        <Text style={s.titulo}>{textoPdf(`${r.etapaNome} · ${r.localNome}`)}</Text>
-        <Text style={s.sub}>{textoPdf(`${r.obraNome} — relatório de conferência antes da execução`)}</Text>
+        <Faixa />
+        <Cabecalho tipo="Relatório de conferência" />
 
-        <View style={s.caixa}>
-          <View style={s.linha}>
-            <Text style={s.rotulo}>Situação</Text>
-            <Text style={statusEstilo}>{STATUS[r.status] ?? r.status}</Text>
-          </View>
-          <View style={s.linha}>
-            <Text style={s.rotulo}>Data prevista</Text>
-            <Text>{r.dataPrevista.split("-").reverse().join("/")}</Text>
-          </View>
-          <View style={s.linha}>
-            <Text style={s.rotulo}>Anunciada por</Text>
-            <Text>{textoPdf(`${r.anunciadaPor} em ${fmtData(r.criadoEm)}`)}</Text>
-          </View>
-          <View style={s.linha}>
-            <Text style={s.rotulo}>Engenheiro responsável</Text>
-            <Text>{textoPdf(r.engenheiroResponsavel.nome)}</Text>
-          </View>
-          <View style={s.linha}>
-            <Text style={s.rotulo}>Rodadas de conferência</Text>
-            <Text>{r.rodadaAtual}</Text>
-          </View>
+        <Text style={s.obra}>{textoPdf(r.obraNome)}</Text>
+        <View style={s.tituloLinha}>
+          <Text style={s.titulo}>{textoPdf(`${r.etapaNome} · ${r.localNome}`)}</Text>
+          <Selo palavra={status.palavra} tom={status.tom} />
+        </View>
+
+        <View style={s.ficha}>
+          <ItemFicha primeiro rotulo="Data prevista" valor={r.dataPrevista.split("-").reverse().join("/")} />
+          <ItemFicha rotulo="Anunciada por" valor={`${r.anunciadaPor} em ${fmtData(r.criadoEm)}`} />
+          <ItemFicha rotulo="Responsável" valor={r.engenheiroResponsavel.nome} />
+          <ItemFicha rotulo="Rodadas" valor={String(r.rodadaAtual)} />
         </View>
 
         {r.rodadas.map((rod) => (
           <View key={rod.rodada} wrap>
-            <Text style={s.h2}>
-              {textoPdf(
-                `Rodada ${rod.rodada} — ${rod.ok} dentro da tolerância, ${rod.divergentes} divergente(s)${rod.pendentes ? `, ${rod.pendentes} sem resposta` : ""}`,
-              )}
-            </Text>
-            {rod.pontos.map((p) => (
-              <View key={p.pontoId} style={s.ponto} wrap={false}>
-                <Text style={s.pontoTitulo}>
-                  <Text style={p.situacao === "ok" ? s.ok : p.situacao === "divergente" ? s.ruim : s.neutro}>
-                    {p.situacao === "ok" ? "[OK] " : p.situacao === "divergente" ? "[X] " : "[ ] "}
-                  </Text>
-                  {textoPdf(p.descricao)}
-                </Text>
-                <Text style={s.neutro}>{textoPdf(`Esperado: ${p.esperado}`)}</Text>
-                {p.tentativas.map((t) => (
-                  <View key={t.tentativa}>
-                    <Text>
-                      {textoPdf(
-                        `${t.tentativa}ª medida: ${t.texto} — ${t.dentro ? "dentro" : "fora"} da tolerância · ${t.usuarioNome} · ${fmtData(t.criadoEm)} · ${CANAL[t.canal] ?? t.canal}${t.estruturada ? "" : " (não estruturada)"}${t.observacao ? ` · obs.: ${t.observacao}` : ""}`,
-                      )}
-                    </Text>
-                    <Fotos midias={t.midias} fotos={fotos} />
-                  </View>
-                ))}
-                {p.divergencia ? (
-                  <View>
-                    <Text style={s.ruim}>
-                      {textoPdf(
-                        `Causa provável: ${p.divergencia.causa}${p.divergencia.descricao ? ` — ${p.divergencia.descricao}` : ""}`,
-                      )}
-                    </Text>
-                    <Fotos midias={p.divergencia.midias} fotos={fotos} />
-                  </View>
+            <View style={s.rodadaCab} wrap={false} minPresenceAhead={60}>
+              <Text style={s.h2}>{`Rodada ${rod.rodada}`}</Text>
+              <View style={s.resumo}>
+                <View style={s.resumoItem}>
+                  <Icone tipo="ok" cor={COR.nivel} />
+                  <Text>{`${rod.ok} dentro da tolerância`}</Text>
+                </View>
+                <View style={s.resumoItem}>
+                  <Icone tipo="fora" cor={COR.divergencia} />
+                  <Text>{`${rod.divergentes} fora`}</Text>
+                </View>
+                {rod.pendentes ? (
+                  <Text style={{ color: COR.inkMuted }}>{`${rod.pendentes} sem resposta`}</Text>
                 ) : null}
               </View>
+            </View>
+
+            {rod.pontos.map((p) => (
+              <View key={p.pontoId} style={s.ponto} wrap={false}>
+                <View style={s.pontoSituacao}>
+                  <SituacaoPonto situacao={p.situacao} />
+                </View>
+                <View style={s.pontoCorpo}>
+                  <Text style={s.pontoTitulo}>{textoPdf(p.descricao)}</Text>
+                  <View style={s.esperadoLinha}>
+                    <Rotulo>Esperado</Rotulo>
+                    <Text style={s.medida}>{textoPdf(p.esperado)}</Text>
+                  </View>
+                  {p.tentativas.map((t) => (
+                    <View key={t.tentativa} style={s.tentativa}>
+                      <View style={s.tentativaLinha}>
+                        <Rotulo>{`${t.tentativa}ª medida`}</Rotulo>
+                        <Text style={s.medida}>{textoPdf(t.texto)}</Text>
+                        <View style={s.situacaoTexto}>
+                          <Icone
+                            tipo={t.dentro ? "ok" : "fora"}
+                            cor={t.dentro ? COR.nivel : COR.divergencia}
+                          />
+                          <Text style={[s.palavra, { color: t.dentro ? COR.nivel : COR.divergencia }]}>
+                            {t.dentro ? "Dentro da tolerância" : "Fora da tolerância"}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={s.meta}>
+                        {textoPdf(
+                          `${t.usuarioNome} · ${fmtData(t.criadoEm)} · ${CANAL[t.canal] ?? t.canal}${t.estruturada ? "" : " · resposta não estruturada"}`,
+                        )}
+                      </Text>
+                      {t.observacao ? <Text style={s.meta}>{textoPdf(`Obs.: ${t.observacao}`)}</Text> : null}
+                      <Fotos midias={t.midias} fotos={fotos} />
+                    </View>
+                  ))}
+                  {p.divergencia ? (
+                    <View style={s.causa}>
+                      <Rotulo style={{ color: COR.divergencia }}>Causa provável</Rotulo>
+                      <Text style={s.corrido}>
+                        {textoPdf(
+                          `${p.divergencia.causa}${p.divergencia.descricao ? ` — ${p.divergencia.descricao}` : ""}`,
+                        )}
+                      </Text>
+                      <Fotos midias={p.divergencia.midias} fotos={fotos} />
+                    </View>
+                  ) : null}
+                </View>
+              </View>
             ))}
-            <View style={[s.caixa, { marginTop: 6 }]}>
+
+            <View style={s.decisao} wrap={false}>
               {rod.decisao ? (
-                <Text>
-                  <Text style={rod.decisao.decisao === "liberada" ? s.ok : s.ruim}>
-                    {rod.decisao.decisao === "liberada" ? "LIBERADA" : "RECUSADA"}
-                  </Text>
-                  {textoPdf(
-                    ` por ${rod.decisao.engenheiroNome} em ${fmtData(rod.decisao.criadoEm)} (${CANAL[rod.decisao.canal] ?? rod.decisao.canal})${rod.decisao.justificativa ? `. Justificativa: ${rod.decisao.justificativa}` : ""}`,
-                  )}
-                </Text>
+                <>
+                  <View style={s.decisaoLinha}>
+                    <Selo
+                      palavra={rod.decisao.decisao === "liberada" ? "Liberada" : "Recusada"}
+                      tom={rod.decisao.decisao === "liberada" ? "nivel" : "divergencia"}
+                    />
+                    <Text style={s.corrido}>
+                      {textoPdf(
+                        `por ${rod.decisao.engenheiroNome} em ${fmtData(rod.decisao.criadoEm)} · ${CANAL[rod.decisao.canal] ?? rod.decisao.canal}`,
+                      )}
+                    </Text>
+                  </View>
+                  {rod.decisao.justificativa ? (
+                    <Text style={s.corrido}>{textoPdf(`Justificativa: ${rod.decisao.justificativa}`)}</Text>
+                  ) : null}
+                </>
               ) : (
-                <Text style={s.neutro}>Sem decisão do engenheiro nesta rodada.</Text>
+                <Text style={{ color: COR.inkMuted }}>Sem decisão do engenheiro nesta rodada.</Text>
               )}
             </View>
           </View>
         ))}
 
-        <Text
-          style={s.rodape}
-          render={({ pageNumber, totalPages }) =>
-            textoPdf(
-              `Execução ${r.id} · gerado em ${fmtData(geradoEm)} · página ${pageNumber}/${totalPages} · A comparação medido × projetado é feita por regra determinística; a liberação é decisão do engenheiro responsável.`,
-            )
+        <Rodape
+          texto={(pagina, total) =>
+            textoPdf(`Execução ${r.id} · gerado em ${fmtData(geradoEm)} · página ${pagina}/${total}`)
           }
-          fixed
+          nota="A comparação medido × projetado é feita por regra determinística; a liberação é decisão do engenheiro responsável."
         />
       </Page>
     </Document>

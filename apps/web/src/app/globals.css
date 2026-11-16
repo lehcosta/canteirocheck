@@ -62,8 +62,9 @@
   --radius-4xl: 8px;
 }
 
-:root {
-  /* tokens Prumo — tema claro */
+:root,
+.claro {
+  /* tokens Prumo — tema claro (.claro devolve o tema claro dentro de um bloco .dark) */
   --surface: #f4f3ef;
   --surface-raised: #ffffff;
   --line: #dad6cd;
@@ -94,9 +95,10 @@
   --divergencia: #ff6a5c;
 }
 
-/* o tema do shadcn lê os tokens: declarado nos dois seletores para o .dark recalcular */
+/* o tema do shadcn lê os tokens: declarado nos três seletores para .dark e .claro recalcularem */
 :root,
-.dark {
+.dark,
+.claro {
   --background: var(--surface);
   --foreground: var(--ink);
   --card: var(--surface-raised);

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BotaoSair } from "@/components/botao-sair";
-import { Logotipo } from "@/components/marca";
+import { LogotipoVivo } from "@/components/logotipo-vivo";
 import { NavegacaoPainel } from "@/components/navegacao-painel";
 import { PAPEL } from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
@@ -22,7 +22,7 @@ export default async function LayoutPainel({ children }: { children: React.React
         className="flex flex-col gap-6 border-b bg-card px-4 py-4 md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:gap-8 md:border-r md:border-b-0 md:py-6"
       >
         <Link href="/obras" className="self-start px-3 text-foreground">
-          <Logotipo className="h-7" />
+          <LogotipoVivo className="h-7" />
         </Link>
         <NavegacaoPainel />
         <div className="flex items-center gap-3 border-t px-1 pt-4 md:mt-auto">
