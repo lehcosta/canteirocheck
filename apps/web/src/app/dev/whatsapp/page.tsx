@@ -8,7 +8,7 @@ import { ambienteDoSimulador, simuladorLigado } from "@/lib/simulador";
 import { Chat } from "./chat";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Simulador de WhatsApp · CanteiroCheck" };
+export const metadata = { title: "Simulador de WhatsApp · Prumo" };
 
 const CONTATOS = [
   { tel: SEED.joao.whatsappE164, nome: `${SEED.joao.nome} (encarregado)` },

@@ -45,7 +45,7 @@ export function FormularioAcao({
         </p>
       )}
       {estado?.ok && (
-        <p role="status" className="text-sm text-emerald-700">
+        <p role="status" className="text-sm font-semibold text-nivel">
           {estado.ok}
         </p>
       )}

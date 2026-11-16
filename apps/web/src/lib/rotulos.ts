@@ -23,18 +23,22 @@ export const STATUS_EXECUCAO = {
   cancelada: "Cancelada",
 } as const;
 
-/** Variante do Badge por status: vermelho para o que pede atenção. */
+/**
+ * Variante do Badge por status (DS Prumo): laranja cheio só para o que pede decisão,
+ * `nivel` para liberada, `destructive` (divergência) para bloqueada/recusada.
+ * Quem usa `nivel`/`destructive` mostra também ✓/✕ ou a palavra, nunca só a cor.
+ */
 export const COR_STATUS_EXECUCAO: Record<
   keyof typeof STATUS_EXECUCAO,
-  "default" | "secondary" | "destructive" | "outline"
+  "default" | "secondary" | "destructive" | "outline" | "nivel" | "atencao"
 > = {
   anunciada: "outline",
   em_conferencia: "secondary",
   bloqueada: "destructive",
   aguardando_liberacao: "default",
-  liberada: "secondary",
+  liberada: "nivel",
   recusada: "destructive",
-  cancelada: "outline",
+  cancelada: "secondary",
 };
 
 export const GRANDEZA = {

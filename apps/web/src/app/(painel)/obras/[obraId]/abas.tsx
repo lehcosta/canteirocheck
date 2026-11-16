@@ -17,7 +17,7 @@ export function AbasObra({ obraId }: { obraId: string }) {
   const atual = usePathname();
   const base = `/obras/${obraId}`;
   return (
-    <nav className="flex gap-1 border-b text-sm">
+    <nav aria-label="Seções da obra" className="-mt-2 flex flex-wrap gap-1 border-b">
       {ABAS.map((a) => {
         const href = `${base}${a.caminho}`;
         const ativa =
@@ -28,10 +28,11 @@ export function AbasObra({ obraId }: { obraId: string }) {
           <Link
             key={a.caminho}
             href={href}
+            aria-current={ativa ? "page" : undefined}
             className={cn(
-              "-mb-px border-b-2 px-3 py-2",
+              "-mb-px inline-flex min-h-11 items-center border-b-[3px] px-3 text-[15px]",
               ativa
-                ? "border-foreground font-medium"
+                ? "border-prumo font-semibold text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >

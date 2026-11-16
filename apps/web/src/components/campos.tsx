@@ -9,7 +9,7 @@ export function Campo({
   ...props
 }: { rotulo: string; nome: string } & Omit<React.ComponentProps<"input">, "name" | "id">) {
   return (
-    <div className={cn("grid gap-1.5", className)}>
+    <div className={cn("grid gap-2", className)}>
       <Label htmlFor={nome}>{rotulo}</Label>
       <Input id={nome} name={nome} {...props} />
     </div>
@@ -35,7 +35,7 @@ export function CampoSelect({
       <select
         id={nome}
         name={nome}
-        className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+        className="h-11 w-full rounded-sm border border-input bg-card px-3 text-base text-foreground disabled:opacity-60"
         {...props}
       >
         {vazio !== undefined && <option value="">{vazio}</option>}

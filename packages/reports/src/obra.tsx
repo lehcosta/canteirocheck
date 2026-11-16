@@ -67,7 +67,7 @@ const STATUS: Record<string, string> = {
 
 export async function gerarPdfObra(d: DadosRelatorioObra, geradoEm = new Date()): Promise<Buffer> {
   return renderToBuffer(
-    <Document title={textoPdf(`Relatório — ${d.obraNome}`)} author="CanteiroCheck">
+    <Document title={textoPdf(`Relatório — ${d.obraNome}`)} author="Prumo">
       <Page size="A4" orientation="landscape" style={s.pagina}>
         <Text style={s.titulo}>{textoPdf(d.obraNome)}</Text>
         <Text style={s.sub}>

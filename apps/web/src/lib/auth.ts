@@ -10,7 +10,7 @@ import { env } from "./env";
 const escapar = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 export const auth = betterAuth({
-  appName: "CanteiroCheck",
+  appName: "Prumo",
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(obterDbParaAuth(), { provider: "pg", schema: schemaAuth }),
@@ -30,10 +30,10 @@ export const auth = betterAuth({
         if (!(await podeEntrarNoPainel(email))) return;
         await enviarEmail({
           para: email,
-          assunto: "Seu link de acesso ao CanteiroCheck",
-          texto: `Para entrar no CanteiroCheck, abra este link (vale por 15 minutos):\n\n${url}\n\nSe você não pediu, ignore este e-mail.`,
-          html: `<p>Para entrar no CanteiroCheck, clique no link abaixo. Ele vale por 15 minutos.</p>
-<p><a href="${escapar(url)}">Entrar no CanteiroCheck</a></p>
+          assunto: "Seu link de acesso ao Prumo",
+          texto: `Para entrar no Prumo, abra este link (vale por 15 minutos):\n\n${url}\n\nSe você não pediu, ignore este e-mail.`,
+          html: `<p>Para entrar no Prumo, clique no link abaixo. Ele vale por 15 minutos.</p>
+<p><a href="${escapar(url)}">Entrar no Prumo</a></p>
 <p style="color:#666">Se você não pediu, ignore este e-mail.</p>`,
         });
       },

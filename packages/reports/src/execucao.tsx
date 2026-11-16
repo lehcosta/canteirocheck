@@ -155,7 +155,7 @@ export function RelatorioExecucao({
   const statusEstilo =
     r.status === "liberada" ? s.ok : r.status === "bloqueada" || r.status === "recusada" ? s.ruim : s.neutro;
   return (
-    <Document title={textoPdf(`${r.etapaNome} · ${r.localNome} — ${r.obraNome}`)} author="CanteiroCheck">
+    <Document title={textoPdf(`${r.etapaNome} · ${r.localNome} — ${r.obraNome}`)} author="Prumo">
       <Page size="A4" style={s.pagina}>
         <Text style={s.titulo}>{textoPdf(`${r.etapaNome} · ${r.localNome}`)}</Text>
         <Text style={s.sub}>{textoPdf(`${r.obraNome} — relatório de conferência antes da execução`)}</Text>
