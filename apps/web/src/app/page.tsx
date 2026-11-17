@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogotipoVivo } from "@/components/logotipo-vivo";
 import { Logotipo } from "@/components/marca";
+import { ReguaViva } from "@/components/regua-viva";
 import { cn } from "@/lib/utils";
 import { FormularioDemonstracao } from "./_landing/formulario-demonstracao";
 
@@ -548,14 +549,7 @@ export default function LandingPage() {
                 Mostramos uma conferência inteira com uma obra sua: do DWG ao WhatsApp do encarregado e à
                 liberação no painel.
               </p>
-              <div aria-hidden className="mt-4 flex h-[120px] items-end gap-4">
-                <span className="block h-[120px] w-[72px] rounded-t-md bg-liquido" />
-                <span className="block h-16 w-10 rounded-t-md bg-[#8A867C]" />
-                <span className="block h-[88px] w-10 rounded-t-md bg-prumo" />
-                <span className="mb-[52px]">
-                  <Regua />
-                </span>
-              </div>
+              <ReguaViva className="mt-4 block h-auto w-full max-w-[320px]" />
             </div>
             {/* o cartão volta ao tema claro para o formulário */}
             <div className="claro min-w-0 flex-[1_1_440px] rounded-md bg-card p-8 text-foreground">

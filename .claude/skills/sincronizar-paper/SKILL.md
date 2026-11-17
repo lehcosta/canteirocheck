@@ -1,0 +1,51 @@
+---
+name: sincronizar-paper
+description: Espelha no Paper, à risca, o design do app Prumo (tokens do globals.css e uma prancheta por rota, nos temas claro e escuro) e prova a fidelidade de cada prancheta contra o gabarito.
+disable-model-invocation: true
+---
+
+# Sincronizar o design com o Paper
+
+O app é a fonte e o Paper é **espelho**. **À risca**: posição, tamanho, cor, fonte e quebra de linha saem do app renderizado no Chrome (`getComputedStyle`, `getBoundingClientRect`), nunca do olho nem do código-fonte lido à mão. O **gabarito** é a foto de cada tela no app; uma prancheta está pronta quando a exportação dela bate com o gabarito.
+
+Aqui o Paper é espelho, não prancheta de criação: o brief, a paleta e a revisão de "qualidade de design" do guia do Paper ficam de fora. A única referência visual é o gabarito.
+
+O trabalho pesado é do `scripts/sincronizar.mjs` (da raiz do repositório):
+
+```bash
+node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs [--previa] [--rotas '/login,/obras/[obraId]'] [--temas claro,escuro]
+```
+
+Ele imprime uma linha por rota × tema (`à risca` ou `divergente`, blocos divergentes, % de pixels) e o caminho do `relatorio.json`, que traz para cada linha o `gabarito`, a `previa`/`paper`, o `diff` e os `primeirosBlocos` divergentes.
+
+## Passos
+
+1. **Pré-requisitos.** Infra no ar (`pnpm infra:up`: Postgres e Mailpit), `pnpm dev` respondendo no `APP_URL` do `.env`, banco com um admin ativo que tenha login (o script acha o e-mail no banco e entra por magic link via Mailpit) e o Paper Desktop aberto e logado no time Prumo (o arquivo do espelho é procurado e criado no time ativo; o script sobe `~/.paper/bin/paper mcp` sozinho, então o MCP do Paper não precisa estar na sessão).
+   _Pronto quando_ `curl -sf "$APP_URL/login"` responde e o Paper está aberto no time Prumo.
+
+2. **Prévia.** Rode com `--previa`. Ela desenha a conversão no próprio Chrome e compara com o gabarito, sem nenhuma chamada ao Paper.
+   _Pronto quando_ toda linha diz `à risca` com 0 blocos. Se alguma diz `divergente`, vá ao passo 4 antes do 3.
+
+3. **Sincronizar.** Rode sem `--previa`. Grava os tokens e as pranchetas no arquivo "Prumo — espelho do app" (páginas Claro e Escuro), exporta cada prancheta do Paper e compara com o gabarito.
+   _Pronto quando_ toda rota × tema do relatório está `à risca`, ou listada com a causa (passo 4).
+
+4. **Divergência.** Para cada linha `divergente`, abra o `diff` (vermelho é pixel divergente, quadrado é bloco reprovado) e recorte a mesma região do gabarito e da prévia ou exportação. Nomeie a causa e corrija em `scripts/conversor.mjs`, seguindo [CONVERSOR.md](CONVERSOR.md). Depois rode de novo só aquela rota com `--rotas`. A correção vai sempre no conversor: cada sincronização regrava a prancheta inteira, então um ajuste feito à mão no Paper some na próxima rodada.
+   _Pronto quando_ a rota passa, ou a causa está nomeada como algo que o Paper não desenha.
+
+5. **Relato.** Diga ao usuário quais rotas foram sincronizadas, quais ficaram de fora (por exemplo, `sem dados no banco para resolver os parâmetros`: falta registro para preencher um `[param]`), as divergências que sobraram com a causa de cada uma e quantas chamadas ao MCP do Paper foram gastas.
+
+## Cota do Paper
+
+No plano gratuito, o Paper limita as chamadas MCP por semana. A mensagem de erro é "Weekly MCP limit reached". Uma prancheta nova custa 3 chamadas e uma existente custa 2, mais 1 exportação por página (e 1 por prancheta que o lote deixar de fora) e umas 5 de abertura. A sincronização completa de 13 rotas × 2 temas gasta perto de 90 chamadas na primeira vez e uns 65 depois. Por isso:
+
+- itere sempre na prévia, que custa 0 chamadas;
+- rode o passo 3 uma vez, no fim;
+- quando só algumas telas mudaram, use `--rotas`.
+
+O script imprime as chamadas que gastou.
+
+## Opções
+
+- `--rotas`: templates como aparecem no relatório (`/obras/[obraId]/pontos`). Sem essa opção, entram todas as rotas, e as pranchetas de rotas que sumiram do app são apagadas do Paper.
+- `--temas`: `claro`, `escuro` ou os dois (padrão).
+- Variáveis de ambiente: `PAPER_EMAIL` (entrar com outro usuário), `APP_URL`, `MAILPIT_URL`, `PAPER_BIN`, `PAPER_ARQUIVO` (outro arquivo no Paper, para teste).
