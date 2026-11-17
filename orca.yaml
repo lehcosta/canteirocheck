@@ -1,0 +1,113 @@
+# Orca (https://www.onorca.dev/docs) — configuração de worktrees deste repo.
+#
+# Cada worktree nova ganha:
+#   1. uma cópia do banco `canteirocheck` do checkout primário: canteirocheck_wt_<workspace>,
+#      feita pelo próprio Postgres (CREATE DATABASE ... TEMPLATE), com dono canteiro_owner
+#   2. um banco de teste vazio só dela (canteirocheck_wt_<workspace>_test); o globalSetup do
+#      vitest zera e migra, então duas worktrees rodando `pnpm test` não se atropelam
+#   3. um `.env` copiado do checkout primário (ou do .env.example, se o primário não tiver)
+#      apontando para esses bancos e com QUEUE_PREFIX próprio (filas do BullMQ isoladas)
+#   4. `pnpm install` e `pnpm db:migrate` (a cópia pode estar atrás das migrations do branch)
+# Ao arquivar a worktree, os dois bancos são apagados.
+#
+# ⚠️ Orca só executa estes scripts se, em Settings → Repository → Hooks, a
+# fonte do comando for "orca.yaml" ou "orca.yaml + local". Se existir um script
+# local salvo e a fonte não for trocada, o local vence e este arquivo é ignorado.
+#
+# Variáveis disponíveis no hook: $ORCA_ROOT_PATH (checkout primário) e
+# $ORCA_WORKSPACE_NAME (nome do diretório da worktree). Os dois rodam dentro da worktree.
+#
+# Postgres, Redis, Mailpit, S3 e dwg-extractor são compartilhados (infra/docker-compose.yml).
+# A porta 3000 também: duas worktrees não rodam `pnpm dev` ao mesmo tempo.
+# Precisa de psql/createdb no host (brew install libpq ou postgresql).
+
+scripts:
+  setup: |
+    set -euo pipefail
+    export PATH="/opt/homebrew/bin:/opt/homebrew/opt/libpq/bin:$PATH"
+
+    # Postgres de dev do infra/docker-compose.yml (superusuário; credenciais já versionadas lá)
+    export PGHOST=127.0.0.1 PGPORT=54329 PGUSER=postgres PGPASSWORD=postgres_dev
+    ORIGEM=canteirocheck
+
+    # "feat-x" → "feat_x". Nome longo vira prefixo + hash: identificador do Postgres tem até 63.
+    NOME=$(printf '%s' "$ORCA_WORKSPACE_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_')
+    if [ ${#NOME} -gt 40 ]; then NOME="${NOME:0:31}_$(printf '%s' "$NOME" | md5 | cut -c1-8)"; fi
+    BANCO="canteirocheck_wt_$NOME"
+    BANCO_TESTE="${BANCO}_test"
+
+    existe() { [ -n "$(psql -d postgres -Atc "select 1 from pg_database where datname = '$1'")" ]; }
+
+    # 0. Infra. Só sobe se o Postgres estiver fora do ar: um `up` com a stack
+    #    rodando a partir de outro diretório recria os containers.
+    if ! pg_isready -q; then
+      echo "Postgres fora do ar em :$PGPORT, subindo a infra do checkout primário"
+      docker compose -f "$ORCA_ROOT_PATH/infra/docker-compose.yml" up -d --wait
+    fi
+
+    # 1. Cópia do banco do primário (idempotente: pula se já existe).
+    #    O Postgres só copia um banco sem ninguém conectado nele: derruba as conexões
+    #    do primário (o pool do `pnpm dev` de lá reconecta sozinho) e tenta de novo se
+    #    alguém reconectar entre o terminate e o create.
+    if ! existe "$BANCO"; then
+      echo "copiando $ORIGEM → $BANCO"
+      for tentativa in 1 2 3 4 5; do
+        psql -d postgres -qAt -v ON_ERROR_STOP=1 \
+          -c "select pg_terminate_backend(pid) from pg_stat_activity where datname = '$ORIGEM' and pid <> pg_backend_pid()" \
+          -c "create database \"$BANCO\" template \"$ORIGEM\" owner canteiro_owner" >/dev/null && break
+        if [ "$tentativa" = 5 ]; then
+          echo "não consegui copiar '$ORIGEM': algo continua conectado nele" >&2
+          exit 1
+        fi
+        sleep 1
+      done
+    fi
+
+    # 2. Banco de teste da worktree (vazio; o vitest migra no globalSetup)
+    existe "$BANCO_TESTE" || createdb -O canteiro_owner "$BANCO_TESTE"
+
+    # 3. .env do primário (ou do exemplo) → bancos e filas da worktree.
+    #    As substituições são idempotentes e só trocam o nome de banco padrão.
+    if [ ! -f .env ]; then
+      if [ -f "$ORCA_ROOT_PATH/.env" ]; then
+        cp "$ORCA_ROOT_PATH/.env" .env
+      else
+        echo "checkout primário sem .env, usando .env.example (preencha as chaves no primário)"
+        cp .env.example .env
+        sed -i '' "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$(openssl rand -hex 32)|" .env
+      fi
+    fi
+    sed -i '' -E \
+      -e "/^DATABASE_URL(_MIGRATOR)?=/ s#/canteirocheck(\?|$)#/$BANCO\1#" \
+      -e "/^DATABASE_URL_TEST(_MIGRATOR)?=/ s#/canteirocheck_test(\?|$)#/$BANCO_TESTE\1#" \
+      .env
+    if grep -q '^QUEUE_PREFIX=' .env; then
+      sed -i '' "s|^QUEUE_PREFIX=.*|QUEUE_PREFIX=canteiro_$NOME|" .env
+    else
+      printf '\n# Filas do BullMQ só desta worktree (orca.yaml)\nQUEUE_PREFIX=canteiro_%s\n' "$NOME" >> .env
+    fi
+
+    # 4. Dependências e migrations pendentes do branch
+    pnpm install --prefer-offline
+    pnpm db:migrate
+
+    echo "setup ok"
+    grep -E '^(DATABASE_URL|DATABASE_URL_TEST|QUEUE_PREFIX)=' .env | sed 's/:[^:@]*@/:***@/'
+
+  archive: |
+    export PATH="/opt/homebrew/bin:/opt/homebrew/opt/libpq/bin:$PATH"
+    export PGHOST=127.0.0.1 PGPORT=54329 PGUSER=postgres PGPASSWORD=postgres_dev
+
+    NOME=$(printf '%s' "$ORCA_WORKSPACE_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_')
+    if [ ${#NOME} -gt 40 ]; then NOME="${NOME:0:31}_$(printf '%s' "$NOME" | md5 | cut -c1-8)"; fi
+
+    # --force derruba quem ainda estiver conectado (o `pnpm dev` da worktree, por exemplo)
+    dropdb --if-exists --force "canteirocheck_wt_$NOME"
+    dropdb --if-exists --force "canteirocheck_wt_${NOME}_test"
+
+# O agente só abre depois do setup terminar (o .env e os bancos já existem).
+setupAgentStartupPolicy: wait-for-setup
+
+defaultTabs:
+  - title: dev
+    command: pnpm dev
