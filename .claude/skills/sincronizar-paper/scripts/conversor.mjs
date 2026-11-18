@@ -601,15 +601,18 @@ export function converterPagina({ cores }) {
       y: rect.top + folga.Top + visivel.Top,
     };
     const pad = (l) => px(Number.parseFloat(cs[`padding${l}`]) + invisivel[l] - folga[l]);
+    // O Chrome 158 devolve flex-start/flex-end como flow-start/flow-end no estilo computado,
+    // e o Paper não conhece esses nomes: o item cai no começo.
+    const alinhamento = (v) => v.replace(/\bflow-(start|end)\b/g, "flex-$1");
     if (flex) {
       Object.assign(estilo, {
         display: "flex",
         "flex-direction": cs.flexDirection,
         "flex-wrap": cs.flexWrap === "nowrap" ? undefined : cs.flexWrap,
-        "justify-content": cs.justifyContent === "normal" ? undefined : cs.justifyContent,
-        "align-items": cs.alignItems === "normal" ? "stretch" : cs.alignItems,
+        "justify-content": cs.justifyContent === "normal" ? undefined : alinhamento(cs.justifyContent),
+        "align-items": cs.alignItems === "normal" ? "stretch" : alinhamento(cs.alignItems),
         "align-content":
-          cs.flexWrap !== "nowrap" && cs.alignContent !== "normal" ? cs.alignContent : undefined,
+          cs.flexWrap !== "nowrap" && cs.alignContent !== "normal" ? alinhamento(cs.alignContent) : undefined,
         "row-gap": cs.rowGap === "normal" || cs.rowGap === "0px" ? undefined : cs.rowGap,
         "column-gap": cs.columnGap === "normal" || cs.columnGap === "0px" ? undefined : cs.columnGap,
         padding: LADOS.some((l) => pad(l) !== "0px") ? LADOS.map(pad).join(" ") : undefined,
