@@ -52,8 +52,13 @@ pnpm install
 pnpm infra:up                              # Postgres 18, Redis, S3 local (RustFS), Mailpit e o extrator de DWG
 pnpm db:migrate
 pnpm db:seed                               # cenário da §10 do prompt (Construtora Exemplo, Edifício Teste)
-pnpm dev                                   # painel (http://localhost:3000) + worker das filas
+pnpm dev                                   # painel (https://canteirocheck.localhost) + worker das filas
 ```
+
+O `pnpm dev` roda atrás do [portless](https://github.com/vercel-labs/portless): em vez de uma porta fixa, cada checkout ganha uma URL estável, e o comando imprime a dele. No checkout principal é `https://canteirocheck.localhost`; numa worktree, `https://<worktree>.canteirocheck.localhost`. Assim várias worktrees rodam ao mesmo tempo sem disputar porta nem cookie. Se o proxy do portless usa outra porta na sua máquina, ela aparece na URL (`:1355`, por exemplo). Na primeira vez o portless sobe o proxy e pede para confiar no certificado local dele.
+
+- Os scripts que rodam fora do `pnpm dev` (e2e, skills do Paper) leem a URL do `.env`: ponha em `APP_URL` e `BETTER_AUTH_URL` a saída de `pnpm --filter @canteirocheck/web exec portless get canteirocheck`. Nas worktrees do Orca o `orca.yaml` já faz isso.
+- Sem portless: `PORTLESS=0 pnpm dev` sobe em <http://localhost:3000>, com essas duas variáveis apontando para lá.
 
 Entre com **admin@exemplo.test** (admin) ou **ana@exemplo.test** (engenheira). O link de acesso chega no Mailpit: <http://localhost:8025>.
 
@@ -65,7 +70,7 @@ pnpm --filter @canteirocheck/whatsapp gerar-chave >> .env
 
 ### Testar o WhatsApp sem a Meta
 
-Com `WHATSAPP_MODO=simulado` (o padrão), abra <http://localhost:3000/dev/whatsapp>. A lateral tem o celular do **João** (encarregado, +55 11 90000-0003) e o da **Eng. Ana** (+55 11 90000-0002).
+Com `WHATSAPP_MODO=simulado` (o padrão), abra `/dev/whatsapp` na URL do `pnpm dev`. A lateral tem o celular do **João** (encarregado, +55 11 90000-0003) e o da **Eng. Ana** (+55 11 90000-0002).
 
 O simulador chama o webhook e o endpoint do Flow de verdade, assinados e cifrados como a Meta faz. As respostas vêm do worker.
 
@@ -101,7 +106,7 @@ pnpm criar-tenant --nome "Construtora X" --cnpj 12.345.678/0001-90 \
 | `pnpm db:migrate` · `pnpm db:seed` · `pnpm db:reset` | aplica migrations · seed idempotente · zera + migra + seed (só localhost) |
 | `pnpm infra:up` · `pnpm infra:down` | sobe/derruba Postgres, Redis, S3 local e Mailpit |
 | `pnpm --filter @canteirocheck/whatsapp fumaca` | cenário L3/L4 contra o sistema rodando (`pnpm dev`), pelo webhook e pelo Flow |
-| `pnpm --filter @canteirocheck/web e2e` | Playwright: cenário da §10 no simulador e decisão no painel. Usa o Google Chrome instalado; rode com `pnpm dev` no ar e logo após `pnpm db:reset` |
+| `pnpm --filter @canteirocheck/web e2e` | Playwright: cenário da §10 no simulador e decisão no painel. Usa o Google Chrome instalado; rode com `pnpm dev` no ar, logo após `pnpm db:reset`, e com `BASE_URL` na URL do `pnpm dev` |
 | `pnpm --filter @canteirocheck/whatsapp gerar-chave` | gera a chave RSA do endpoint de Flows (linha para o `.env`) |
 
 ## Estrutura
@@ -182,7 +187,7 @@ Os prompts e schemas estão em `packages/ai/src/tarefas.ts`, versionados (`ponto
 Para ligar na Meta:
 
 1. Crie um app **Business** e adicione o produto WhatsApp. O token deve ser de um **System User**, porque o temporário expira em 24 h.
-2. Cadastre o webhook em `https://SEU_HOST/api/whatsapp/webhook`, com o `WHATSAPP_VERIFY_TOKEN`, no campo `messages`. Para testar local: `cloudflared tunnel --url http://localhost:3000`.
+2. Cadastre o webhook em `https://SEU_HOST/api/whatsapp/webhook`, com o `WHATSAPP_VERIFY_TOKEN`, no campo `messages`. Para testar local: `PORTLESS=0 pnpm dev` (porta 3000 fixa) e `cloudflared tunnel --url http://localhost:3000`.
 3. Suba a chave pública do Flow: `pnpm --filter @canteirocheck/whatsapp publicar -- --chave`.
 4. Crie os 3 Flows em DRAFT: `pnpm --filter @canteirocheck/whatsapp publicar`.
    - O endpoint vai como `APP_URL/api/whatsapp/flow` e o app como `WHATSAPP_APP_ID`.

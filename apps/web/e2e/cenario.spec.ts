@@ -1,6 +1,7 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
+import { BASE } from "../playwright.config";
 
 /**
  * Cenário da §10 pelo navegador: João no simulador de WhatsApp (anúncio + checklist com
@@ -83,7 +84,8 @@ test("Eng. Ana entra pelo magic link e recusa no painel; João recebe o aviso", 
   await expect(async () => {
     const lista = await (await request.get(`${MAILPIT}/api/v1/messages`)).json();
     const msg = await (await request.get(`${MAILPIT}/api/v1/message/${lista.messages[0].ID}`)).json();
-    link = /http:\/\/localhost:3000\/api\/auth\/magic-link\/verify\S+/.exec(msg.Text)?.[0] ?? "";
+    link =
+      msg.Text.split(/\s+/).find((p: string) => p.startsWith(`${BASE}/api/auth/magic-link/verify`)) ?? "";
     expect(link).not.toBe("");
   }).toPass();
   await page.goto(link);

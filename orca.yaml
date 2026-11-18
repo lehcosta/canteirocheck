@@ -6,7 +6,8 @@
 #   2. um banco de teste vazio só dela (canteirocheck_wt_<workspace>_test); o globalSetup do
 #      vitest zera e migra, então duas worktrees rodando `pnpm test` não se atropelam
 #   3. um `.env` copiado do checkout primário (ou do .env.example, se o primário não tiver)
-#      apontando para esses bancos e com QUEUE_PREFIX próprio (filas do BullMQ isoladas)
+#      apontando para esses bancos, com QUEUE_PREFIX próprio (filas do BullMQ isoladas) e com a
+#      URL do portless desta worktree em APP_URL e BETTER_AUTH_URL
 #   4. `pnpm install` e `pnpm db:migrate` (a cópia pode estar atrás das migrations do branch)
 # Ao arquivar a worktree, os dois bancos são apagados.
 #
@@ -17,8 +18,10 @@
 # Variáveis disponíveis no hook: $ORCA_ROOT_PATH (checkout primário) e
 # $ORCA_WORKSPACE_NAME (nome do diretório da worktree). Os dois rodam dentro da worktree.
 #
-# Postgres, Redis, Mailpit, S3 e dwg-extractor são compartilhados (infra/docker-compose.yml).
-# A porta 3000 também: duas worktrees não rodam `pnpm dev` ao mesmo tempo.
+# Postgres, Redis, Mailpit, S3, dwg-extractor e mpp-extractor são compartilhados (infra/docker-compose.yml).
+# O `pnpm dev` roda atrás do portless (https://<worktree>.canteirocheck.localhost), cada um numa
+# porta sorteada: várias worktrees rodam ao mesmo tempo, cada uma com seus cookies e sua sessão.
+# Sem o portless instalado, o setup deixa http://localhost:3000 e vale o `PORTLESS=0 pnpm dev`.
 # Precisa de psql/createdb no host (brew install libpq ou postgresql).
 
 scripts:
@@ -91,8 +94,19 @@ scripts:
     pnpm install --prefer-offline
     pnpm db:migrate
 
+    # 5. URL do `pnpm dev` desta worktree. O Next já usa a do portless sozinho (next.config.ts);
+    #    o .env precisa dela para o que roda fora do `pnpm dev`: e2e, skills do Paper, fumaça.
+    #    Vem depois do install porque o portless é dependência de desenvolvimento do apps/web.
+    URL_APP=$(pnpm --silent --filter @canteirocheck/web exec portless get canteirocheck 2>/dev/null || true)
+    if [ -n "$URL_APP" ]; then
+      sed -i '' -E \
+        -e "s|^APP_URL=.*|APP_URL=$URL_APP|" \
+        -e "s|^BETTER_AUTH_URL=.*|BETTER_AUTH_URL=$URL_APP|" \
+        .env
+    fi
+
     echo "setup ok"
-    grep -E '^(DATABASE_URL|DATABASE_URL_TEST|QUEUE_PREFIX)=' .env | sed 's/:[^:@]*@/:***@/'
+    grep -E '^(DATABASE_URL|DATABASE_URL_TEST|QUEUE_PREFIX|APP_URL)=' .env | sed 's/:[^:@]*@/:***@/'
 
   archive: |
     export PATH="/opt/homebrew/bin:/opt/homebrew/opt/libpq/bin:$PATH"
