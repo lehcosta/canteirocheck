@@ -82,3 +82,17 @@ export {
   MENSAGEM_ERRO_NUMERO,
   paraBanco,
 } from "./numero";
+export {
+  CATALOGO,
+  chavePreco,
+  type DefinicaoPlano,
+  ehPlanoPago,
+  lerChavePreco,
+  limiteDeObras,
+  PERIODICIDADES,
+  type Periodicidade,
+  PLANOS_PAGOS,
+  type Plano,
+  type PlanoPago,
+  STATUS_QUE_VALEM,
+} from "./planos";

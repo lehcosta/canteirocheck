@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Ruler, Users } from "lucide-react";
+import { Building2, CreditCard, Ruler, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const ITENS = [
   { href: "/obras", rotulo: "Obras", Icone: Building2 },
   { href: "/configuracoes/usuarios", rotulo: "Usuários", Icone: Users },
   { href: "/configuracoes/tolerancias", rotulo: "Tolerâncias", Icone: Ruler },
+  { href: "/configuracoes/assinatura", rotulo: "Assinatura", Icone: CreditCard },
 ];
 
 export function NavegacaoPainel() {

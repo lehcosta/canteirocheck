@@ -5,8 +5,7 @@ import { z } from "zod";
 import { enviarEmail } from "@/lib/email";
 import { env } from "@/lib/env";
 import { campos, type EstadoAcao } from "../acao";
-
-const FAIXAS = ["1 a 3", "4 a 10", "Mais de 10"] as const;
+import { IDS_PLANO, OPCOES_PLANO } from "./planos";
 
 const pedido = z.object({
   nome: z.string().trim().min(2, "Escreva seu nome.").max(120),
@@ -20,7 +19,7 @@ const pedido = z.object({
       return e164 ?? "";
     }),
   email: z.union([z.literal(""), z.email("E-mail inválido.")]).default(""),
-  obras: z.enum(FAIXAS).default("1 a 3"),
+  plano: z.enum(IDS_PLANO).default("a-definir"),
   // armadilha para robôs: campo escondido que pessoas não preenchem
   site: z.string().max(0).default(""),
 });
@@ -48,7 +47,7 @@ export async function pedirDemonstracaoAction(_: EstadoAcao, form: FormData): Pr
     ["Construtora", p.construtora],
     ["WhatsApp", p.whatsapp],
     ["E-mail", p.email || "—"],
-    ["Obras em andamento", p.obras],
+    ["Plano", OPCOES_PLANO.find((o) => o.id === p.plano)?.rotulo ?? p.plano],
   ];
   try {
     await enviarEmail({

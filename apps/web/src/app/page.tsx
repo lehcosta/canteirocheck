@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogotipoVivo } from "@/components/logotipo-vivo";
 import { Logotipo } from "@/components/marca";
 import { ReguaViva } from "@/components/regua-viva";
+import { PLANOS } from "@/features/demonstracao/planos";
 import { cn } from "@/lib/utils";
 import { FormularioDemonstracao } from "./_landing/formulario-demonstracao";
 
@@ -18,6 +19,7 @@ const SECOES = [
   { href: "#painel", rotulo: "O painel" },
   { href: "#para-quem", rotulo: "Para quem" },
   { href: "#seguranca", rotulo: "Segurança" },
+  { href: "#planos", rotulo: "Planos" },
   { href: "#perguntas", rotulo: "Perguntas" },
 ];
 
@@ -516,6 +518,125 @@ export default function LandingPage() {
                 </div>
               ))}
             </dl>
+          </div>
+        </section>
+
+        <section id="planos" className="scroll-mt-20 border-t px-6 py-16 sm:py-24">
+          <div className={cn(conteiner, "flex flex-col gap-8 sm:gap-12")}>
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <p className={cn(sobrancelha, "text-prumo-text")}>Planos</p>
+              <h2 className={tituloSecao}>Um preço por tamanho de construtora.</h2>
+              <p className="text-base leading-6 text-muted-foreground sm:text-lg sm:leading-7">
+                Você paga pelas obras ativas. O encarregado no WhatsApp não entra na conta.
+              </p>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-3 lg:gap-4">
+              {PLANOS.map((p) => (
+                <article
+                  key={p.id}
+                  className={cn(
+                    "flex flex-col gap-6 rounded-md border p-6 sm:p-7",
+                    // no celular a recomendada sobe para o topo da pilha
+                    p.destaque ? "border-ink bg-ink text-surface-raised max-lg:order-first" : "bg-card",
+                  )}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex min-h-7 items-center justify-between gap-3">
+                      <h3 className="font-heading text-2xl leading-7 font-bold">{p.nome}</h3>
+                      {p.destaque && (
+                        <span className="inline-flex h-6 shrink-0 items-center rounded-sm bg-liquido px-2 text-xs font-semibold tracking-[0.06em] text-on-prumo uppercase">
+                          Recomendado
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className={cn(
+                        "text-[15px] leading-[23px]",
+                        p.destaque ? "text-line" : "text-ink-muted",
+                      )}
+                    >
+                      {p.frase}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <p className="flex items-end gap-1.5">
+                      <span
+                        className={cn(
+                          "font-mono text-base leading-10 font-medium",
+                          p.destaque ? "text-line" : "text-ink-muted",
+                        )}
+                      >
+                        R$
+                      </span>
+                      <span className="font-heading text-5xl leading-none font-extrabold tracking-[-0.02em]">
+                        {p.preco}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-[15px] leading-[34px]",
+                          p.destaque ? "text-line" : "text-ink-muted",
+                        )}
+                      >
+                        /mês
+                      </span>
+                    </p>
+                    <p
+                      className={cn(
+                        "font-mono text-[13px] leading-5 font-medium",
+                        p.destaque ? "text-line" : "text-ink-muted",
+                      )}
+                    >
+                      {p.ano}
+                    </p>
+                  </div>
+                  <span aria-hidden className={cn("h-px", p.destaque ? "bg-ink-muted" : "bg-line")} />
+                  <div className="flex flex-1 flex-col gap-2.5 text-[15px] leading-[22px]">
+                    <p className="font-semibold">{p.obras}</p>
+                    <ul className="flex flex-col gap-2.5">
+                      {p.itens.map((i) => (
+                        <li key={i} className="flex items-center gap-2.5">
+                          <Check
+                            aria-hidden
+                            className={cn("size-4 shrink-0", p.destaque ? "text-liquido" : "text-nivel")}
+                            strokeWidth={3}
+                          />
+                          {i}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <Link
+                    href={`/?plano=${p.id}#demonstracao`}
+                    aria-label={`Quero o plano ${p.nome}`}
+                    className={cn(
+                      "inline-flex h-11 items-center justify-center rounded-md px-[18px] text-[15px] font-semibold",
+                      p.destaque
+                        ? // sobre o grafite o anel de foco usa o laranja de texto do tema escuro
+                          "bg-prumo text-on-prumo hover:bg-[color-mix(in_oklch,var(--prumo),var(--ink)_10%)] focus-visible:outline-[#ff8e57]"
+                        : "border border-concreto bg-card text-ink hover:bg-surface",
+                    )}
+                  >
+                    Quero este plano
+                  </Link>
+                </article>
+              ))}
+            </div>
+            <div className="flex flex-col gap-4 text-[15px] leading-[22px] lg:flex-row lg:items-center lg:justify-between">
+              <p className="text-muted-foreground">
+                Em todos: encarregados sem limite no WhatsApp, mensagens incluídas e nenhuma taxa de
+                implantação.
+              </p>
+              <p className="flex shrink-0 flex-wrap items-center gap-x-2">
+                Mais de 15 obras?
+                <Link
+                  href="/?plano=sob-medida#demonstracao"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-prumo-text hover:underline max-lg:py-2.5"
+                >
+                  Falar com a Prumo
+                  <ArrowRight aria-hidden className="size-3.5" />
+                </Link>
+              </p>
+            </div>
           </div>
         </section>
 

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, pgPolicy, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, pgPolicy, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import {
   appRole,
   criadoEm,
@@ -20,6 +20,16 @@ export const tenant = pgTable(
     cnpj: text("cnpj").notNull().unique(),
     plano: text("plano").notNull().default("piloto"),
     criadoEm: criadoEm(),
+    // ── Cobrança (Stripe). Só o papel de sistema grava: o app não tem UPDATE em tenant. ──
+    stripeCustomerId: text("stripe_customer_id").unique(),
+    stripeSubscriptionId: text("stripe_subscription_id").unique(),
+    /** Status da assinatura como o Stripe manda (active, past_due, canceled…); null = nunca assinou. */
+    assinaturaStatus: text("assinatura_status"),
+    assinaturaPeriodicidade: text("assinatura_periodicidade"),
+    assinaturaFimPeriodo: timestamp("assinatura_fim_periodo", { withTimezone: true }),
+    assinaturaCancelaNoFim: boolean("assinatura_cancela_no_fim").notNull().default(false),
+    /** `created` do evento do Stripe mais novo já aplicado: evento antigo que chega atrasado é ignorado. */
+    assinaturaAtualizadaEm: timestamp("assinatura_atualizada_em", { withTimezone: true }),
   },
   () => [pgPolicy("tenant_proprio", { for: "select", to: appRole, using: sql`id = ${tenantAtual}` })],
 );
