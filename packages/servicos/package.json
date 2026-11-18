@@ -8,7 +8,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "stripe:catalogo": "tsx --env-file=../../.env scripts/catalogo-stripe.ts"
   },
   "dependencies": {
     "@canteirocheck/ai": "workspace:*",
@@ -21,12 +22,14 @@
     "@canteirocheck/whatsapp": "workspace:*",
     "drizzle-orm": "0.45.4",
     "sharp": "0.35.5",
+    "stripe": "23.1.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@canteirocheck/config": "workspace:*",
     "@types/node": "^22",
     "typescript": "5.9.3",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "tsx": "4.23.15"
   }
 }

@@ -43,6 +43,13 @@
       "when": 1795008462746,
       "tag": "0005_riscos_concorrencia",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795036089834,
+      "tag": "0006_assinatura_stripe",
+      "breakpoints": true
     }
   ]
 }

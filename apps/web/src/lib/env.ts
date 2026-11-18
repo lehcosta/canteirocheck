@@ -11,6 +11,9 @@ const esquema = z.object({
   EMAIL_FROM: z.string().min(1),
   /** Quem recebe os pedidos de demonstração da landing page. */
   CONTATO_EMAIL: z.email().optional(),
+  /** Cobrança (Stripe). Sem a chave, a página de assinatura avisa que a cobrança não está configurada. */
+  STRIPE_SECRET_KEY: z.union([z.literal(""), z.string().startsWith("sk_")]).optional(),
+  STRIPE_WEBHOOK_SECRET: z.union([z.literal(""), z.string().startsWith("whsec_")]).optional(),
 });
 
 /** Variáveis de ambiente do servidor, validadas na primeira leitura. */

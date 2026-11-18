@@ -18,6 +18,19 @@ export {
   registrarRespostasDoCheck,
   salvarCheck,
 } from "./checks";
+export {
+  type Assinatura,
+  abrirPortal,
+  confirmarCheckout,
+  criarStripe,
+  entradaAssinar,
+  estadoDaAssinatura,
+  iniciarAssinatura,
+  nomeDoPlano,
+  obterAssinatura,
+  receberWebhookStripe,
+  type UrlsRetorno,
+} from "./cobranca";
 export { type Contexto, ErroDeCampo, ErroDominio, type PapelPainel } from "./contexto";
 export { confirmarMedidaDaConversa, interpretarMensagem, transcreverAudio } from "./conversa";
 export {

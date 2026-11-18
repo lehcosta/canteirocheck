@@ -1,10 +1,11 @@
-import { registrarAuditoria, schema, withTenant } from "@canteirocheck/db";
-import { and, asc, count, eq } from "drizzle-orm";
+import { CATALOGO, ehPlanoPago, limiteDeObras } from "@canteirocheck/core";
+import { registrarAuditoria, schema, type Tx, withTenant } from "@canteirocheck/db";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ator, type Contexto, ErroDominio, exigirPapel, traduzirErroBanco } from "./contexto";
 import { primeiraMensagem, textoObrigatorio, textoOpcional, uuid } from "./validacao";
 
-const { obra, obraMembro, local, usuario, pendencia, execucaoEtapa } = schema;
+const { obra, obraMembro, local, usuario, pendencia, execucaoEtapa, tenant } = schema;
 
 // ─────────────────────────── Leitura ───────────────────────────
 
@@ -144,6 +145,33 @@ export const entradaCriarObra = z.object({
     .default("16:00"),
 });
 
+/**
+ * Barra a obra nova além do teto do plano. Duas criações juntas não passam as duas: a trava é um
+ * advisory lock da construtora (o app não tem UPDATE em tenant, então `FOR UPDATE` não serve).
+ */
+async function conferirLimiteDeObras(tx: Tx, tenantId: string): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`obras:${tenantId}`}, 0))`);
+  const [t] = await tx
+    .select({ plano: tenant.plano, status: tenant.assinaturaStatus })
+    .from(tenant)
+    .where(eq(tenant.id, tenantId));
+  const limite = t ? limiteDeObras(t.plano, t.status) : null;
+  if (limite === null) return;
+  const [ativas] = await tx.select({ n: count() }).from(obra).where(eq(obra.status, "ativa"));
+  if ((ativas?.n ?? 0) < limite) return;
+  if (limite === 0) {
+    throw new ErroDominio(
+      "conflito",
+      "A assinatura não está ativa. Regularize em Assinatura para abrir obras.",
+    );
+  }
+  const nome = t && ehPlanoPago(t.plano) ? CATALOGO[t.plano].nome : t?.plano;
+  throw new ErroDominio(
+    "conflito",
+    `O plano ${nome} vai até ${limite} obras ativas. Troque de plano em Assinatura para abrir outra.`,
+  );
+}
+
 export async function criarObra(ctx: Contexto, entrada: unknown): Promise<{ id: string }> {
   exigirPapel(ctx, ["admin"]);
   const r = entradaCriarObra.safeParse(entrada);
@@ -162,6 +190,7 @@ export async function criarObra(ctx: Contexto, entrada: unknown): Promise<{ id: 
         ),
       );
     if (!eng) throw new ErroDominio("invalido", "Escolha um engenheiro ativo como responsável.");
+    await conferirLimiteDeObras(tx, ctx.tenantId);
 
     const [nova] = await tx
       .insert(obra)
