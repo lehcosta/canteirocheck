@@ -113,6 +113,12 @@ export async function varrerParados(minutos = 3): Promise<{ reenfileirados: numb
         { tenantId: i.tenantId, midiaId: i.id },
         { jobId: idJob("midia", i.id, "v", janela) },
       );
+    } else if (i.tipo === "cruzamento") {
+      await fila.enfileirar(
+        "cruzar_cronograma",
+        { tenantId: i.tenantId, cruzamentoId: i.id },
+        { jobId: idJob("cruz", i.id, "v", janela) },
+      );
     } else if (i.tipo === "cronograma") {
       await fila.enfileirar(
         "ler_cronograma",

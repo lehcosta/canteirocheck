@@ -1,4 +1,24 @@
-export { type Contexto, ErroDominio, type PapelPainel } from "./contexto";
+export type { EstadoCheck, Momento, TipoResposta } from "@canteirocheck/core";
+export {
+  aprovarCheck,
+  type CheckDaFase,
+  type CheckNoGantt,
+  desfazerAprovacaoDoCheck,
+  type EntradaCheck,
+  type EnvioDoCheck,
+  type FaseDoCronograma,
+  type FaseNoGantt,
+  obterFase,
+  obterRiscosDoCronograma,
+  type PerguntaDoCheck,
+  type RespostaDoCheck,
+  type RiscoDaFase,
+  type RiscosDoCronograma,
+  registrarEnvioDoCheck,
+  registrarRespostasDoCheck,
+  salvarCheck,
+} from "./checks";
+export { type Contexto, ErroDeCampo, ErroDominio, type PapelPainel } from "./contexto";
 export { confirmarMedidaDaConversa, interpretarMensagem, transcreverAudio } from "./conversa";
 export {
   type CronogramaDaObra,
@@ -12,6 +32,15 @@ export {
   tipoDoCronograma,
   type VersaoCronograma,
 } from "./cronogramas";
+export {
+  cruzarDeNovo,
+  ERRO_SEM_IA,
+  ERRO_SUBSTITUIDO,
+  type ProjetoDoCruzamento,
+  processarCruzamento,
+  solicitarCruzamento,
+  validarCruzamento,
+} from "./cruzamentos";
 export {
   anunciarExecucoes,
   decidirExecucao,

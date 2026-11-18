@@ -73,6 +73,8 @@ export const tipoCusto = pgEnum("tipo_custo", [
   "transcricao_audio",
 ]);
 export const atorTipo = pgEnum("ator_tipo", ["usuario", "sistema", "ia"]);
+export const momentoCheck = pgEnum("momento_check", ["antes", "durante", "depois"]);
+export const tipoResposta = pgEnum("tipo_resposta", ["sim_nao", "opcao", "data", "medida", "texto"]);
 
 export type Papel = (typeof papel.enumValues)[number];
 export type TipoLocal = (typeof tipoLocal.enumValues)[number];

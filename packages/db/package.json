@@ -17,7 +17,8 @@
     "db:migrate": "tsx --env-file=../../.env src/scripts/migrar.ts",
     "db:seed": "tsx --env-file=../../.env src/scripts/seed.ts",
     "db:reset": "tsx --env-file=../../.env src/scripts/resetar.ts && pnpm db:migrate && pnpm db:seed",
-    "criar-tenant": "tsx --env-file=../../.env src/scripts/criar-tenant.ts"
+    "criar-tenant": "tsx --env-file=../../.env src/scripts/criar-tenant.ts",
+    "cena-riscos": "tsx --env-file=../../.env src/scripts/cena-riscos.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

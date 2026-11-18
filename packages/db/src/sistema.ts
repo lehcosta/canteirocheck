@@ -246,7 +246,7 @@ export async function listarObrasParaAgenda(): Promise<ObraParaAgenda[]> {
 
 export interface ItemParado {
   tenantId: string;
-  tipo: "mensagem" | "midia" | "extracao" | "cronograma";
+  tipo: "mensagem" | "midia" | "extracao" | "cronograma" | "cruzamento";
   id: string;
 }
 
@@ -274,6 +274,12 @@ export async function itensParados(minutos = 3, limite = 200): Promise<ItemParad
       (select tenant_id, 'cronograma', id from cronograma_versao
         where status_leitura = 'pendente' and criado_em < now() - make_interval(mins => ${minutos * 3})
           and criado_em > now() - interval '15 days'
+        limit ${limite})
+      union all
+      (select tenant_id, 'cruzamento', id from cruzamento
+        where ((status = 'pendente' and criado_em < now() - make_interval(mins => ${minutos * 3}))
+            or (status = 'processando' and iniciado_em < now() - interval '15 minutes'))
+          and criado_em > now() - interval '2 days'
         limit ${limite})`);
     return r.rows.map((l) => ({ tenantId: l.tenant_id, tipo: l.tipo, id: l.id }));
   });
