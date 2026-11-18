@@ -12,6 +12,7 @@ import {
   interpretarMensagem,
   notificarEncarregado,
   notificarEngenheiro,
+  processarCruzamento,
   processarExtracao,
   processarLeituraCronograma,
   processarMensagemRecebida,
@@ -98,6 +99,7 @@ subir(
     gerar_pontos: (p) => gerarPontosSugeridos(p.tenantId, p.projetoId),
     transcrever_audio: (p) => transcreverAudio(p.tenantId, p.mensagemId),
     interpretar_mensagem: (p) => interpretarMensagem(p.tenantId, p.mensagemId),
+    cruzar_cronograma: (p) => processarCruzamento(p.tenantId, p.cruzamentoId),
   },
   { concorrencia: 2, limite: { max: 10, duracaoMs: 60_000 } },
 );

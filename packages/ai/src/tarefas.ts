@@ -210,3 +210,127 @@ export function tarefaInterpretacao(
     maxTokens: 2000,
   };
 }
+
+// ─────────────────────────── Cruzamento do cronograma com os projetos ───────────────────────────
+
+export const VERSAO_CRUZAMENTO = "cruzamento-v1";
+
+export const esquemaCruzamento = z.object({
+  riscos: z.array(
+    z.object({
+      fase_uid: z.number().int().describe("uid da fase da lista recebida"),
+      nivel: z.enum(["alto", "medio", "baixo"]),
+      titulo: z.string().describe("frase de conflito curta: o projeto pede X; o cronograma dá Y"),
+      projeto: z.string().describe("código do projeto citado, exatamente como na lista"),
+      projeto_trecho: z.string().describe("cópia EXATA de um texto recebido daquele projeto"),
+      cronograma_linha: z.number().int().nullable().describe("linha do cronograma citada"),
+      cronograma_trecho: z.string().describe("o que a linha citada mostra: nome, datas, %"),
+      consequencia: z.string().describe("o que acontece na obra se nada mudar"),
+      perguntas: z.array(
+        z.object({
+          momento: z.enum(["antes", "durante", "depois"]),
+          texto: z.string().describe("pergunta curta, que o encarregado responde em campo pelo celular"),
+          tipo: z.enum(["sim_nao", "opcao", "data", "medida", "texto"]),
+          opcoes: z
+            .array(z.string())
+            .describe(
+              'opcao: as opções, até 30 caracteres cada; medida: só a unidade, ["m"], ["cm"] ou ["mm"]; outros: []',
+            ),
+          esperada: z
+            .string()
+            .nullable()
+            .describe(
+              'resposta certa, quando houver: "Sim"/"Não"; uma das opções; "<=AAAA-MM-DD" ou ">=AAAA-MM-DD"; "min..max" com ponto decimal',
+            ),
+          pede_foto: z.boolean(),
+        }),
+      ),
+    }),
+  ),
+});
+export type SaidaCruzamento = z.infer<typeof esquemaCruzamento>;
+
+const SISTEMA_CRUZAMENTO = `Você ajuda engenheiros civis no Brasil a antecipar problemas da obra cruzando o CRONOGRAMA (MS Project) com os PROJETOS (textos e notas lidos dos DWG).
+
+Aponte RISCOS POR FASE que nascem do ENCONTRO das duas fontes, nunca de uma só:
+- o projeto pede X e o cronograma dá Y (ex.: o projeto pede 21 dias de escoramento e o cronograma carrega a laje de cima em 10);
+- uma nota "a definir", "a confirmar" ou "aguardando" com a fase que depende dela às portas;
+- um prazo entre tarefas menor do que o projeto exige (cura, escoramento, encunhamento, teste de estanqueidade).
+
+Para cada risco:
+1. fase_uid: o uid de uma fase da lista. cronograma_linha: a linha citada (a fase ou uma tarefa dela).
+2. titulo: frase de conflito curta, ex.: "O projeto pede 21 dias de escoramento; o cronograma carrega a laje do térreo em 10".
+3. projeto: o código do projeto citado. projeto_trecho: cópia EXATA de um texto recebido daquele projeto, sem mudar letra, acento nem pontuação. Sem trecho para citar, não há risco.
+4. cronograma_trecho: o que a linha citada mostra (nome, datas, %). consequencia: o que acontece na obra se nada mudar.
+5. nivel: alto = retrabalho caro, estrutural ou de segurança; medio = retrabalho de sistemas ou acabamento; baixo = ajuste simples.
+6. perguntas: curtas, para o encarregado responder em campo pelo celular; pelo menos uma por risco, distribuídas nos três momentos (antes de a fase começar, durante, depois de terminar). Use "esperada" quando houver resposta certa: "Sim" ou "Não" (sim_nao); uma das opções (opcao, com até 30 caracteres por opção); "<=AAAA-MM-DD" ou ">=AAAA-MM-DD" (data); "min..max" com ponto decimal (medida, na unidade que vai em opcoes: ["m"], ["cm"] ou ["mm"]). Peça foto quando a evidência ajudar.
+
+Não invente: nada de valor, prazo ou exigência que não esteja nos textos recebidos ou nas linhas do cronograma. Prefira poucos riscos certeiros a muitos genéricos. Se o material não sustenta nenhum risco, devolva a lista vazia. Os riscos e as perguntas são SUGESTÕES: o engenheiro revisa e aprova antes de qualquer envio.`;
+
+/**
+ * O texto como a conferência do trecho citado o vê: quebra de linha e espaços repetidos viram um
+ * espaço. Mostrar o texto assim ao modelo é o que deixa a cópia exata passar na conferência.
+ */
+export const espacosNormalizados = (t: string) => t.replace(/\s+/g, " ").trim();
+
+export interface MaterialCruzamento {
+  /** AAAA-MM-DD */
+  hoje: string;
+  projetos: { codigo: string; revisao: string; titulo: string; disciplina: string; textos: string[] }[];
+  fases: {
+    uid: number;
+    nome: string;
+    etapa: string | null;
+    linha: number;
+    inicio: string | null;
+    termino: string | null;
+    percentual: number;
+    tarefas: {
+      linha: number;
+      nome: string;
+      inicio: string | null;
+      termino: string | null;
+      percentual: number;
+    }[];
+  }[];
+}
+
+export function tarefaCruzamento(m: MaterialCruzamento): TarefaEstruturada<SaidaCruzamento> {
+  const datas = (inicio: string | null, termino: string | null) =>
+    `${inicio ?? "sem início"} a ${termino ?? "sem término"}`;
+  return {
+    nome: VERSAO_CRUZAMENTO,
+    modelo: process.env.IA_MODELO_CRUZAMENTO || modelos().pontos,
+    esforco: "high",
+    sistema: SISTEMA_CRUZAMENTO,
+    usuario: [
+      `Hoje: ${m.hoje}.`,
+      `## Projetos\n${
+        m.projetos
+          .map(
+            (p) =>
+              `### ${p.codigo} rev. ${p.revisao}: ${p.titulo} (disciplina: ${p.disciplina})\n${
+                p.textos.length
+                  ? p.textos.map((t) => `- ${espacosNormalizados(t)}`).join("\n")
+                  : "(sem textos)"
+              }`,
+          )
+          .join("\n\n") || "(nenhum)"
+      }`,
+      `## Cronograma (fases e as tarefas de cada uma)\n${
+        m.fases
+          .map((f) =>
+            [
+              `- fase uid ${f.uid} · linha ${f.linha} · ${f.nome}${f.etapa ? ` (etapa: ${f.etapa})` : ""} · ${datas(f.inicio, f.termino)} · ${f.percentual}%`,
+              ...f.tarefas.map(
+                (t) => `  - linha ${t.linha} · ${t.nome} · ${datas(t.inicio, t.termino)} · ${t.percentual}%`,
+              ),
+            ].join("\n"),
+          )
+          .join("\n") || "(nenhuma)"
+      }`,
+    ].join("\n\n"),
+    esquema: esquemaCruzamento,
+    maxTokens: 16000,
+  };
+}

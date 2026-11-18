@@ -624,7 +624,15 @@ export function converterPagina({ cores }) {
       const no = item.tipo === "el" ? noElemento(item.el, ctxFilhos) : noTexto(item.nos, cs, null, ctxFilhos);
       if (no) filhos.push(no);
     }
-    if (!filhos.length && !decorado(cs)) return null;
+    // item vazio de um flex ocupa lugar (o `flex-1` que empurra o pé de um cartão): sem ele, o que
+    // vem depois sobe. Fica como caixa vazia do tamanho medido.
+    const espacador =
+      ctx.modo === "flex" &&
+      rect.width > 0 &&
+      rect.height > 0 &&
+      cs.position !== "absolute" &&
+      cs.position !== "fixed";
+    if (!filhos.length && !decorado(cs) && !espacador) return null;
     if (!embrulhar)
       return {
         tag: "div",

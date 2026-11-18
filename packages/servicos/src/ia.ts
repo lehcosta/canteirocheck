@@ -21,7 +21,13 @@ const { projeto, extracaoProjeto, pendencia, pontoControle, local, etapa, evento
  * decide: nada aqui entra em checklist sem aprovação (`status_revisao = sugerido`).
  */
 
-async function registrarCusto(tx: Tx, tenantId: string, obraId: string, usos: UsoLlm[], tarefa: string) {
+export async function registrarCusto(
+  tx: Tx,
+  tenantId: string,
+  obraId: string,
+  usos: UsoLlm[],
+  tarefa: string,
+) {
   for (const u of usos) {
     await tx.insert(eventoCusto).values({
       tenantId,

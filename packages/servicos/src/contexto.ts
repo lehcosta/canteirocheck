@@ -19,6 +19,17 @@ export class ErroDominio extends Error {
   }
 }
 
+/** Erro de validação por campo, para a tela marcar o campo: `campo` no formato "perguntas.3.texto". */
+export class ErroDeCampo extends ErroDominio {
+  constructor(
+    readonly campo: string,
+    mensagem: string,
+  ) {
+    super("invalido", mensagem);
+    this.name = "ErroDeCampo";
+  }
+}
+
 export function exigirPapel(ctx: Contexto, papeis: readonly Contexto["papel"][]): void {
   if (!papeis.includes(ctx.papel)) {
     throw new ErroDominio("permissao", "Você não tem permissão para esta ação.");

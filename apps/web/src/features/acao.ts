@@ -1,10 +1,12 @@
-import { ErroDominio } from "@canteirocheck/servicos";
+import { ErroDeCampo, ErroDominio } from "@canteirocheck/servicos";
 
-export type EstadoAcao = { erro?: string; ok?: string } | undefined;
+/** `campo`: o campo que o erro marca ("perguntas.3.texto"), quando ele vem de um `ErroDeCampo`. */
+export type EstadoAcao = { erro?: string; ok?: string; campo?: string } | undefined;
 export type Acao = (estado: EstadoAcao, form: FormData) => Promise<EstadoAcao>;
 
 /** Erro de domínio vira mensagem para o usuário; o resto é logado e vira mensagem genérica. */
 export function tratarErro(e: unknown): EstadoAcao {
+  if (e instanceof ErroDeCampo) return { erro: e.message, campo: e.campo };
   if (e instanceof ErroDominio) return { erro: e.message };
   console.error("[acao] erro inesperado", e);
   return { erro: "Não foi possível concluir. Tente de novo em instantes." };

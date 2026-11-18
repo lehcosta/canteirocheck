@@ -6,6 +6,7 @@ import { chaveDoTenant, gravarObjeto, lerObjeto, urlDeLeitura } from "@canteiroc
 import { and, desc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { ator, type Contexto, ErroDominio, exigirPapel, traduzirErroBanco } from "./contexto";
+import { solicitarCruzamento } from "./cruzamentos";
 import { primeiraMensagem, textoObrigatorio, uuid } from "./validacao";
 
 const { projeto, extracaoProjeto, pendencia, obra, usuario, etapa } = schema;
@@ -137,8 +138,9 @@ export async function chamarExtrator(
 }
 
 /**
- * Job `extrair_dwg`: bucket → extrator → interpretação (código nosso) → `extracao_projeto`.
- * Arquivo recusado pelo extrator = falha definitiva; erro de rede/5xx = o BullMQ tenta de novo.
+ * Job `extrair_dwg`: bucket → extrator → interpretação (código nosso) → `extracao_projeto`, e o
+ * projeto lido é cruzado com o cronograma vigente. Arquivo recusado pelo extrator = falha
+ * definitiva; erro de rede/5xx = o BullMQ tenta de novo.
  */
 export async function processarExtracao(
   tenantId: string,
@@ -211,6 +213,7 @@ export async function processarExtracao(
   const fila = obterFila();
   await fila.enfileirar("detectar_pendencias", { tenantId, projetoId }, { jobId: idJob("pend", projetoId) });
   await fila.enfileirar("gerar_pontos", { tenantId, projetoId }, { jobId: idJob("pontos", projetoId) });
+  await solicitarCruzamento(tenantId, p.obraId, null);
   return {
     status: "concluida",
     notasSuspeitas: interpretada.notas.filter((n) => n.pareceDependencia).length,

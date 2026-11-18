@@ -5,6 +5,8 @@ import { chaveDoTenant, gravarObjeto, lerObjeto } from "@canteirocheck/storage";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ator, type Contexto, ErroDominio, exigirPapel } from "./contexto";
+import { solicitarCruzamento } from "./cruzamentos";
+import { logar } from "./metricas";
 import { uuid } from "./validacao";
 
 const { cronogramaVersao, cronogramaTarefa, obra, usuario } = schema;
@@ -143,8 +145,8 @@ const travarObra = (tx: Tx, obraId: string) =>
 
 /**
  * Job `ler_cronograma`: bucket → leitor → tarefas no banco. A versão ganha o próximo número da
- * obra e vira a vigente. Arquivo recusado ou sem tarefas = falha definitiva (a vigente não
- * muda); erro de rede/5xx = o BullMQ tenta de novo.
+ * obra e vira a vigente (e é cruzada com os projetos lidos). Arquivo recusado ou sem tarefas =
+ * falha definitiva (a vigente não muda); erro de rede/5xx = o BullMQ tenta de novo.
  */
 export async function processarLeituraCronograma(
   tenantId: string,
@@ -244,6 +246,7 @@ export async function processarLeituraCronograma(
     });
     return numero;
   });
+  await solicitarCruzamento(tenantId, v.obraId, null);
   return { status: "concluida", numero, tarefas: leitura.tarefas.length };
 }
 
@@ -266,6 +269,8 @@ export interface VersaoCronograma {
 
 export interface TarefaCronograma {
   ordem: number;
+  /** Unique ID do MS Project: identifica a fase entre versões. */
+  uid: number;
   nome: string;
   nivel: number;
   resumo: boolean;
@@ -311,6 +316,7 @@ export async function obterCronograma(ctx: Contexto, obraId: string): Promise<Cr
       ? await tx
           .select({
             ordem: cronogramaTarefa.ordem,
+            uid: cronogramaTarefa.uid,
             nome: cronogramaTarefa.nome,
             nivel: cronogramaTarefa.nivel,
             resumo: cronogramaTarefa.resumo,
@@ -327,11 +333,14 @@ export async function obterCronograma(ctx: Contexto, obraId: string): Promise<Cr
   });
 }
 
-/** Volta uma versão já lida a ser a vigente. Nada é apagado: a atual continua no histórico. */
+/**
+ * Volta uma versão já lida a ser a vigente (e a cruza de novo com os projetos). Nada é apagado:
+ * a atual continua no histórico.
+ */
 export async function restaurarCronograma(ctx: Contexto, versaoId: string): Promise<{ numero: number }> {
   exigirPapel(ctx, ["admin", "engenheiro"]);
   if (!uuid.safeParse(versaoId).success) throw new ErroDominio("invalido", "Versão inválida.");
-  return withTenant(ctx.tenantId, async (tx) => {
+  const r = await withTenant(ctx.tenantId, async (tx) => {
     const [alvo] = await tx.select().from(cronogramaVersao).where(eq(cronogramaVersao.id, versaoId));
     if (!alvo) throw new ErroDominio("nao_encontrado", "Versão não encontrada.");
     await travarObra(tx, alvo.obraId);
@@ -354,6 +363,12 @@ export async function restaurarCronograma(ctx: Contexto, versaoId: string): Prom
       antes: { vigente: atual?.numero ?? null },
       depois: { vigente: alvo.numero },
     });
-    return { numero: alvo.numero };
+    return { numero: alvo.numero, obraId: alvo.obraId };
   });
+  // A restauração já está gravada: fila fora não pode desfazê-la. O pendente fica no banco e a
+  // varredura do worker o reenfileira.
+  await solicitarCruzamento(ctx.tenantId, r.obraId, null).catch((e) =>
+    logar("error", "cruzamento.pedido_falhou", { obraId: r.obraId, erro: String(e) }),
+  );
+  return { numero: r.numero };
 }

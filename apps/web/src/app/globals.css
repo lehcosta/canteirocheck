@@ -4,6 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  /* andamento sem número (cruzamento ao fundo): um trecho cheio vai e volta na régua */
+  --animate-andamento: andamento 1.6s ease-in-out infinite alternate;
+  @keyframes andamento {
+    from {
+      margin-left: 0;
+    }
+    to {
+      margin-left: calc(100% - 300px);
+    }
+  }
+}
+
 @theme inline {
   --font-heading: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;

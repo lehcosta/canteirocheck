@@ -40,7 +40,7 @@ export const JOBS = {
   notificar_encarregado: { fila: "execucao", payload: z.object({ ...comTenant, liberacaoId: uuid }) },
   /** Pendência aberta bloqueia uma etapa recém-anunciada → aviso ao engenheiro. */
   avisar_pendencia: { fila: "execucao", payload: z.object({ ...comTenant, execucaoId: uuid }) },
-  /** A cada 2 min: reenfileira o que ficou parado em `pendente` (mensagem, mídia, extração). */
+  /** A cada 2 min: reenfileira o que ficou parado em `pendente` (mensagem, mídia, extração, leitura, cruzamento). */
   varredura: { fila: "agenda", payload: z.object({}) },
   /** Cron por obra (Job Scheduler no fuso da obra). */
   anuncio_diario: { fila: "agenda", payload: z.object({ ...comTenant, obraId: uuid }) },
@@ -61,6 +61,8 @@ export const JOBS = {
   gerar_pontos: { fila: "ia", payload: z.object({ ...comTenant, projetoId: uuid }) },
   transcrever_audio: { fila: "ia", payload: z.object({ ...comTenant, mensagemId: uuid }) },
   interpretar_mensagem: { fila: "ia", payload: z.object({ ...comTenant, mensagemId: uuid }) },
+  /** Cronograma vigente × projetos lidos → riscos por fase e perguntas de check sugeridas. */
+  cruzar_cronograma: { fila: "ia", payload: z.object({ ...comTenant, cruzamentoId: uuid }) },
 } as const satisfies Record<string, { fila: NomeFila; payload: z.ZodType }>;
 
 export type NomeJob = keyof typeof JOBS;
