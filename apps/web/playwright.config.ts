@@ -7,9 +7,12 @@ export const SAIDA = process.env.E2E_SAIDA ?? join(tmpdir(), "canteirocheck-e2e"
 
 /**
  * Ponta a ponta no painel e no simulador de WhatsApp. Pré-requisito: stack local no ar
- * (`pnpm infra:up && pnpm db:reset && pnpm dev`). Localmente usa o Google Chrome instalado
+ * (`pnpm infra:up && pnpm db:reset && pnpm dev`) e BASE_URL com a URL que o `pnpm dev` imprimiu. Localmente usa o Google Chrome instalado
  * (sem baixar navegador); no CI, `npx playwright install chromium` e PW_CHANNEL vazio.
  */
+/** A URL do `pnpm dev`. Com o portless: BASE_URL=$(portless get canteirocheck). */
+export const BASE = process.env.BASE_URL ?? "http://localhost:3000";
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 120_000,
@@ -19,7 +22,7 @@ export default defineConfig({
   reporter: [["list"]],
   outputDir: SAIDA,
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    baseURL: BASE,
     channel: process.env.PW_CHANNEL ?? "chrome",
     headless: true,
     locale: "pt-BR",

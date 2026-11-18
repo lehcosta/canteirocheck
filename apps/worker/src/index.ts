@@ -13,6 +13,7 @@ import {
   notificarEncarregado,
   notificarEngenheiro,
   processarExtracao,
+  processarLeituraCronograma,
   processarMensagemRecebida,
   transcreverAudio,
   varrerParados,
@@ -84,6 +85,11 @@ subir("agenda", {
 });
 subir("relatorios", { gerar_pdf: (p) => gerarRelatorio(p) }, { concorrencia: 2 });
 subir("dwg", { extrair_dwg: (p) => processarExtracao(p.tenantId, p.projetoId) }, { concorrencia: 2 });
+subir(
+  "cronograma",
+  { ler_cronograma: (p) => processarLeituraCronograma(p.tenantId, p.versaoId) },
+  { concorrencia: 2 },
+);
 // IA: sem chave, os jobs registram a falta e caem no caminho de revisão humana.
 subir(
   "ia",

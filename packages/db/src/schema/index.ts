@@ -1,6 +1,7 @@
 export * from "./auditoria";
 export * from "./auth";
 export * from "./comum";
+export * from "./cronograma";
 export * from "./execucao";
 export * from "./obra";
 export * from "./ponto";

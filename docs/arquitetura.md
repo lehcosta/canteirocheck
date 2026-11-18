@@ -86,7 +86,8 @@ Regra de ouro: **nenhuma chamada a LLM dentro de request HTTP síncrono.** O web
 | IA | SDK da Anthropic; Whisper (OpenAI) para áudio | atrás das interfaces `Llm`, `Classifier` e `Transcriber` |
 | Testes | Vitest (unit + integração com Postgres real); Playwright no painel (etapa 7) | |
 | Lint/format | Biome | uma ferramenta só |
-| Local | docker-compose: Postgres, Redis, MinIO, Mailpit, dwg-extractor | |
+| Cronograma | MPXJ 16 (LGPL-2.1+) numa JVM | só dentro do `mpp-extractor`; lê `.mpp` e o XML do MS Project |
+| Local | docker-compose: Postgres, Redis, MinIO, Mailpit, dwg-extractor, mpp-extractor | |
 
 ---
 
@@ -112,7 +113,8 @@ canteirocheck/
 │        ├─ agendamentos.ts               # upsert dos Job Schedulers (anúncio diário por obra)
 │        └─ jobs/<fila>/<job>.ts
 ├─ services/
-│  └─ dwg-extractor/                      # GPL-3.0 · POST /extrair {s3Key} → JSON · Dockerfile próprio
+│  ├─ dwg-extractor/                      # GPL-3.0 · POST /extrair {s3Key} → JSON · Dockerfile próprio
+│  └─ mpp-extractor/                      # Java + MPXJ · POST /ler (bytes do .mpp/.xml) → tarefas em JSON
 ├─ packages/
 │  ├─ core/        # PURO: tolerancia.ts, interface.ts, execucao-estado.ts, checklist-motor.ts,
 │  │               #       ordenacao.ts, agrupamento.ts, unidades.ts — testes de propriedade
@@ -134,7 +136,7 @@ canteirocheck/
 ├─ biome.json · turbo.json · pnpm-workspace.yaml
 ```
 
-Dependências permitidas: `apps/*` → `servicos` → (`core`, `db`, `queue`, `storage`, `whatsapp`, `ai`). Exceção: os route handlers do webhook e do Flow importam direto de `whatsapp` a camada de transporte (assinatura e cripto). O `core` não depende de nada do projeto. Só o worker fala HTTP com o `dwg-extractor`.
+Dependências permitidas: `apps/*` → `servicos` → (`core`, `db`, `queue`, `storage`, `whatsapp`, `ai`). Exceção: os route handlers do webhook e do Flow importam direto de `whatsapp` a camada de transporte (assinatura e cripto). O `core` não depende de nada do projeto. Só o worker fala HTTP com o `dwg-extractor` e com o `mpp-extractor`.
 
 ---
 
@@ -179,6 +181,7 @@ Mutações usam **Server Actions**, que chamam `packages/servicos` com o context
 | Fila | Job | Gatilho | O que faz |
 |---|---|---|---|
 | `dwg` | `extrair_dwg` | upload de DWG | chama o `dwg-extractor`, limpa MTEXT, salva `ExtracaoProjeto`, enfileira os 2 jobs abaixo |
+| `cronograma` | `ler_cronograma` | importação do MS Project | chama o `mpp-extractor`, grava as tarefas, numera a versão e a torna a vigente da obra (as anteriores ficam no histórico e podem ser restauradas) |
 | `ia` | `detectar_pendencias` | fim da extração | classifica cada nota: é pendência? qual etapa bloqueia? risco? → `Pendencia` |
 | `ia` | `gerar_pontos` | fim da extração | Claude + schema zod → `PontoControle` com `status=sugerido` e `trecho_origem`. Falha de schema → 1 retry → marca para revisão humana |
 | `ia` | `transcrever_audio` | áudio recebido | Whisper → texto na mensagem |

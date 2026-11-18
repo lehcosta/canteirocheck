@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const ABAS = [
   { caminho: "", rotulo: "Visão geral" },
   { caminho: "/linha-do-tempo", rotulo: "Linha do tempo" },
+  { caminho: "/cronograma", rotulo: "Cronograma" },
   { caminho: "/projetos", rotulo: "Projetos" },
   { caminho: "/pontos", rotulo: "Pontos de controle" },
   { caminho: "/indicadores", rotulo: "Indicadores" },
