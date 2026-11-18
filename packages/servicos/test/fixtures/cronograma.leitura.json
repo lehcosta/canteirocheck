@@ -1,0 +1,1433 @@
+{
+  "versao": {
+    "leitor": "0.1.0",
+    "mpxj": "16.11.0"
+  },
+  "projeto": {
+    "nome": "Cronograma_EdTeste_rev04",
+    "inicio": "2026-08-03",
+    "termino": "2027-06-30"
+  },
+  "tarefas": [
+    {
+      "uid": 1,
+      "nome": "Infraestrutura",
+      "nivel": 1,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-08-03",
+      "termino": "2026-10-30",
+      "percentual": 100
+    },
+    {
+      "uid": 2,
+      "nome": "Serviços preliminares",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-08-03",
+      "termino": "2026-08-28",
+      "percentual": 100
+    },
+    {
+      "uid": 3,
+      "nome": "Mobilização do canteiro, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-03",
+      "termino": "2026-08-06",
+      "percentual": 100
+    },
+    {
+      "uid": 4,
+      "nome": "Tapume e portão, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-07",
+      "termino": "2026-08-10",
+      "percentual": 100
+    },
+    {
+      "uid": 5,
+      "nome": "Ligações provisórias, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-11",
+      "termino": "2026-08-14",
+      "percentual": 100
+    },
+    {
+      "uid": 6,
+      "nome": "Locação da obra, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-17",
+      "termino": "2026-08-19",
+      "percentual": 100
+    },
+    {
+      "uid": 7,
+      "nome": "Barracão e almoxarifado, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-20",
+      "termino": "2026-08-21",
+      "percentual": 100
+    },
+    {
+      "uid": 8,
+      "nome": "Mobilização do canteiro, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-24",
+      "termino": "2026-08-28",
+      "percentual": 100
+    },
+    {
+      "uid": 9,
+      "nome": "Fundações",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-08-31",
+      "termino": "2026-10-30",
+      "percentual": 100
+    },
+    {
+      "uid": 10,
+      "nome": "Escavação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-08-31",
+      "termino": "2026-09-03",
+      "percentual": 100
+    },
+    {
+      "uid": 11,
+      "nome": "Estacas, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-04",
+      "termino": "2026-09-07",
+      "percentual": 100
+    },
+    {
+      "uid": 12,
+      "nome": "Arrasamento de estacas, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-08",
+      "termino": "2026-09-11",
+      "percentual": 100
+    },
+    {
+      "uid": 13,
+      "nome": "Blocos de coroamento, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-14",
+      "termino": "2026-09-16",
+      "percentual": 100
+    },
+    {
+      "uid": 14,
+      "nome": "Vigas baldrame, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-17",
+      "termino": "2026-09-18",
+      "percentual": 100
+    },
+    {
+      "uid": 15,
+      "nome": "Impermeabilização do baldrame, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-21",
+      "termino": "2026-09-25",
+      "percentual": 100
+    },
+    {
+      "uid": 16,
+      "nome": "Reaterro e compactação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-28",
+      "termino": "2026-09-29",
+      "percentual": 100
+    },
+    {
+      "uid": 17,
+      "nome": "Escavação, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-09-30",
+      "termino": "2026-10-02",
+      "percentual": 100
+    },
+    {
+      "uid": 18,
+      "nome": "Estacas, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-05",
+      "termino": "2026-10-08",
+      "percentual": 100
+    },
+    {
+      "uid": 19,
+      "nome": "Arrasamento de estacas, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-09",
+      "termino": "2026-10-12",
+      "percentual": 100
+    },
+    {
+      "uid": 20,
+      "nome": "Blocos de coroamento, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-13",
+      "termino": "2026-10-16",
+      "percentual": 100
+    },
+    {
+      "uid": 21,
+      "nome": "Vigas baldrame, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-19",
+      "termino": "2026-10-21",
+      "percentual": 100
+    },
+    {
+      "uid": 22,
+      "nome": "Impermeabilização do baldrame, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-22",
+      "termino": "2026-10-23",
+      "percentual": 100
+    },
+    {
+      "uid": 23,
+      "nome": "Reaterro e compactação, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-26",
+      "termino": "2026-10-30",
+      "percentual": 100
+    },
+    {
+      "uid": 24,
+      "nome": "Estrutura",
+      "nivel": 1,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-10-19",
+      "termino": "2027-02-26",
+      "percentual": 18
+    },
+    {
+      "uid": 25,
+      "nome": "Térreo e garagem",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-10-19",
+      "termino": "2026-11-20",
+      "percentual": 80
+    },
+    {
+      "uid": 26,
+      "nome": "Forma dos pilares",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-19",
+      "termino": "2026-10-22",
+      "percentual": 100
+    },
+    {
+      "uid": 27,
+      "nome": "Armação dos pilares",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-23",
+      "termino": "2026-10-27",
+      "percentual": 100
+    },
+    {
+      "uid": 28,
+      "nome": "Concretagem dos pilares",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-10-28",
+      "termino": "2026-10-30",
+      "percentual": 100
+    },
+    {
+      "uid": 29,
+      "nome": "Forma da laje",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-02",
+      "termino": "2026-11-05",
+      "percentual": 100
+    },
+    {
+      "uid": 30,
+      "nome": "Armação da laje",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-06",
+      "termino": "2026-11-10",
+      "percentual": 100
+    },
+    {
+      "uid": 31,
+      "nome": "Concretagem da laje",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-11",
+      "termino": "2026-11-13",
+      "percentual": 60
+    },
+    {
+      "uid": 32,
+      "nome": "Desforma e cura",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-16",
+      "termino": "2026-11-20",
+      "percentual": 0
+    },
+    {
+      "uid": 33,
+      "nome": "Pavimentos tipo 1 a 4",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-11-23",
+      "termino": "2027-01-29",
+      "percentual": 0
+    },
+    {
+      "uid": 34,
+      "nome": "Pavimento tipo 1",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-23",
+      "termino": "2026-11-26",
+      "percentual": 0
+    },
+    {
+      "uid": 35,
+      "nome": "Pavimento tipo 2",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-11-27",
+      "termino": "2026-12-01",
+      "percentual": 0
+    },
+    {
+      "uid": 36,
+      "nome": "Pavimento tipo 3: forma, armação e concretagem da laje e dos pilares",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-02",
+      "termino": "2026-12-04",
+      "percentual": 0
+    },
+    {
+      "uid": 37,
+      "nome": "Pavimento tipo 4",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": null,
+      "termino": null,
+      "percentual": 0
+    },
+    {
+      "uid": 38,
+      "nome": "Pavimento tipo 1: etapa 2",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-11",
+      "termino": "2026-12-14",
+      "percentual": 0
+    },
+    {
+      "uid": 39,
+      "nome": "Pavimento tipo 2: etapa 2",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-15",
+      "termino": "2026-12-18",
+      "percentual": 0
+    },
+    {
+      "uid": 40,
+      "nome": "Pavimento tipo 3: etapa 2",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-21",
+      "termino": "2026-12-23",
+      "percentual": 0
+    },
+    {
+      "uid": 41,
+      "nome": "Pavimento tipo 4: etapa 2",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-24",
+      "termino": "2026-12-28",
+      "percentual": 0
+    },
+    {
+      "uid": 42,
+      "nome": "Pavimento tipo 1: etapa 3",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-29",
+      "termino": "2027-01-01",
+      "percentual": 0
+    },
+    {
+      "uid": 43,
+      "nome": "Pavimento tipo 2: etapa 3",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-04",
+      "termino": "2027-01-06",
+      "percentual": 0
+    },
+    {
+      "uid": 44,
+      "nome": "Pavimento tipo 3: etapa 3",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-07",
+      "termino": "2027-01-08",
+      "percentual": 0
+    },
+    {
+      "uid": 45,
+      "nome": "Pavimento tipo 4: etapa 3",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-11",
+      "termino": "2027-01-15",
+      "percentual": 0
+    },
+    {
+      "uid": 46,
+      "nome": "Pavimento tipo 1: etapa 4",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-18",
+      "termino": "2027-01-19",
+      "percentual": 0
+    },
+    {
+      "uid": 47,
+      "nome": "Pavimento tipo 2: etapa 4",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-20",
+      "termino": "2027-01-22",
+      "percentual": 0
+    },
+    {
+      "uid": 48,
+      "nome": "Pavimento tipo 3: etapa 4",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-25",
+      "termino": "2027-01-29",
+      "percentual": 0
+    },
+    {
+      "uid": 49,
+      "nome": "Cobertura e reservatório",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2027-02-01",
+      "termino": "2027-02-26",
+      "percentual": 0
+    },
+    {
+      "uid": 50,
+      "nome": "Laje de cobertura, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-01",
+      "termino": "2027-02-04",
+      "percentual": 0
+    },
+    {
+      "uid": 51,
+      "nome": "Platibanda, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-05",
+      "termino": "2027-02-08",
+      "percentual": 0
+    },
+    {
+      "uid": 52,
+      "nome": "Reservatório superior, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-09",
+      "termino": "2027-02-12",
+      "percentual": 0
+    },
+    {
+      "uid": 53,
+      "nome": "Casa de máquinas, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-15",
+      "termino": "2027-02-17",
+      "percentual": 0
+    },
+    {
+      "uid": 54,
+      "nome": "Impermeabilização da cobertura, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-18",
+      "termino": "2027-02-19",
+      "percentual": 0
+    },
+    {
+      "uid": 55,
+      "nome": "Laje de cobertura, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-22",
+      "termino": "2027-02-26",
+      "percentual": 0
+    },
+    {
+      "uid": 56,
+      "nome": "Vedações e instalações",
+      "nivel": 1,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-12-07",
+      "termino": "2027-04-30",
+      "percentual": 0
+    },
+    {
+      "uid": 57,
+      "nome": "Alvenaria",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2026-12-07",
+      "termino": "2027-03-12",
+      "percentual": 0
+    },
+    {
+      "uid": 58,
+      "nome": "Marcação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-07",
+      "termino": "2026-12-10",
+      "percentual": 0
+    },
+    {
+      "uid": 59,
+      "nome": "Elevação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-11",
+      "termino": "2026-12-14",
+      "percentual": 0
+    },
+    {
+      "uid": 60,
+      "nome": "Vergas e contravergas, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-15",
+      "termino": "2026-12-18",
+      "percentual": 0
+    },
+    {
+      "uid": 61,
+      "nome": "Encunhamento, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-21",
+      "termino": "2026-12-23",
+      "percentual": 0
+    },
+    {
+      "uid": 62,
+      "nome": "Marcação, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-24",
+      "termino": "2026-12-25",
+      "percentual": 0
+    },
+    {
+      "uid": 63,
+      "nome": "Elevação, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2026-12-28",
+      "termino": "2027-01-01",
+      "percentual": 0
+    },
+    {
+      "uid": 64,
+      "nome": "Vergas e contravergas, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-04",
+      "termino": "2027-01-05",
+      "percentual": 0
+    },
+    {
+      "uid": 65,
+      "nome": "Encunhamento, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-06",
+      "termino": "2027-01-08",
+      "percentual": 0
+    },
+    {
+      "uid": 66,
+      "nome": "Marcação, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-11",
+      "termino": "2027-01-14",
+      "percentual": 0
+    },
+    {
+      "uid": 67,
+      "nome": "Elevação, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-15",
+      "termino": "2027-01-18",
+      "percentual": 0
+    },
+    {
+      "uid": 68,
+      "nome": "Vergas e contravergas, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-19",
+      "termino": "2027-01-22",
+      "percentual": 0
+    },
+    {
+      "uid": 69,
+      "nome": "Encunhamento, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-25",
+      "termino": "2027-01-27",
+      "percentual": 0
+    },
+    {
+      "uid": 70,
+      "nome": "Marcação, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-28",
+      "termino": "2027-01-29",
+      "percentual": 0
+    },
+    {
+      "uid": 71,
+      "nome": "Elevação, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-01",
+      "termino": "2027-02-05",
+      "percentual": 0
+    },
+    {
+      "uid": 72,
+      "nome": "Vergas e contravergas, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-08",
+      "termino": "2027-02-09",
+      "percentual": 0
+    },
+    {
+      "uid": 73,
+      "nome": "Encunhamento, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-10",
+      "termino": "2027-02-12",
+      "percentual": 0
+    },
+    {
+      "uid": 74,
+      "nome": "Marcação, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-15",
+      "termino": "2027-02-18",
+      "percentual": 0
+    },
+    {
+      "uid": 75,
+      "nome": "Elevação, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-19",
+      "termino": "2027-02-22",
+      "percentual": 0
+    },
+    {
+      "uid": 76,
+      "nome": "Vergas e contravergas, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-23",
+      "termino": "2027-02-26",
+      "percentual": 0
+    },
+    {
+      "uid": 77,
+      "nome": "Encunhamento, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-01",
+      "termino": "2027-03-03",
+      "percentual": 0
+    },
+    {
+      "uid": 78,
+      "nome": "Marcação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-04",
+      "termino": "2027-03-05",
+      "percentual": 0
+    },
+    {
+      "uid": 79,
+      "nome": "Elevação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-08",
+      "termino": "2027-03-12",
+      "percentual": 0
+    },
+    {
+      "uid": 80,
+      "nome": "Elétrica e hidráulica",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2027-01-04",
+      "termino": "2027-04-30",
+      "percentual": 0
+    },
+    {
+      "uid": 81,
+      "nome": "Prumadas de água fria, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-04",
+      "termino": "2027-01-07",
+      "percentual": 0
+    },
+    {
+      "uid": 82,
+      "nome": "Prumadas de esgoto, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-08",
+      "termino": "2027-01-11",
+      "percentual": 0
+    },
+    {
+      "uid": 83,
+      "nome": "Eletrodutos e caixas, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-12",
+      "termino": "2027-01-15",
+      "percentual": 0
+    },
+    {
+      "uid": 84,
+      "nome": "Enfiação, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-18",
+      "termino": "2027-01-20",
+      "percentual": 0
+    },
+    {
+      "uid": 85,
+      "nome": "Quadros de distribuição, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-21",
+      "termino": "2027-01-22",
+      "percentual": 0
+    },
+    {
+      "uid": 86,
+      "nome": "Testes de estanqueidade, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-01-25",
+      "termino": "2027-01-29",
+      "percentual": 0
+    },
+    {
+      "uid": 87,
+      "nome": "Prumadas de água fria, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-01",
+      "termino": "2027-02-02",
+      "percentual": 0
+    },
+    {
+      "uid": 88,
+      "nome": "Prumadas de esgoto, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-03",
+      "termino": "2027-02-05",
+      "percentual": 0
+    },
+    {
+      "uid": 89,
+      "nome": "Eletrodutos e caixas, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-08",
+      "termino": "2027-02-11",
+      "percentual": 0
+    },
+    {
+      "uid": 90,
+      "nome": "Enfiação, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-12",
+      "termino": "2027-02-15",
+      "percentual": 0
+    },
+    {
+      "uid": 91,
+      "nome": "Quadros de distribuição, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-16",
+      "termino": "2027-02-19",
+      "percentual": 0
+    },
+    {
+      "uid": 92,
+      "nome": "Testes de estanqueidade, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-22",
+      "termino": "2027-02-24",
+      "percentual": 0
+    },
+    {
+      "uid": 93,
+      "nome": "Prumadas de água fria, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-02-25",
+      "termino": "2027-02-26",
+      "percentual": 0
+    },
+    {
+      "uid": 94,
+      "nome": "Prumadas de esgoto, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-01",
+      "termino": "2027-03-04",
+      "percentual": 0
+    },
+    {
+      "uid": 95,
+      "nome": "Eletrodutos e caixas, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-05",
+      "termino": "2027-03-09",
+      "percentual": 0
+    },
+    {
+      "uid": 96,
+      "nome": "Enfiação, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-10",
+      "termino": "2027-03-12",
+      "percentual": 0
+    },
+    {
+      "uid": 97,
+      "nome": "Quadros de distribuição, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-15",
+      "termino": "2027-03-17",
+      "percentual": 0
+    },
+    {
+      "uid": 98,
+      "nome": "Testes de estanqueidade, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-18",
+      "termino": "2027-03-22",
+      "percentual": 0
+    },
+    {
+      "uid": 99,
+      "nome": "Prumadas de água fria, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-23",
+      "termino": "2027-03-26",
+      "percentual": 0
+    },
+    {
+      "uid": 100,
+      "nome": "Prumadas de esgoto, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-29",
+      "termino": "2027-03-30",
+      "percentual": 0
+    },
+    {
+      "uid": 101,
+      "nome": "Eletrodutos e caixas, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-31",
+      "termino": "2027-04-02",
+      "percentual": 0
+    },
+    {
+      "uid": 102,
+      "nome": "Enfiação, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-05",
+      "termino": "2027-04-08",
+      "percentual": 0
+    },
+    {
+      "uid": 103,
+      "nome": "Quadros de distribuição, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-09",
+      "termino": "2027-04-12",
+      "percentual": 0
+    },
+    {
+      "uid": 104,
+      "nome": "Testes de estanqueidade, 3º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-13",
+      "termino": "2027-04-16",
+      "percentual": 0
+    },
+    {
+      "uid": 105,
+      "nome": "Prumadas de água fria, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-19",
+      "termino": "2027-04-21",
+      "percentual": 0
+    },
+    {
+      "uid": 106,
+      "nome": "Prumadas de esgoto, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-22",
+      "termino": "2027-04-23",
+      "percentual": 0
+    },
+    {
+      "uid": 107,
+      "nome": "Eletrodutos e caixas, 4º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-26",
+      "termino": "2027-04-30",
+      "percentual": 0
+    },
+    {
+      "uid": 108,
+      "nome": "Acabamentos",
+      "nivel": 1,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2027-03-15",
+      "termino": "2027-06-18",
+      "percentual": 0
+    },
+    {
+      "uid": 109,
+      "nome": "Revestimentos e pisos",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2027-03-15",
+      "termino": "2027-05-28",
+      "percentual": 0
+    },
+    {
+      "uid": 110,
+      "nome": "Chapisco e emboço, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-15",
+      "termino": "2027-03-18",
+      "percentual": 0
+    },
+    {
+      "uid": 111,
+      "nome": "Contrapiso, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-19",
+      "termino": "2027-03-22",
+      "percentual": 0
+    },
+    {
+      "uid": 112,
+      "nome": "Gesso liso, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-23",
+      "termino": "2027-03-26",
+      "percentual": 0
+    },
+    {
+      "uid": 113,
+      "nome": "Assentamento de piso, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-03-29",
+      "termino": "2027-03-31",
+      "percentual": 0
+    },
+    {
+      "uid": 114,
+      "nome": "Assentamento de azulejo, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-01",
+      "termino": "2027-04-05",
+      "percentual": 0
+    },
+    {
+      "uid": 115,
+      "nome": "Rejunte, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-06",
+      "termino": "2027-04-09",
+      "percentual": 0
+    },
+    {
+      "uid": 116,
+      "nome": "Chapisco e emboço, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-12",
+      "termino": "2027-04-13",
+      "percentual": 0
+    },
+    {
+      "uid": 117,
+      "nome": "Contrapiso, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-14",
+      "termino": "2027-04-16",
+      "percentual": 0
+    },
+    {
+      "uid": 118,
+      "nome": "Gesso liso, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-19",
+      "termino": "2027-04-22",
+      "percentual": 0
+    },
+    {
+      "uid": 119,
+      "nome": "Assentamento de piso, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-23",
+      "termino": "2027-04-27",
+      "percentual": 0
+    },
+    {
+      "uid": 120,
+      "nome": "Assentamento de azulejo, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-28",
+      "termino": "2027-04-30",
+      "percentual": 0
+    },
+    {
+      "uid": 121,
+      "nome": "Rejunte, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-03",
+      "termino": "2027-05-05",
+      "percentual": 0
+    },
+    {
+      "uid": 122,
+      "nome": "Chapisco e emboço, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-06",
+      "termino": "2027-05-10",
+      "percentual": 0
+    },
+    {
+      "uid": 123,
+      "nome": "Contrapiso, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-11",
+      "termino": "2027-05-14",
+      "percentual": 0
+    },
+    {
+      "uid": 124,
+      "nome": "Gesso liso, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-17",
+      "termino": "2027-05-19",
+      "percentual": 0
+    },
+    {
+      "uid": 125,
+      "nome": "Assentamento de piso, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-20",
+      "termino": "2027-05-21",
+      "percentual": 0
+    },
+    {
+      "uid": 126,
+      "nome": "Assentamento de azulejo, 2º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-24",
+      "termino": "2027-05-28",
+      "percentual": 0
+    },
+    {
+      "uid": 127,
+      "nome": "Esquadrias e pintura",
+      "nivel": 2,
+      "resumo": true,
+      "marco": false,
+      "inicio": "2027-04-19",
+      "termino": "2027-06-18",
+      "percentual": 0
+    },
+    {
+      "uid": 128,
+      "nome": "Contramarcos, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-19",
+      "termino": "2027-04-22",
+      "percentual": 0
+    },
+    {
+      "uid": 129,
+      "nome": "Esquadrias de alumínio, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-23",
+      "termino": "2027-04-26",
+      "percentual": 0
+    },
+    {
+      "uid": 130,
+      "nome": "Portas de madeira, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-04-27",
+      "termino": "2027-04-30",
+      "percentual": 0
+    },
+    {
+      "uid": 131,
+      "nome": "Massa e lixamento, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-03",
+      "termino": "2027-05-05",
+      "percentual": 0
+    },
+    {
+      "uid": 132,
+      "nome": "Pintura da primeira demão, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-06",
+      "termino": "2027-05-07",
+      "percentual": 0
+    },
+    {
+      "uid": 133,
+      "nome": "Pintura final, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-10",
+      "termino": "2027-05-14",
+      "percentual": 0
+    },
+    {
+      "uid": 134,
+      "nome": "Limpeza final, térreo",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-17",
+      "termino": "2027-05-18",
+      "percentual": 0
+    },
+    {
+      "uid": 135,
+      "nome": "Contramarcos, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-19",
+      "termino": "2027-05-21",
+      "percentual": 0
+    },
+    {
+      "uid": 136,
+      "nome": "Esquadrias de alumínio, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-24",
+      "termino": "2027-05-27",
+      "percentual": 0
+    },
+    {
+      "uid": 137,
+      "nome": "Portas de madeira, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-05-28",
+      "termino": "2027-05-31",
+      "percentual": 0
+    },
+    {
+      "uid": 138,
+      "nome": "Massa e lixamento, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-06-01",
+      "termino": "2027-06-04",
+      "percentual": 0
+    },
+    {
+      "uid": 139,
+      "nome": "Pintura da primeira demão, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-06-07",
+      "termino": "2027-06-09",
+      "percentual": 0
+    },
+    {
+      "uid": 140,
+      "nome": "Pintura final, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-06-10",
+      "termino": "2027-06-11",
+      "percentual": 0
+    },
+    {
+      "uid": 141,
+      "nome": "Limpeza final, 1º pavimento",
+      "nivel": 3,
+      "resumo": false,
+      "marco": false,
+      "inicio": "2027-06-14",
+      "termino": "2027-06-18",
+      "percentual": 0
+    },
+    {
+      "uid": 142,
+      "nome": "Entrega da obra",
+      "nivel": 1,
+      "resumo": false,
+      "marco": true,
+      "inicio": "2027-06-30",
+      "termino": "2027-06-30",
+      "percentual": 0
+    }
+  ]
+}

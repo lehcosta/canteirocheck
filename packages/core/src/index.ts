@@ -30,6 +30,13 @@ export {
   TENTATIVAS_ANTES_DA_CAUSA,
 } from "./checklist";
 export {
+  type EstadoPrazo,
+  type LinhaComPrazo,
+  type SituacaoPrazo,
+  situacaoDoPrazo,
+  TOLERANCIA_ATRASO_PONTOS,
+} from "./cronograma";
+export {
   aguardaDecisao,
   type EstadoExecucao,
   type EventoExecucao,

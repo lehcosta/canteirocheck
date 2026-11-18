@@ -42,6 +42,7 @@ export const statusExtracao = pgEnum("status_extracao", [
   "falhou",
   "nao_aplicavel", // PDF de referência
 ]);
+export const tipoCronograma = pgEnum("tipo_cronograma", ["mpp", "xml"]);
 export const risco = pgEnum("risco", ["alto", "medio", "baixo"]);
 export const statusPendencia = pgEnum("status_pendencia", ["aberta", "resolvida", "descartada"]);
 export const tipoLocal = pgEnum("tipo_local", ["pavimento", "laje", "ambiente", "eixo"]);

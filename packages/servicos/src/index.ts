@@ -1,6 +1,18 @@
 export { type Contexto, ErroDominio, type PapelPainel } from "./contexto";
 export { confirmarMedidaDaConversa, interpretarMensagem, transcreverAudio } from "./conversa";
 export {
+  type CronogramaDaObra,
+  chamarLeitor,
+  obterCronograma,
+  processarLeituraCronograma,
+  registrarCronograma,
+  restaurarCronograma,
+  TAMANHO_MAXIMO_CRONOGRAMA,
+  type TarefaCronograma,
+  tipoDoCronograma,
+  type VersaoCronograma,
+} from "./cronogramas";
+export {
   anunciarExecucoes,
   decidirExecucao,
   type EntradaAnuncio,

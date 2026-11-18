@@ -13,6 +13,7 @@ export const FILAS = [
   "agenda",
   "relatorios",
   "dwg",
+  "cronograma",
   "ia",
 ] as const;
 export type NomeFila = (typeof FILAS)[number];
@@ -54,6 +55,8 @@ export const JOBS = {
     }),
   },
   extrair_dwg: { fila: "dwg", payload: z.object({ ...comTenant, projetoId: uuid }) },
+  /** Arquivo do MS Project já no bucket → tarefas no banco e versão vigente. */
+  ler_cronograma: { fila: "cronograma", payload: z.object({ ...comTenant, versaoId: uuid }) },
   detectar_pendencias: { fila: "ia", payload: z.object({ ...comTenant, projetoId: uuid }) },
   gerar_pontos: { fila: "ia", payload: z.object({ ...comTenant, projetoId: uuid }) },
   transcrever_audio: { fila: "ia", payload: z.object({ ...comTenant, mensagemId: uuid }) },

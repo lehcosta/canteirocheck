@@ -83,6 +83,21 @@ services:
       timeout: 3s
       retries: 30
 
+  # Leitura de cronograma do MS Project (MPP/XML) com o MPXJ (JVM, isolado: só HTTP).
+  # Ver services/mpp-extractor/README.md
+  mpp-extractor:
+    build: ../services/mpp-extractor
+    environment:
+      LER_TIMEOUT_MS: "60000"
+      LER_CONCORRENCIA: "2"
+    ports:
+      - "58091:8091"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8091/health || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
 volumes:
   pgdata:
   redisdata:
