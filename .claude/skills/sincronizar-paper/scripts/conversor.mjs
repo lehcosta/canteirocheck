@@ -556,8 +556,14 @@ export function converterPagina({ cores }) {
     const itens = itensDe(el);
     const { visivel, invisivel } = bordasDe(cs);
 
-    // elemento sem caixa própria que só contém texto: vira o próprio nó de texto
-    if (!decorado(cs) && itens.length === 1 && itens[0].tipo === "texto" && !/flex|grid/.test(cs.display)) {
+    // elemento sem caixa própria que só contém texto: vira o próprio nó de texto.
+    // Célula de tabela fica de fora: ela centra o texto na altura da linha, então a caixa dela não é a do texto.
+    if (
+      !decorado(cs) &&
+      itens.length === 1 &&
+      itens[0].tipo === "texto" &&
+      !/flex|grid|table-cell/.test(cs.display)
+    ) {
       const no = noTexto(itens[0].nos, cs, rect, ctx, { csPosicao: cs });
       if (no?.html !== undefined && cs.textOverflow === "ellipsis" && el.scrollWidth > el.clientWidth)
         no.html = esc(truncar(el, cs));
