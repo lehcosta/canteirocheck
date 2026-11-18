@@ -1,19 +1,35 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pedirDemonstracaoAction } from "@/features/demonstracao/actions";
+import { type IdPlano, OPCOES_PLANO } from "@/features/demonstracao/planos";
+import { cn } from "@/lib/utils";
 
 /** Remonta o formulário (zera o estado da action) quando a pessoa quer mandar outro contato. */
 export function FormularioDemonstracao() {
   const [chave, setChave] = useState(0);
-  return <Formulario key={chave} outroContato={() => setChave((c) => c + 1)} />;
+  const outroContato = () => setChave((c) => c + 1);
+  // a página é estática: o plano de `?plano=` só existe no navegador
+  return (
+    <Suspense fallback={<Formulario key={chave} outroContato={outroContato} />}>
+      <ComPlanoDaUrl key={chave} outroContato={outroContato} />
+    </Suspense>
+  );
 }
 
-function Formulario({ outroContato }: { outroContato: () => void }) {
+/** Lê o plano que a pessoa escolheu nas caixinhas (`/?plano=construtora#demonstracao`). */
+function ComPlanoDaUrl({ outroContato }: { outroContato: () => void }) {
+  const pedido = useSearchParams().get("plano");
+  const plano = OPCOES_PLANO.find((o) => o.id === pedido)?.id;
+  return <Formulario key={plano} plano={plano} outroContato={outroContato} />;
+}
+
+function Formulario({ plano, outroContato }: { plano?: IdPlano; outroContato: () => void }) {
   const [estado, enviar, pendente] = useActionState(pedirDemonstracaoAction, undefined);
 
   if (estado?.ok) {
@@ -36,6 +52,25 @@ function Formulario({ outroContato }: { outroContato: () => void }) {
   return (
     <form action={enviar} className="relative space-y-4">
       <h3 className="text-xl font-semibold">Agende uma demonstração</h3>
+      <div className="grid gap-2">
+        <Label htmlFor="plano">Plano</Label>
+        <select
+          id="plano"
+          name="plano"
+          defaultValue={plano ?? "a-definir"}
+          className={cn(
+            "h-11 w-full rounded-sm border border-input bg-card px-3 text-base text-foreground",
+            // o plano que veio das caixinhas chega marcado, com a borda forte
+            plano && "border-2 border-foreground px-[11px]",
+          )}
+        >
+          {OPCOES_PLANO.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.rotulo}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="nome">Seu nome</Label>
@@ -67,18 +102,6 @@ function Formulario({ outroContato }: { outroContato: () => void }) {
             placeholder="voce@construtora.com.br"
           />
         </div>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="obras">Obras em andamento</Label>
-        <select
-          id="obras"
-          name="obras"
-          className="h-11 w-full rounded-sm border border-input bg-card px-3 text-base text-foreground"
-        >
-          <option>1 a 3</option>
-          <option>4 a 10</option>
-          <option>Mais de 10</option>
-        </select>
       </div>
       {/* armadilha para robôs */}
       <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
