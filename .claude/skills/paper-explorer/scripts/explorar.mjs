@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: script local da skill, não roda pelo turbo
 // Estudos de uma tela, fluxo ou elemento: desenha no Chrome para criticar (sem cota do Paper), grava no
-// Paper, na página "Explorações" do arquivo do espelho, para o usuário aprovar, e confere o executivo.
+// Paper para o usuário aprovar, e confere o executivo. Se a rota já está no espelho, a exploração — tela cheia
+// ou elemento — desenha na página "Claro", abaixo da prancheta da rota (modo projeto), como o sincronizar-paper;
+// só uma tela que o espelho ainda não tem vai para "Explorações".
 //
 // uso (da raiz do repositório), com <pasta> = .claude/skills/paper-explorer/exploracoes/<nome>:
 //   explorar.mjs previa <pasta>                  desenha, confere o dialeto e a marca, monta o comparativo
 //   explorar.mjs enviar <pasta>                  grava os estudos no Paper e imprime o link da página
 //   explorar.mjs comentarios <pasta>             comentários abertos da página "Explorações"
 //   explorar.mjs resolver <pasta> <threadId>...  marca comentários atendidos como resolvidos
-//   explorar.mjs aprovar <pasta> <id>|todos      marca o aprovado (✓ no Paper, "aprovado" no manifesto);
-//                                                num conjunto de estados (paper-states), todos
+//   explorar.mjs aprovar <pasta> <id>|todos      no modo projeto a exploração sai do Claro (tela cheia: a
+//                                                variação toma o lugar da rota antes); senão marca ✓. Estados: todos
 //   explorar.mjs conferir <pasta> [id]           compara o app (a rota, em repouso) com o estudo aprovado,
 //                                                ou com o estado id
 // <pasta> tem o exploracao.json e um .html por tela (formato em FORMATO.md).
@@ -90,8 +92,49 @@ function gravarManifesto(m) {
   writeFileSync(join(PASTA, "exploracao.json"), `${JSON.stringify(conteudo, null, 1)}\n`);
 }
 
+/** Página clara do espelho, onde cada rota do app tem a sua prancheta (como no sincronizar-paper). */
+const ESPELHO_CLARO = "Claro";
+
 /** Página do Paper: estudos em "Explorações", conjuntos de estados em "Estados". */
 const paginaDe = (m) => (m.tipo === "estados" ? "Estados" : "Explorações");
+
+/**
+ * Onde a exploração mora no espelho e como a aprovação se comporta:
+ * - "estados": página "Estados" (paper-states).
+ * - "projeto": a `rota` já tem prancheta no espelho. As variações são desenhadas na página "Claro", abaixo
+ *   dela, como o sincronizar-paper desenha cada rota — seja a tela cheia ou um elemento dela. `substitui` é
+ *   true só na tela cheia (sem `ancora`, uma tela por variação): ao aprovar, a aprovada toma o lugar da rota.
+ *   Num elemento ou fluxo (substitui false), a aprovação apenas limpa a exploração do projeto.
+ * - "explor": uma tela que o espelho ainda não tem (rota nova) — página "Explorações".
+ */
+async function destino(paper, fileId, manifesto) {
+  if (manifesto.tipo === "estados") {
+    return {
+      modo: "estados",
+      PAGINA: "Estados",
+      pageId: (await garantirPaginas(paper, fileId, ["Estados"])).Estados,
+    };
+  }
+  if (manifesto.rota) {
+    const pageId = (await garantirPaginas(paper, fileId, [ESPELHO_CLARO]))[ESPELHO_CLARO];
+    const info = await paper.chamar("get_basic_info", { fileId, pageId });
+    const rota = (info.artboards ?? []).find((a) => a.name === manifesto.rota);
+    if (rota) {
+      const substitui =
+        !manifesto.ancora &&
+        manifesto.variacoes.every((v) => v.id === "atual" || (v.telas?.length === 1 && !v.ancora));
+      return { modo: "projeto", PAGINA: ESPELHO_CLARO, pageId, rota, substitui, url: info.url };
+    }
+  }
+  return {
+    modo: "explor",
+    PAGINA: "Explorações",
+    pageId: (await garantirPaginas(paper, fileId, ["Explorações"])).Explorações,
+  };
+}
+
+/** Nome da página do espelho onde a exploração está, para as mensagens. */
+const nomePagina = (m) => (m.paper?.modo === "projeto" ? ESPELHO_CLARO : paginaDe(m));
 /** Título e linha de apoio de cada item na legenda e no comparativo. */
 const tituloDe = (v) => v.partido ?? v.estado;
 const apoioDe = (v) => (v.eixo ? `eixo: ${v.eixo}` : v.quando ? `quando: ${v.quando}` : "ponto de partida");
@@ -297,22 +340,37 @@ async function enviar(page, manifesto, tokens, vars, ferramentas) {
   const paper = await Paper.conectar();
   try {
     const fileId = await acharArquivo(paper);
-    const PAGINA = paginaDe(manifesto);
-    const pageId = (await garantirPaginas(paper, fileId, [PAGINA]))[PAGINA];
     await sincronizarTokens(paper, fileId, tokens.paper);
+    const alvo = await destino(paper, fileId, manifesto);
+    const { modo, PAGINA, pageId } = alvo;
 
     // reenvio: as pranchetas desta exploração saem e voltam no mesmo lugar
     const prefixo = `${manifesto.nome} · `;
     const info = await paper.chamar("get_basic_info", { fileId, pageId });
     const pranchetas = info.artboards ?? [];
     const antigas = pranchetas.filter((a) => a.name.startsWith(prefixo));
-    const outras = pranchetas.filter((a) => !a.name.startsWith(prefixo));
-    const baseY = antigas.length
-      ? Math.min(...antigas.map((a) => a.worldY ?? 0))
-      : outras.length
-        ? Math.max(...outras.map((a) => (a.worldY ?? 0) + (a.height ?? 0))) + 400
-        : 0;
+    // modo projeto: as variações ancoram abaixo da prancheta da rota. Senão: abaixo do que já há na página.
+    let baseX = 0;
+    let baseY;
+    if (modo === "projeto") {
+      baseX = alvo.rota.worldX ?? 0;
+      baseY = (alvo.rota.worldY ?? 0) + (alvo.rota.height ?? 0) + ESPACO_LINHAS;
+    } else {
+      const outras = pranchetas.filter((a) => !a.name.startsWith(prefixo));
+      baseY = antigas.length
+        ? Math.min(...antigas.map((a) => a.worldY ?? 0))
+        : outras.length
+          ? Math.max(...outras.map((a) => (a.worldY ?? 0) + (a.height ?? 0))) + 400
+          : 0;
+    }
     if (antigas.length) await paper.chamar("delete_nodes", { fileId, nodeIds: antigas.map((a) => a.id) });
+    // se a exploração trocou de página (ex.: a rota passou a existir no espelho), limpa a página anterior
+    const paginaAnterior = manifesto.paper?.pageId;
+    if (paginaAnterior && paginaAnterior !== pageId) {
+      const lá = (await paper.chamar("get_basic_info", { fileId, pageId: paginaAnterior })).artboards ?? [];
+      const orfas = lá.filter((a) => a.name.startsWith(prefixo));
+      if (orfas.length) await paper.chamar("delete_nodes", { fileId, nodeIds: orfas.map((a) => a.id) });
+    }
 
     const criar = async (nome, largura, altura, left, top, html) => {
       const { id } = await paper.chamar("create_artboard", {
@@ -330,11 +388,16 @@ async function enviar(page, manifesto, tokens, vars, ferramentas) {
     };
 
     const ids = [];
-    ids.push(await criar(`${prefixo}legenda`, 1120, alturaLegenda, 0, baseY, htmlLegenda));
+    ids.push(await criar(`${prefixo}legenda`, 1120, alturaLegenda, baseX, baseY, htmlLegenda));
     let y = baseY + alturaLegenda + ESPACO_LINHAS;
     const telas = [];
-    for (const v of manifesto.variacoes) {
-      let x = 0;
+    // na tela cheia o "atual" já é a prancheta da rota, logo acima; não se redesenha. No elemento, sim.
+    const variacoes =
+      modo === "projeto" && alvo.substitui
+        ? manifesto.variacoes.filter((v) => v.id !== "atual")
+        : manifesto.variacoes;
+    for (const v of variacoes) {
+      let x = baseX;
       let alturaLinha = 0;
       for (const [i, t] of v.telas.entries()) {
         const html = readFileSync(join(PASTA, t), "utf8");
@@ -375,12 +438,27 @@ async function enviar(page, manifesto, tokens, vars, ferramentas) {
       );
     }
     // aprovação e conferência voltam a esta página sem procurar o arquivo; um reenvio pede aprovação nova
-    manifesto.paper = { fileId, pageId, url: info.url };
+    manifesto.paper = {
+      fileId,
+      pageId,
+      url: info.url,
+      modo,
+      rota: manifesto.rota,
+      substitui: !!alvo.substitui,
+    };
     delete manifesto.aprovado;
     gravarManifesto(manifesto);
+    const onde =
+      modo === "projeto" ? `abaixo da rota ${manifesto.rota} na página "${PAGINA}"` : `na página "${PAGINA}"`;
+    const aoAprovar =
+      modo === "projeto"
+        ? alvo.substitui
+          ? "\nao aprovar, a variação toma o lugar da rota no espelho Claro (o Escuro fica para o executivo)"
+          : "\nao aprovar, a exploração sai do projeto (o executivo implementa o elemento)"
+        : "";
     console.log(
-      `\n${manifesto.tipo === "estados" ? "estados" : "estudos"} na página "${PAGINA}" do arquivo "${ARQUIVO}": ` +
-        `${info.url ?? "(o Paper não deu o link)"}` +
+      `\n${manifesto.tipo === "estados" ? "estados" : "estudos"} ${onde} do arquivo "${ARQUIVO}": ` +
+        `${info.url ?? "(o Paper não deu o link)"}${aoAprovar}` +
         `\nchamadas ao MCP do Paper: ${paper.chamadas}`,
     );
   } finally {
@@ -412,7 +490,7 @@ async function comentarios(manifesto) {
     });
     const threads = r.commentThreads ?? [];
     if (!threads.length) {
-      console.log(`nenhum comentário aberto na página "${paginaDe(manifesto)}"`);
+      console.log(`nenhum comentário aberto na página "${nomePagina(manifesto)}"`);
       return;
     }
     const pranchetas = (await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? [];
@@ -457,14 +535,17 @@ async function aprovar(manifesto, id) {
     throw new Error("num conjunto de estados, aprove todos: aprovar <pasta> todos");
   if (!estados && !ids.includes(id))
     throw new Error(`estudo desconhecido: ${id ?? "(nenhum)"}; estudos: ${ids.join(", ")}`);
-  const marca = (base) =>
-    estados
-      ? base.startsWith(prefixo) && !base.endsWith(" · legenda")
-      : base.startsWith(`${prefixo}${id} · `);
-  const { fileId, pageId } = noPaper(manifesto);
+  const { fileId, pageId, modo, rota, substitui } = noPaper(manifesto);
   const prefixo = `${manifesto.nome} · `;
   const paper = await Paper.conectar();
   try {
+    if (modo === "projeto")
+      return await aprovarProjeto(paper, manifesto, id, { fileId, pageId, rota, substitui, prefixo });
+    // Explorações/Estados: só o estudo aprovado leva ✓; quem tinha sido aprovado antes a perde
+    const marca = (base) =>
+      estados
+        ? base.startsWith(prefixo) && !base.endsWith(" · legenda")
+        : base.startsWith(`${prefixo}${id} · `);
     const pranchetas = ((await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? []).filter(
       (a) => a.name.startsWith(prefixo),
     );
@@ -484,6 +565,42 @@ async function aprovar(manifesto, id) {
     console.log(`chamadas ao MCP do Paper: ${paper.chamadas}`);
     paper.fechar();
   }
+}
+
+/**
+ * Modo projeto: a exploração sai do projeto ao aprovar. Na tela cheia (`substitui`), antes disso a variação
+ * aprovada toma o lugar da prancheta da rota no espelho Claro — um mock, até o executivo re-sincronizar a tela
+ * real; o Escuro espera o executivo. Num elemento, só a limpeza: o executivo implementa o elemento no app.
+ */
+async function aprovarProjeto(paper, manifesto, id, { fileId, pageId, rota, substitui, prefixo }) {
+  const pranchetas = (await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? [];
+  const explor = pranchetas.filter((a) => a.name.startsWith(prefixo));
+  if (!explor.some((a) => a.name.startsWith(`${prefixo}${id} · `)))
+    throw new Error(`as pranchetas de ${id} não estão no Paper: rode enviar`);
+  if (substitui) {
+    const alvo = pranchetas.find((a) => a.name === rota);
+    if (!alvo) throw new Error(`a rota ${rota} não está no espelho Claro: rode o sincronizar-paper`);
+    const v = manifesto.variacoes.find((x) => x.id === id);
+    const html = readFileSync(join(PASTA, v.telas[0]), "utf8");
+    const { largura, altura } = tamanho(html);
+    // a rota recebe a tela da variação: troca o tamanho, apaga o conteúdo e grava a tela crua (como o enviar)
+    await paper.chamar("update_styles", {
+      fileId,
+      updates: [{ nodeIds: [alvo.id], styles: { width: `${largura}px`, height: `${alturaPar(altura)}px` } }],
+    });
+    const filhos = (await paper.chamar("get_children", { fileId, nodeId: alvo.id })).children ?? [];
+    if (filhos.length) await paper.chamar("delete_nodes", { fileId, nodeIds: filhos.map((f) => f.id) });
+    await paper.chamar("write_html", { fileId, targetNodeId: alvo.id, mode: "insert-children", html });
+    await paper.chamar("finish_working_on_nodes", { fileId, nodeIds: [alvo.id] });
+  }
+  if (explor.length) await paper.chamar("delete_nodes", { fileId, nodeIds: explor.map((a) => a.id) });
+  manifesto.aprovado = id;
+  gravarManifesto(manifesto);
+  console.log(
+    substitui
+      ? `aprovado: ${id} — a rota ${rota} recebeu a variação no espelho Claro (mock) e a exploração saiu.\no Escuro fica para o executivo: implemente no app e rode o sincronizar-paper.`
+      : `aprovado: ${id} — a exploração saiu do projeto. Implemente o elemento no app (o executivo) e rode o sincronizar-paper.`,
+  );
 }
 
 /**
