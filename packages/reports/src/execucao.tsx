@@ -212,9 +212,9 @@ export function RelatorioExecucao({
   return (
     <Document
       title={textoPdf(`${r.etapaNome} · ${r.localNome} — ${r.obraNome}`)}
-      author="Prumo"
-      creator="Prumo"
-      producer="Prumo"
+      author="EngCheck"
+      creator="EngCheck"
+      producer="EngCheck"
     >
       <Page size="A4" style={s.pagina}>
         <Faixa />

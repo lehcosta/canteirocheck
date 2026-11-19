@@ -13,7 +13,11 @@ O usuário volta de três jeitos: aprova, pede ajuste, ou diz que comentou no Pa
 
    _Pronto quando_ todo comentário atendido está resolvido e, se houve ajuste, a nova rodada foi apresentada.
 
-3. **Aprovar.** Rode `explorar.mjs aprovar <pasta> <id>` para um estudo, ou `aprovar <pasta> todos` para um conjunto de estados. O comando marca as pranchetas aprovadas com ✓ no Paper e grava `aprovado` no `exploracao.json`. Se a aprovação veio num comentário, resolva-o.
+3. **Aprovar.** Rode `explorar.mjs aprovar <pasta> <id>` para um estudo, ou `aprovar <pasta> todos` para um conjunto de estados. Grava `aprovado` no `exploracao.json` e, no Paper:
+   - **Modo projeto** (a rota já está no espelho): a exploração **sai do projeto**. Na tela cheia, antes disso a variação aprovada **toma o lugar da prancheta da rota** no espelho Claro — um mock, até o executivo re-sincronizar a tela real (o Escuro espera o executivo). Num elemento, só a limpeza: o executivo implementa o elemento.
+   - **Explorações/Estados**: marca as pranchetas aprovadas com ✓.
+
+   Se a aprovação veio num comentário, resolva-o.
    _Pronto quando_ o comando imprimiu `aprovado:`.
 
 4. **Estados.** O estudo aprovado é o caminho feliz, um estado entre vinte. Antes do executivo, siga a skill `paper-states` com o estudo como base: a lista dos estados em palavras, aprovada, e depois os estados desenhados e aprovados. Num conjunto de estados já aprovado, este passo está feito.

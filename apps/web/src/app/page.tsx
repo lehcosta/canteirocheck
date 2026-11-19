@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 import { FormularioDemonstracao } from "./_landing/formulario-demonstracao";
 
 export const metadata: Metadata = {
-  title: { absolute: "Prumo — conferência de obra pelo WhatsApp" },
+  title: { absolute: "EngCheck — conferência de obra pelo WhatsApp" },
   description:
-    "O encarregado mede pelo WhatsApp, o Prumo compara com o projeto e o engenheiro libera ou bloqueia pelo painel antes do ponto sem volta.",
+    "O encarregado mede pelo WhatsApp, o EngCheck compara com o projeto e o engenheiro libera ou bloqueia pelo painel antes do ponto sem volta.",
 };
 
 const SECOES = [
@@ -29,12 +29,12 @@ const PASSOS = [
   {
     titulo: "Envie o projeto",
     texto:
-      "O Prumo lê o DWG (cotas de nível, ambientes e notas) e sugere os pontos de controle de cada etapa, com a tolerância padrão. O engenheiro revisa e aprova.",
+      "O EngCheck lê o DWG (cotas de nível, ambientes e notas) e sugere os pontos de controle de cada etapa, com a tolerância padrão. O engenheiro revisa e aprova.",
   },
   {
     titulo: "O encarregado anuncia",
     texto:
-      "Todo dia o Prumo pergunta no WhatsApp o que vai ser executado. O encarregado responde em poucos toques, ou por texto e áudio.",
+      "Todo dia o EngCheck pergunta no WhatsApp o que vai ser executado. O encarregado responde em poucos toques, ou por texto e áudio.",
   },
   {
     titulo: "Mede e manda foto",
@@ -145,15 +145,6 @@ const tituloSecao =
   "font-heading text-[32px] leading-[1.05] font-extrabold tracking-[-0.02em] sm:text-[44px]";
 const conteiner = "mx-auto w-full max-w-[1200px]";
 
-/** Régua de nível do padrão gráfico: cápsula de `liquido` com a bolha no centro. */
-function Regua({ fundo = "bg-[#191816]" }: { fundo?: string }) {
-  return (
-    <span aria-hidden className="relative block h-4 w-12 rounded-lg bg-liquido">
-      <span className={cn("absolute top-1 left-4 h-2 w-4 rounded-md", fundo)} />
-    </span>
-  );
-}
-
 function Bolha({ de, children }: { de: "encarregado" | "prumo"; children: React.ReactNode }) {
   return de === "encarregado" ? (
     <p className="max-w-[82%] self-end rounded-[12px_12px_2px_12px] bg-[#191816] px-3 py-2 text-[#F3F1EC]">
@@ -166,25 +157,47 @@ function Bolha({ de, children }: { de: "encarregado" | "prumo"; children: React.
   );
 }
 
+/** Grelha do fundo do hero: uma linha a cada 48 px, até cobrir o painel mais largo (o excedente é cortado). */
+const GRELHA_ALCANCE = 1248;
+const GRELHA = Array.from({ length: GRELHA_ALCANCE / 48 + 1 }, (_, i) => i * 48);
+
 function ConversaExemplo() {
   return (
     <div
       role="img"
-      aria-label="Exemplo de conversa do encarregado com o Prumo no WhatsApp: um ponto fora da tolerância, refeito e anotado"
+      aria-label="Exemplo de conversa do encarregado com o EngCheck no WhatsApp: um ponto fora da tolerância, refeito e anotado"
       className="relative flex min-h-[640px] min-w-0 flex-[1_1_420px] justify-center overflow-hidden rounded-[8px] bg-[#191816] px-6 py-12"
     >
-      <span aria-hidden className="absolute bottom-0 left-8 h-[72%] w-[88px] rounded-t-md bg-liquido" />
-      <span aria-hidden className="absolute bottom-0 left-[136px] h-[38%] w-14 rounded-t-md bg-concreto" />
-      <span
+      {/* fundo de projeto: grelha técnica fina e um contorno de planta atrás do celular.
+          A grelha é SVG (linhas soltas), não gradiente: o espelho no Paper não desenha gradiente. */}
+      <svg
         aria-hidden
-        className="absolute bottom-[calc(38%+16px)] left-[136px] h-8 w-14 rounded-md bg-prumo"
-      />
-      <span aria-hidden className="absolute top-10 right-7 grid grid-cols-2 gap-4">
-        <Regua />
-        <Regua />
-        <Regua />
-        <Regua />
-      </span>
+        width="100%"
+        height="100%"
+        stroke="currentColor"
+        strokeWidth={1}
+        className="absolute inset-0 text-ink-muted"
+      >
+        {GRELHA.map((p) => (
+          <line key={`v${p}`} x1={p} y1={0} x2={p} y2={GRELHA_ALCANCE} />
+        ))}
+        {GRELHA.map((p) => (
+          <line key={`h${p}`} x1={0} y1={p} x2={GRELHA_ALCANCE} y2={p} />
+        ))}
+      </svg>
+      <svg
+        aria-hidden
+        width={350}
+        height={400}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 text-nivel"
+      >
+        <rect x={1} y={1} width={348} height={398} />
+        <line x1={0} y1={200} x2={350} y2={200} />
+        <line x1={175} y1={0} x2={175} y2={400} />
+      </svg>
 
       <div className="relative flex w-[300px] max-w-full flex-col overflow-hidden rounded-[36px] border-[10px] border-ink-muted bg-background">
         <div className="flex items-center gap-2.5 border-b bg-card px-4 py-3.5">
@@ -207,7 +220,7 @@ function ConversaExemplo() {
             </svg>
           </span>
           <div>
-            <p className="text-[15px] leading-5 font-semibold">Prumo</p>
+            <p className="text-[15px] leading-5 font-semibold">EngCheck</p>
             <p className="text-xs text-muted-foreground">Residencial Jardim das Acácias</p>
           </div>
         </div>
@@ -329,7 +342,7 @@ export default function LandingPage() {
       {/* topo fixo: no celular fica só logo, "Entrar" e o botão, para não ocupar a tela */}
       <header className="sticky top-0 z-40 border-b bg-background px-4 py-3 sm:px-6 sm:py-4">
         <div className={cn(conteiner, "flex items-center justify-between gap-4 lg:gap-8")}>
-          <Link href="/" aria-label="Prumo, início" className="text-foreground">
+          <Link href="/" aria-label="EngCheck, início" className="text-foreground">
             <LogotipoVivo className="h-7 sm:h-8" />
           </Link>
           <nav aria-label="Seções" className="hidden items-center gap-x-6 text-[15px] lg:flex">
@@ -363,7 +376,7 @@ export default function LandingPage() {
                 Confira antes do ponto sem volta.
               </h1>
               <p className="max-w-[560px] text-[19px] leading-[30px] text-muted-foreground">
-                O encarregado mede pelo WhatsApp, o Prumo compara com o projeto e mostra o que saiu da
+                O encarregado mede pelo WhatsApp, o EngCheck compara com o projeto e mostra o que saiu da
                 tolerância. Você libera ou bloqueia pelo painel antes de concretar, fechar a parede ou
                 assentar o piso.
               </p>
@@ -632,7 +645,7 @@ export default function LandingPage() {
                   href="/?plano=sob-medida#demonstracao"
                   className="inline-flex items-center gap-1 text-sm font-semibold text-prumo-text hover:underline max-lg:py-2.5"
                 >
-                  Falar com a Prumo
+                  Falar com a EngCheck
                   <ArrowRight aria-hidden className="size-3.5" />
                 </Link>
               </p>
@@ -699,7 +712,7 @@ export default function LandingPage() {
               Entrar no painel
             </Link>
           </nav>
-          <span className="text-[13px]">© 2026 Prumo</span>
+          <span className="text-[13px]">© 2026 EngCheck</span>
         </div>
       </footer>
     </div>

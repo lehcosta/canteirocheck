@@ -37,7 +37,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    - Capture o alvo com `node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs --previa --rotas '<rota>' --temas claro` (0 chamadas ao Paper). Copie como `atual.html` o `<rota>-claro.html` da pasta que esta rodada imprimiu na linha `relatório:`. Cada rodada cria uma pasta nova, e uma pasta antiga traz a tela de antes.
    - Num fluxo, capture um passo por arquivo: `atual-1.html`, `atual-2.html`…
    - Numa tela nova ou num elemento sem rota, capture a rota mais próxima. O HTML dela é o vocabulário: barra lateral, cabeçalho, botões, selos, tabela.
-   - No `exploracao.json`, a `rota` diz onde o executivo vai morar. Num elemento, a `ancora` é o seletor do trecho da página onde o estudo começa ([FORMATO.md](FORMATO.md)).
+   - No `exploracao.json`, a `rota` diz onde o executivo vai morar. Num elemento, a `ancora` é o seletor do trecho onde o estudo começa — **a section que contém o elemento**, não o elemento solto, para comparar em contexto ([FORMATO.md](FORMATO.md)).
 
    _Pronto quando_ o atual (ou a rota de vocabulário) está na pasta e você leu o PNG do gabarito.
 
@@ -47,6 +47,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 4. **Desenhar.** Faça uma tela HTML por passo de cada estudo, no dialeto do Paper descrito abaixo, com o conteúdo real do app (o atual e o banco).
    - Se o partido mexe numa região, parta de uma cópia do atual e troque só aquela região.
    - Se o partido muda a estrutura, escreva em flex e reaproveite do atual a barra lateral e os componentes.
+   - **Elemento dentro de uma section** (o fundo do hero, um cartão numa faixa): desenhe a **section inteira, em contexto** — nunca o elemento solto. Clone a captura (`captura.html`), recorte à section e, em cada estudo, troque só a região do elemento (um `gerar.mjs` com playwright faz o clone, o recorte e o splice). O redor vem da captura: fiel, e na conferência diverge só onde o próprio sync diverge (o logo, o texto miúdo). O `atual` é a section como está. Assim as variações se comparam lado a lado no mesmo enquadramento, sem recriar à mão o texto do redor.
    - Dado que o estudo pede e o app ainda não tem entra no HTML e é marcado como **dado novo** na apresentação.
 
    _Pronto quando_ toda tela listada no manifesto existe.
@@ -59,7 +60,11 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    Corrija e rode de novo.
    _Pronto quando_ a prévia sai sem erro, cada aviso foi corrigido ou explicado, nenhum estudo tem quebra na medição da crítica, cada PNG foi lido depois da última edição e o comparativo mostra opções que se distinguem de longe.
 
-6. **Enviar.** Rode `enviar`. Ele grava na página "Explorações" do arquivo do espelho uma legenda e uma linha por estudo, exporta cada prancheta e confere com a prévia. Reenviar a mesma exploração substitui as pranchetas dela no mesmo lugar e pede aprovação nova.
+6. **Enviar.** Rode `enviar`. Ele põe a exploração no projeto, igual o sincronizar-paper desenha as rotas:
+   - **Modo projeto** — a `rota` já tem prancheta no espelho: os estudos vão para a página "Claro", **abaixo da prancheta da rota**, seja a tela cheia ou um elemento dela. Na tela cheia o "atual" não é redesenhado (a prancheta da rota já é ele); no elemento, o "atual" vai junto.
+   - **Explorações** — uma tela que o espelho ainda não tem (rota nova): a página "Explorações", com o "atual" junto.
+
+   Em ambos ele grava uma legenda e uma linha por estudo, exporta cada prancheta e confere com a prévia. Reenviar substitui as pranchetas da exploração no mesmo lugar e pede aprovação nova.
    _Pronto quando_ toda prancheta sai `à risca` na conferência. Se a cota do Paper acabou, entregue o comparativo e diga que os estudos ainda não estão no Paper.
 
 7. **Apresentar.** No chat, entregue:
@@ -74,9 +79,10 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 ## Dialeto do Paper
 
 - Só estilo inline. O layout é feito com flex, padding e gap; posição absoluta serve para sobrepor. O Paper não desenha margin, grid, `<table>` nem `display: inline`, e a prévia barra esses quatro.
-- O elemento raiz de cada tela é `position:absolute;left:0px;top:0px`, com `width` e `height` em px. Tela do painel é 1440×900. Elemento é o menor quadro que mostre os estados dele.
+- O elemento raiz de cada tela é `position:absolute;left:0px;top:0px`, com `width` e `height` em px. Tela do painel é 1440×900. Um elemento solto é o menor quadro que mostre os estados dele; um elemento dentro de uma section é a section inteira (passo 4).
 - Texto é um `<div>` só com texto, com `font-family`, `font-weight`, `font-size` e `line-height` em px. Trecho com outro estilo vai num `<span>`.
 - Cor é sempre token: `var(--color-ink)` ou `color-mix(var(--color-prumo) 10%, transparent)`. Os tokens são os do `globals.css` (`--color-surface`, `--color-surface-raised`, `--color-line`, `--color-ink`, `--color-ink-muted`, `--color-prumo`, `--color-on-prumo`, `--color-divergencia`, `--color-nivel`, `--color-liquido`…). O tema escuro usa os mesmos nomes com o sufixo `-escuro`. O laranja `--color-prumo` é só para ação.
+- O Paper **não desenha `opacity`/`fill-opacity` nem gradiente** (`linear-gradient`, `repeating-linear-gradient`), e a prévia (Chrome) não pega isso — só a conferência do `enviar`. Isso vale também para o executivo: um padrão (grelha, listras) vira SVG com linhas soltas, senão some do espelho. Cor esmaecida é `color-mix` com o fundo (ex.: `color-mix(in oklch, var(--color-liquido) 10%, var(--color-ink))`, opaca, não com `transparent`), e `color-mix` só vale em `background-color` de `<div>`, não em `fill`/`stroke` de `<svg>` — aí, token sólido. Texto que quebra em várias linhas diverge entre Chrome e Paper: num estudo em que o texto não é o alvo (um mockup de fundo, p.ex.), use a silhueta — formas sólidas, sem texto corrido.
 - Fontes e pesos que a marca carrega:
   - Archivo 700/800 nos títulos;
   - IBM Plex Sans 400/600 no texto;
@@ -86,4 +92,4 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 
 ## Cota do Paper
 
-A `previa` e o `conferir` não gastam cota. O `enviar` gasta umas 3 chamadas por tela e mais umas 10 por envio: uma exploração com o atual e três estudos de uma tela custa umas 25. `aprovar` e `comentarios` gastam 2 cada, e `resolver`, 1 por comentário. No plano gratuito a cota é semanal, então itere na prévia e envie uma vez.
+A `previa` e o `conferir` não gastam cota. O `enviar` gasta umas 3 chamadas por tela e mais umas 10 por envio: uma exploração com o atual e três estudos de uma tela custa umas 25 (no modo projeto de tela cheia sai o atual, umas 22). `comentarios` gasta 2; `resolver`, 1 por comentário. `aprovar` gasta 2 em Explorações/Estados e umas 7 no modo projeto. No plano gratuito a cota é semanal, então itere na prévia e envie uma vez.

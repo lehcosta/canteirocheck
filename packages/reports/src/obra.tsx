@@ -85,7 +85,12 @@ export async function gerarPdfObra(d: DadosRelatorioObra, geradoEm = new Date())
   const liberadas = d.linhas.filter((l) => l.status === "liberada").length;
   const bloqueadas = d.linhas.filter((l) => l.status === "bloqueada" || l.status === "recusada").length;
   return renderToBuffer(
-    <Document title={textoPdf(`Relatório — ${d.obraNome}`)} author="Prumo" creator="Prumo" producer="Prumo">
+    <Document
+      title={textoPdf(`Relatório — ${d.obraNome}`)}
+      author="EngCheck"
+      creator="EngCheck"
+      producer="EngCheck"
+    >
       <Page size="A4" orientation="landscape" style={s.pagina}>
         <Faixa />
         <Cabecalho tipo="Relatório da obra" />
@@ -167,7 +172,7 @@ export async function gerarPdfObra(d: DadosRelatorioObra, geradoEm = new Date())
         <Rodape
           texto={(pagina, total) =>
             textoPdf(
-              `Prumo · gerado em ${geradoEm.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })} · página ${pagina}/${total}`,
+              `EngCheck · gerado em ${geradoEm.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })} · página ${pagina}/${total}`,
             )
           }
         />

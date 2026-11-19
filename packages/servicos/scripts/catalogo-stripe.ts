@@ -33,7 +33,7 @@ for (const id of PLANOS_PAGOS) {
       busca.data[0]?.id ??
       (
         await stripe.products.create({
-          name: `Prumo ${plano.nome}`,
+          name: `EngCheck ${plano.nome}`,
           description: `Até ${plano.limiteObras} obras ativas`,
           metadata: { plano: id },
         })
@@ -84,7 +84,7 @@ if (existente) {
   console.log(`= portal ${existente.id} (atualizado)`);
 } else {
   const c = await stripe.billingPortal.configurations.create({
-    business_profile: { headline: "Prumo — assinatura" },
+    business_profile: { headline: "EngCheck — assinatura" },
     features: recursos,
     metadata: { prumo: "portal" },
   });
