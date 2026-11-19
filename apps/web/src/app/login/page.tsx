@@ -21,7 +21,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <section className="flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-12 px-6 py-10 sm:px-16 sm:py-12">
         <Link
           href="/"
-          aria-label="Prumo, início"
+          aria-label="EngCheck, início"
           className="self-start text-foreground transition-opacity duration-150 hover:opacity-75"
         >
           <LogotipoVivo className="h-8" />

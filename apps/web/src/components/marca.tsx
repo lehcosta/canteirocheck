@@ -1,14 +1,15 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Logotipo e marca da Prumo (DS: https://claude.ai/artifact/CzNJEY7N18zLcxur1Ys5G9).
- * O "o" é uma régua de nível: contorno da cor do texto, líquido `liquido`, bolha branca no centro.
+ * Logotipo e marca da EngCheck (estudo C do paper-explorer `logo-engcheck`, aprovado 2026-11-19).
+ * A régua de nível vira a marca à esquerda — contorno da cor do texto, líquido `liquido`, bolha branca no centro —
+ * e "EngCheck" vem ao lado em Archivo 800 (a mesma família dos títulos, via `--font-archivo`).
  * Em repouso a bolha fica no centro; só o `LogotipoVivo` (logotipo-vivo.tsx) a move, seguindo o mouse ou a inclinação do celular.
- * Desenhados em curvas (não dependem de fonte). Cor das letras = `currentColor`.
+ * Cor das letras e da régua = `currentColor`. A palavra depende da fonte Archivo (é o partido tipográfico do estudo C).
  */
 export function Logotipo({
   className,
-  titulo = "Prumo",
+  titulo = "EngCheck",
   refBolha,
 }: {
   className?: string;
@@ -17,29 +18,34 @@ export function Logotipo({
   refBolha?: React.Ref<SVGGElement>;
 }) {
   return (
-    <svg viewBox="0 0 181 56" role="img" aria-label={titulo} className={cn("h-7 w-auto", className)}>
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={7}
-        d="M3.5 8V51.4M3.5 11.5H17.5A10.5 10.5 0 0 1 17.5 32.5H3.5M36.5 8V36M36.5 22A10.5 10.5 0 0 1 47 11.5H52M56 8V22A10.5 10.5 0 0 0 77 22M77 8V36M86 8V36M86 22A10.5 10.5 0 0 1 107 22V36M107 22A10.5 10.5 0 0 1 128 22V36"
-      />
+    <svg viewBox="0 9 178 29" role="img" aria-label={titulo} className={cn("h-7 w-auto", className)}>
       <Regua
-        x={136.5}
+        x={3.5}
         y={11.5}
         largura={39}
         altura={21}
         traco={7}
-        riscos={[147.24, 161.96]}
-        bolha={[150.56, 17.74, 10.88, 7.41]}
+        riscos={[14.24, 28.96]}
+        bolha={[17.56, 17.74, 10.88, 7.41]}
         refBolha={refBolha}
       />
+      <text
+        x={49.5}
+        y={30.7}
+        fill="currentColor"
+        fontSize={25.3}
+        fontWeight={800}
+        letterSpacing={-0.76}
+        style={{ fontFamily: "var(--font-archivo), system-ui, sans-serif" }}
+      >
+        EngCheck
+      </text>
     </svg>
   );
 }
 
 /** Só a régua: favicon, selos, canto do PDF. Mínimo de 20px. */
-export function MarcaRegua({ className, titulo = "Prumo" }: { className?: string; titulo?: string }) {
+export function MarcaRegua({ className, titulo = "EngCheck" }: { className?: string; titulo?: string }) {
   return (
     <svg viewBox="0 14 64 36" role="img" aria-label={titulo} className={cn("h-5 w-auto", className)}>
       <Regua

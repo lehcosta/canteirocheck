@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 import { FormularioDemonstracao } from "./_landing/formulario-demonstracao";
 
 export const metadata: Metadata = {
-  title: { absolute: "Prumo — conferência de obra pelo WhatsApp" },
+  title: { absolute: "EngCheck — conferência de obra pelo WhatsApp" },
   description:
-    "O encarregado mede pelo WhatsApp, o Prumo compara com o projeto e o engenheiro libera ou bloqueia pelo painel antes do ponto sem volta.",
+    "O encarregado mede pelo WhatsApp, o EngCheck compara com o projeto e o engenheiro libera ou bloqueia pelo painel antes do ponto sem volta.",
 };
 
 const SECOES = [
@@ -29,12 +29,12 @@ const PASSOS = [
   {
     titulo: "Envie o projeto",
     texto:
-      "O Prumo lê o DWG (cotas de nível, ambientes e notas) e sugere os pontos de controle de cada etapa, com a tolerância padrão. O engenheiro revisa e aprova.",
+      "O EngCheck lê o DWG (cotas de nível, ambientes e notas) e sugere os pontos de controle de cada etapa, com a tolerância padrão. O engenheiro revisa e aprova.",
   },
   {
     titulo: "O encarregado anuncia",
     texto:
-      "Todo dia o Prumo pergunta no WhatsApp o que vai ser executado. O encarregado responde em poucos toques, ou por texto e áudio.",
+      "Todo dia o EngCheck pergunta no WhatsApp o que vai ser executado. O encarregado responde em poucos toques, ou por texto e áudio.",
   },
   {
     titulo: "Mede e manda foto",
@@ -170,7 +170,7 @@ function ConversaExemplo() {
   return (
     <div
       role="img"
-      aria-label="Exemplo de conversa do encarregado com o Prumo no WhatsApp: um ponto fora da tolerância, refeito e anotado"
+      aria-label="Exemplo de conversa do encarregado com o EngCheck no WhatsApp: um ponto fora da tolerância, refeito e anotado"
       className="relative flex min-h-[640px] min-w-0 flex-[1_1_420px] justify-center overflow-hidden rounded-[8px] bg-[#191816] px-6 py-12"
     >
       <span aria-hidden className="absolute bottom-0 left-8 h-[72%] w-[88px] rounded-t-md bg-liquido" />
@@ -207,7 +207,7 @@ function ConversaExemplo() {
             </svg>
           </span>
           <div>
-            <p className="text-[15px] leading-5 font-semibold">Prumo</p>
+            <p className="text-[15px] leading-5 font-semibold">EngCheck</p>
             <p className="text-xs text-muted-foreground">Residencial Jardim das Acácias</p>
           </div>
         </div>
@@ -329,7 +329,7 @@ export default function LandingPage() {
       {/* topo fixo: no celular fica só logo, "Entrar" e o botão, para não ocupar a tela */}
       <header className="sticky top-0 z-40 border-b bg-background px-4 py-3 sm:px-6 sm:py-4">
         <div className={cn(conteiner, "flex items-center justify-between gap-4 lg:gap-8")}>
-          <Link href="/" aria-label="Prumo, início" className="text-foreground">
+          <Link href="/" aria-label="EngCheck, início" className="text-foreground">
             <LogotipoVivo className="h-7 sm:h-8" />
           </Link>
           <nav aria-label="Seções" className="hidden items-center gap-x-6 text-[15px] lg:flex">
@@ -363,7 +363,7 @@ export default function LandingPage() {
                 Confira antes do ponto sem volta.
               </h1>
               <p className="max-w-[560px] text-[19px] leading-[30px] text-muted-foreground">
-                O encarregado mede pelo WhatsApp, o Prumo compara com o projeto e mostra o que saiu da
+                O encarregado mede pelo WhatsApp, o EngCheck compara com o projeto e mostra o que saiu da
                 tolerância. Você libera ou bloqueia pelo painel antes de concretar, fechar a parede ou
                 assentar o piso.
               </p>
@@ -632,7 +632,7 @@ export default function LandingPage() {
                   href="/?plano=sob-medida#demonstracao"
                   className="inline-flex items-center gap-1 text-sm font-semibold text-prumo-text hover:underline max-lg:py-2.5"
                 >
-                  Falar com a Prumo
+                  Falar com a EngCheck
                   <ArrowRight aria-hidden className="size-3.5" />
                 </Link>
               </p>
@@ -699,7 +699,7 @@ export default function LandingPage() {
               Entrar no painel
             </Link>
           </nav>
-          <span className="text-[13px]">© 2026 Prumo</span>
+          <span className="text-[13px]">© 2026 EngCheck</span>
         </div>
       </footer>
     </div>

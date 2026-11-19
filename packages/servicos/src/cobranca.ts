@@ -26,7 +26,7 @@ export function criarStripe(chave = process.env.STRIPE_SECRET_KEY): Stripe | nul
   return chave ? new Stripe(chave) : null;
 }
 
-const SEM_COBRANCA = "A cobrança ainda não está configurada. Fale com a Prumo.";
+const SEM_COBRANCA = "A cobrança ainda não está configurada. Fale com a EngCheck.";
 
 // ─────────────────────────── Leitura ───────────────────────────
 

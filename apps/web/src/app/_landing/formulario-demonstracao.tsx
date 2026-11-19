@@ -117,7 +117,7 @@ function Formulario({ plano, outroContato }: { plano?: IdPlano; outroContato: ()
         {pendente ? "Enviando…" : "Quero uma demonstração"}
       </Button>
       <p className="text-[13px] text-muted-foreground">
-        Usamos seus dados só para falar com você sobre o Prumo.
+        Usamos seus dados só para falar com você sobre o EngCheck.
       </p>
     </form>
   );

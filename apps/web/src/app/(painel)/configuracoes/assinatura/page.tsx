@@ -167,7 +167,7 @@ function EscolherPlano({ a }: { a: Assinatura }) {
           })}
         </div>
         <p className="text-sm text-muted-foreground">
-          Mais de 15 obras? Fale com a Prumo para um plano sob medida.
+          Mais de 15 obras? Fale com a EngCheck para um plano sob medida.
         </p>
       </FormularioAcao>
     </section>

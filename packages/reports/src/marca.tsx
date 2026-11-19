@@ -6,7 +6,7 @@ import { Font, Path, Rect, StyleSheet, type Styles, Svg, Text, View } from "@rea
 Font.registerHyphenationCallback((palavra) => [palavra]);
 
 /**
- * Marca Prumo nos relatórios PDF: cores do DS, logotipo, faixa de 4px em `liquido`, selos de status.
+ * Marca EngCheck nos relatórios PDF: cores do DS, logotipo, faixa de 4px em `liquido`, selos de status.
  * Fontes padrão do PDF (sem download): Helvetica no texto, Courier nas medidas e códigos.
  * ✓ / ✕ são desenhados em Svg: a Helvetica padrão (WinAnsi) não tem esses caracteres.
  */
@@ -82,32 +82,36 @@ const s = StyleSheet.create({
   rodapeNota: { position: "absolute", left: 40, right: 40, bottom: 20, fontSize: 7, color: COR.inkMuted },
 });
 
-/** Logotipo "prumo" com o "o" de régua de nível. Curvas copiadas de `prumo-logotipo.svg` (viewBox 181×56). */
-export function Logotipo({ largura = 64 }: { largura?: number }) {
+/**
+ * Logotipo EngCheck (estudo C): a régua de nível como marca à esquerda e "EngCheck" ao lado.
+ * No PDF a palavra usa a fonte forte do relatório (Helvetica-Bold), não a Archivo do app — registrar
+ * a Archivo no react-pdf exigiria o TTF; a forma da marca (régua + nome) é a mesma.
+ */
+export function Logotipo({ altura = 16 }: { altura?: number }) {
+  const larguraRegua = (altura * 46) / 28;
   return (
-    <Svg width={largura} height={(largura * 56) / 181} viewBox="0 0 181 56">
-      <Path
-        fill="none"
-        stroke={COR.ink}
-        strokeWidth={7}
-        d="M3.5 8V51.4M3.5 11.5H17.5A10.5 10.5 0 0 1 17.5 32.5H3.5M36.5 8V36M36.5 22A10.5 10.5 0 0 1 47 11.5H52M56 8V22A10.5 10.5 0 0 0 77 22M77 8V36M86 8V36M86 22A10.5 10.5 0 0 1 107 22V36M107 22A10.5 10.5 0 0 1 128 22V36"
-      />
-      <Rect x={136.5} y={11.5} width={39} height={21} rx={10.5} ry={10.5} fill={COR.liquido} />
-      <Rect
-        x={136.5}
-        y={11.5}
-        width={39}
-        height={21}
-        rx={10.5}
-        ry={10.5}
-        fill="none"
-        stroke={COR.ink}
-        strokeWidth={7}
-      />
-      <Rect x={150.56} y={17.74} width={10.88} height={7.41} rx={3.7} ry={3.7} fill={COR.branco} />
-      <Rect x={147.24} y={15} width={2.8} height={14} fill={COR.ink} />
-      <Rect x={161.96} y={15} width={2.8} height={14} fill={COR.ink} />
-    </Svg>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: altura * 0.3 }}>
+      <Svg width={larguraRegua} height={altura} viewBox="0 8 46 28">
+        <Rect x={3.5} y={11.5} width={39} height={21} rx={10.5} ry={10.5} fill={COR.liquido} />
+        <Rect
+          x={3.5}
+          y={11.5}
+          width={39}
+          height={21}
+          rx={10.5}
+          ry={10.5}
+          fill="none"
+          stroke={COR.ink}
+          strokeWidth={7}
+        />
+        <Rect x={17.56} y={17.74} width={10.88} height={7.41} rx={3.7} ry={3.7} fill={COR.branco} />
+        <Rect x={14.24} y={15} width={2.8} height={14} fill={COR.ink} />
+        <Rect x={28.96} y={15} width={2.8} height={14} fill={COR.ink} />
+      </Svg>
+      <Text style={{ fontFamily: FONTE.forte, fontSize: altura * 1.02, color: COR.ink, letterSpacing: -0.3 }}>
+        EngCheck
+      </Text>
+    </View>
   );
 }
 

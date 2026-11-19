@@ -8,7 +8,7 @@ const plexSans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "600"], var
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500"], variable: "--font-plex-mono" });
 
 export const metadata: Metadata = {
-  title: { default: "Prumo", template: "%s · Prumo" },
+  title: { default: "EngCheck", template: "%s · EngCheck" },
   description: "Obra no prumo: cada etapa conferida antes de seguir.",
 };
 
