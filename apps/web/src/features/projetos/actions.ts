@@ -30,5 +30,7 @@ export async function resolverPendenciaAction(_: EstadoAcao, form: FormData): Pr
     return tratarErro(e);
   }
   revalidatePath(`/obras/${d.obraId}`, "layout");
+  // o layout do painel também: o marcador de pendência da barra lateral muda ao resolver
+  revalidatePath("/obras", "layout");
   return { ok: "Pendência atualizada." };
 }

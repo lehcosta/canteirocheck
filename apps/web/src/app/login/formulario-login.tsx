@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, X } from "lucide-react";
+import { LoaderCircle, Mail, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Campo } from "@/components/campos";
 import { Button } from "@/components/ui/button";
@@ -86,8 +86,22 @@ export function FormularioLogin({ erroInicial }: { erroInicial?: string }) {
           required
           autoFocus
         />
-        <Button type="submit" size="lg" className="w-full" disabled={pendente}>
-          {pendente ? "Enviando…" : "Enviar link de acesso"}
+        {/* enviando: travado, mas no laranja (não no cinza do travado do Button), com o giro */}
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full disabled:border-transparent disabled:bg-primary disabled:text-primary-foreground"
+          disabled={pendente}
+          aria-busy={pendente}
+        >
+          {pendente ? (
+            <>
+              <LoaderCircle aria-hidden className="animate-spin motion-reduce:animate-none" />
+              Enviando…
+            </>
+          ) : (
+            "Enviar link de acesso"
+          )}
         </Button>
       </form>
     </div>

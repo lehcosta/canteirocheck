@@ -19,6 +19,13 @@ export {
   salvarCheck,
 } from "./checks";
 export {
+  ATRASO_MAXIMO_DIAS,
+  despacharCheck,
+  despacharChecks,
+  lerRespostaDoCheck,
+  type ResultadoDespacho,
+} from "./checks-envio";
+export {
   type Assinatura,
   abrirPortal,
   confirmarCheckout,
@@ -90,7 +97,9 @@ export {
 } from "./metricas";
 export { baixarMidia, urlDaMidia } from "./midias";
 export {
+  type AndamentoObra,
   adicionarMembro,
+  andamentoDaObra,
   criarLocal,
   criarObra,
   type DetalheObra,

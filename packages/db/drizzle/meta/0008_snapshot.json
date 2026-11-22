@@ -1,0 +1,5664 @@
+{
+  "id": "8615b7f8-29a6-4aec-9099-ab18f89adfbd",
+  "prevId": "1475ad96-b799-4dd9-becd-6b2b56257405",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.audit_log": {
+      "name": "audit_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "audit_log_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ator_tipo": {
+          "name": "ator_tipo",
+          "type": "ator_tipo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ator_id": {
+          "name": "ator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acao": {
+          "name": "acao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entidade": {
+          "name": "entidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entidade_id": {
+          "name": "entidade_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "antes": {
+          "name": "antes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "depois": {
+          "name": "depois",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_log_tenant_id_entidade_entidade_id_index": {
+          "name": "audit_log_tenant_id_entidade_entidade_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entidade",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entidade_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_log_tenant_id_tenant_id_fk": {
+          "name": "audit_log_tenant_id_tenant_id_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.evento_custo": {
+      "name": "evento_custo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_custo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantidade": {
+          "name": "quantidade",
+          "type": "numeric(14, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "custo_estimado": {
+          "name": "custo_estimado",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moeda": {
+          "name": "moeda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'USD'"
+        },
+        "referencia": {
+          "name": "referencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "evento_custo_tenant_id_obra_id_criado_em_index": {
+          "name": "evento_custo_tenant_id_obra_id_criado_em_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "evento_custo_tenant_id_tenant_id_fk": {
+          "name": "evento_custo_tenant_id_tenant_id_fk",
+          "tableFrom": "evento_custo",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "evento_custo_obra_id_obra_id_fk": {
+          "name": "evento_custo_obra_id_obra_id_fk",
+          "tableFrom": "evento_custo",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.relatorio": {
+      "name": "relatorio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_key": {
+          "name": "storage_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gerado_por_id": {
+          "name": "gerado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "relatorio_tenant_id_obra_id_index": {
+          "name": "relatorio_tenant_id_obra_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "relatorio_tenant_id_tenant_id_fk": {
+          "name": "relatorio_tenant_id_tenant_id_fk",
+          "tableFrom": "relatorio",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "relatorio_obra_id_obra_id_fk": {
+          "name": "relatorio_obra_id_obra_id_fk",
+          "tableFrom": "relatorio",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "relatorio_execucao_id_execucao_etapa_id_fk": {
+          "name": "relatorio_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "relatorio",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "relatorio_gerado_por_id_usuario_id_fk": {
+          "name": "relatorio_gerado_por_id_usuario_id_fk",
+          "tableFrom": "relatorio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "gerado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_account": {
+      "name": "auth_account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "auth_account_userId_idx": {
+          "name": "auth_account_userId_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "auth_account_user_id_auth_user_id_fk": {
+          "name": "auth_account_user_id_auth_user_id_fk",
+          "tableFrom": "auth_account",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_session": {
+      "name": "auth_session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "auth_session_userId_idx": {
+          "name": "auth_session_userId_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "auth_session_user_id_auth_user_id_fk": {
+          "name": "auth_session_user_id_auth_user_id_fk",
+          "tableFrom": "auth_session",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "auth_session_token_unique": {
+          "name": "auth_session_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_user": {
+      "name": "auth_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "auth_user_email_unique": {
+          "name": "auth_user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_verification": {
+      "name": "auth_verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "auth_verification_identifier_idx": {
+          "name": "auth_verification_identifier_idx",
+          "columns": [
+            {
+              "expression": "identifier",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.check_envio": {
+      "name": "check_envio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "check_id": {
+          "name": "check_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "previsto_para": {
+          "name": "previsto_para",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enviado_em": {
+          "name": "enviado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mensagem_id": {
+          "name": "mensagem_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entrega": {
+          "name": "entrega",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lido_em": {
+          "name": "lido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "respondido_em": {
+          "name": "respondido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "respondido_por_id": {
+          "name": "respondido_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fora_do_esperado": {
+          "name": "fora_do_esperado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pergunta_ids": {
+          "name": "pergunta_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aguardando_pergunta_id": {
+          "name": "aguardando_pergunta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aguardando_foto": {
+          "name": "aguardando_foto",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "check_envio_tenant_id_check_id_index": {
+          "name": "check_envio_tenant_id_check_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "check_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "check_envio_tenant_id_tenant_id_fk": {
+          "name": "check_envio_tenant_id_tenant_id_fk",
+          "tableFrom": "check_envio",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_envio_check_id_check_fase_id_fk": {
+          "name": "check_envio_check_id_check_fase_id_fk",
+          "tableFrom": "check_envio",
+          "tableTo": "check_fase",
+          "columnsFrom": [
+            "check_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_envio_mensagem_id_mensagem_whatsapp_id_fk": {
+          "name": "check_envio_mensagem_id_mensagem_whatsapp_id_fk",
+          "tableFrom": "check_envio",
+          "tableTo": "mensagem_whatsapp",
+          "columnsFrom": [
+            "mensagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_envio_respondido_por_id_usuario_id_fk": {
+          "name": "check_envio_respondido_por_id_usuario_id_fk",
+          "tableFrom": "check_envio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "respondido_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_envio_aguardando_pergunta_id_check_pergunta_id_fk": {
+          "name": "check_envio_aguardando_pergunta_id_check_pergunta_id_fk",
+          "tableFrom": "check_envio",
+          "tableTo": "check_pergunta",
+          "columnsFrom": [
+            "aguardando_pergunta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "check_envio_check_id_previsto_para_unique": {
+          "name": "check_envio_check_id_previsto_para_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "check_id",
+            "previsto_para"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "check_envio_entrega_valida": {
+          "name": "check_envio_entrega_valida",
+          "value": "\"check_envio\".\"entrega\" is null or \"check_envio\".\"entrega\" in ('enviado', 'entregue', 'lido', 'falhou')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.check_fase": {
+      "name": "check_fase",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fase_uid": {
+          "name": "fase_uid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "momento": {
+          "name": "momento",
+          "type": "momento_check",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dias": {
+          "name": "dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hora": {
+          "name": "hora",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'07:00'"
+        },
+        "responsavel_id": {
+          "name": "responsavel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aprovado_por_id": {
+          "name": "aprovado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aprovado_em": {
+          "name": "aprovado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "editado_em": {
+          "name": "editado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "check_fase_tenant_id_obra_id_index": {
+          "name": "check_fase_tenant_id_obra_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "check_fase_tenant_id_tenant_id_fk": {
+          "name": "check_fase_tenant_id_tenant_id_fk",
+          "tableFrom": "check_fase",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_fase_obra_id_obra_id_fk": {
+          "name": "check_fase_obra_id_obra_id_fk",
+          "tableFrom": "check_fase",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_fase_responsavel_id_usuario_id_fk": {
+          "name": "check_fase_responsavel_id_usuario_id_fk",
+          "tableFrom": "check_fase",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "responsavel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_fase_aprovado_por_id_usuario_id_fk": {
+          "name": "check_fase_aprovado_por_id_usuario_id_fk",
+          "tableFrom": "check_fase",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "aprovado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "check_fase_obra_id_fase_uid_momento_unique": {
+          "name": "check_fase_obra_id_fase_uid_momento_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "obra_id",
+            "fase_uid",
+            "momento"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "check_fase_hora_formato": {
+          "name": "check_fase_hora_formato",
+          "value": "\"check_fase\".\"hora\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'"
+        },
+        "check_fase_dias_validos": {
+          "name": "check_fase_dias_validos",
+          "value": "\"check_fase\".\"dias\" >= 0 and (\"check_fase\".\"momento\" <> 'durante' or \"check_fase\".\"dias\" between 1 and 7)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.check_pergunta": {
+      "name": "check_pergunta",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "check_id": {
+          "name": "check_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_resposta": {
+          "name": "tipo_resposta",
+          "type": "tipo_resposta",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opcoes": {
+          "name": "opcoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "esperada": {
+          "name": "esperada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pede_foto": {
+          "name": "pede_foto",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "risco_id": {
+          "name": "risco_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origem": {
+          "name": "origem",
+          "type": "origem_ponto",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "removida_em": {
+          "name": "removida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "check_pergunta_tenant_id_check_id_index": {
+          "name": "check_pergunta_tenant_id_check_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "check_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "check_pergunta_tenant_id_tenant_id_fk": {
+          "name": "check_pergunta_tenant_id_tenant_id_fk",
+          "tableFrom": "check_pergunta",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_pergunta_check_id_check_fase_id_fk": {
+          "name": "check_pergunta_check_id_check_fase_id_fk",
+          "tableFrom": "check_pergunta",
+          "tableTo": "check_fase",
+          "columnsFrom": [
+            "check_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_pergunta_risco_id_risco_fase_id_fk": {
+          "name": "check_pergunta_risco_id_risco_fase_id_fk",
+          "tableFrom": "check_pergunta",
+          "tableTo": "risco_fase",
+          "columnsFrom": [
+            "risco_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.check_resposta": {
+      "name": "check_resposta",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "envio_id": {
+          "name": "envio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pergunta_id": {
+          "name": "pergunta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor": {
+          "name": "valor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dentro_do_esperado": {
+          "name": "dentro_do_esperado",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "midia_id": {
+          "name": "midia_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "check_resposta_tenant_id_envio_id_index": {
+          "name": "check_resposta_tenant_id_envio_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "envio_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "check_resposta_tenant_id_tenant_id_fk": {
+          "name": "check_resposta_tenant_id_tenant_id_fk",
+          "tableFrom": "check_resposta",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_resposta_envio_id_check_envio_id_fk": {
+          "name": "check_resposta_envio_id_check_envio_id_fk",
+          "tableFrom": "check_resposta",
+          "tableTo": "check_envio",
+          "columnsFrom": [
+            "envio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_resposta_pergunta_id_check_pergunta_id_fk": {
+          "name": "check_resposta_pergunta_id_check_pergunta_id_fk",
+          "tableFrom": "check_resposta",
+          "tableTo": "check_pergunta",
+          "columnsFrom": [
+            "pergunta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "check_resposta_midia_id_midia_id_fk": {
+          "name": "check_resposta_midia_id_midia_id_fk",
+          "tableFrom": "check_resposta",
+          "tableTo": "midia",
+          "columnsFrom": [
+            "midia_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "check_resposta_envio_id_pergunta_id_unique": {
+          "name": "check_resposta_envio_id_pergunta_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "envio_id",
+            "pergunta_id"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cruzamento": {
+      "name": "cruzamento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cronograma_versao_id": {
+          "name": "cronograma_versao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_extracao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "erro": {
+          "name": "erro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "projetos": {
+          "name": "projetos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "gerado_por": {
+          "name": "gerado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solicitado_por_id": {
+          "name": "solicitado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "iniciado_em": {
+          "name": "iniciado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concluido_em": {
+          "name": "concluido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "cruzamento_tenant_id_obra_id_criado_em_index": {
+          "name": "cruzamento_tenant_id_obra_id_criado_em_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cruzamento_tenant_id_tenant_id_fk": {
+          "name": "cruzamento_tenant_id_tenant_id_fk",
+          "tableFrom": "cruzamento",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cruzamento_obra_id_obra_id_fk": {
+          "name": "cruzamento_obra_id_obra_id_fk",
+          "tableFrom": "cruzamento",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cruzamento_cronograma_versao_id_cronograma_versao_id_fk": {
+          "name": "cruzamento_cronograma_versao_id_cronograma_versao_id_fk",
+          "tableFrom": "cruzamento",
+          "tableTo": "cronograma_versao",
+          "columnsFrom": [
+            "cronograma_versao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cruzamento_solicitado_por_id_usuario_id_fk": {
+          "name": "cruzamento_solicitado_por_id_usuario_id_fk",
+          "tableFrom": "cruzamento",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "solicitado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risco_fase": {
+      "name": "risco_fase",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cruzamento_id": {
+          "name": "cruzamento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fase_uid": {
+          "name": "fase_uid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "risco",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'projeto'"
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "projeto_id": {
+          "name": "projeto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "projeto_trecho": {
+          "name": "projeto_trecho",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "projeto_referencia": {
+          "name": "projeto_referencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cronograma_ordem": {
+          "name": "cronograma_ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cronograma_trecho": {
+          "name": "cronograma_trecho",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consequencia": {
+          "name": "consequencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descartado_em": {
+          "name": "descartado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descartado_por_id": {
+          "name": "descartado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "risco_fase_tenant_id_cruzamento_id_fase_uid_index": {
+          "name": "risco_fase_tenant_id_cruzamento_id_fase_uid_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cruzamento_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fase_uid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "risco_fase_tenant_id_tenant_id_fk": {
+          "name": "risco_fase_tenant_id_tenant_id_fk",
+          "tableFrom": "risco_fase",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "risco_fase_obra_id_obra_id_fk": {
+          "name": "risco_fase_obra_id_obra_id_fk",
+          "tableFrom": "risco_fase",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "risco_fase_cruzamento_id_cruzamento_id_fk": {
+          "name": "risco_fase_cruzamento_id_cruzamento_id_fk",
+          "tableFrom": "risco_fase",
+          "tableTo": "cruzamento",
+          "columnsFrom": [
+            "cruzamento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "risco_fase_projeto_id_projeto_id_fk": {
+          "name": "risco_fase_projeto_id_projeto_id_fk",
+          "tableFrom": "risco_fase",
+          "tableTo": "projeto",
+          "columnsFrom": [
+            "projeto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "risco_fase_descartado_por_id_usuario_id_fk": {
+          "name": "risco_fase_descartado_por_id_usuario_id_fk",
+          "tableFrom": "risco_fase",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "descartado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "risco_fase_cruzamento_id_fase_uid_ordem_unique": {
+          "name": "risco_fase_cruzamento_id_fase_uid_ordem_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cruzamento_id",
+            "fase_uid",
+            "ordem"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cronograma_tarefa": {
+      "name": "cronograma_tarefa",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao_id": {
+          "name": "versao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uid": {
+          "name": "uid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resumo": {
+          "name": "resumo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marco": {
+          "name": "marco",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inicio": {
+          "name": "inicio",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "termino": {
+          "name": "termino",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "percentual": {
+          "name": "percentual",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "predecessoras": {
+          "name": "predecessoras",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::integer[]"
+        }
+      },
+      "indexes": {
+        "cronograma_tarefa_tenant_id_index": {
+          "name": "cronograma_tarefa_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cronograma_tarefa_tenant_id_tenant_id_fk": {
+          "name": "cronograma_tarefa_tenant_id_tenant_id_fk",
+          "tableFrom": "cronograma_tarefa",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cronograma_tarefa_versao_id_cronograma_versao_id_fk": {
+          "name": "cronograma_tarefa_versao_id_cronograma_versao_id_fk",
+          "tableFrom": "cronograma_tarefa",
+          "tableTo": "cronograma_versao",
+          "columnsFrom": [
+            "versao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cronograma_tarefa_versao_id_ordem_unique": {
+          "name": "cronograma_tarefa_versao_id_ordem_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "versao_id",
+            "ordem"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cronograma_versao": {
+      "name": "cronograma_versao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vigente": {
+          "name": "vigente",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "arquivo_nome": {
+          "name": "arquivo_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_arquivo": {
+          "name": "tipo_arquivo",
+          "type": "tipo_cronograma",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arquivo_key": {
+          "name": "arquivo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arquivo_sha256": {
+          "name": "arquivo_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_leitura": {
+          "name": "status_leitura",
+          "type": "status_extracao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "erro_leitura": {
+          "name": "erro_leitura",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_tarefas": {
+          "name": "total_tarefas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inicio": {
+          "name": "inicio",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "termino": {
+          "name": "termino",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "versao_leitor": {
+          "name": "versao_leitor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enviado_por_id": {
+          "name": "enviado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "cronograma_versao_uma_vigente": {
+          "name": "cronograma_versao_uma_vigente",
+          "columns": [
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"cronograma_versao\".\"vigente\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cronograma_versao_tenant_id_obra_id_criado_em_index": {
+          "name": "cronograma_versao_tenant_id_obra_id_criado_em_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cronograma_versao_tenant_id_tenant_id_fk": {
+          "name": "cronograma_versao_tenant_id_tenant_id_fk",
+          "tableFrom": "cronograma_versao",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cronograma_versao_obra_id_obra_id_fk": {
+          "name": "cronograma_versao_obra_id_obra_id_fk",
+          "tableFrom": "cronograma_versao",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cronograma_versao_enviado_por_id_usuario_id_fk": {
+          "name": "cronograma_versao_enviado_por_id_usuario_id_fk",
+          "tableFrom": "cronograma_versao",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "enviado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cronograma_versao_obra_id_numero_unique": {
+          "name": "cronograma_versao_obra_id_numero_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "obra_id",
+            "numero"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.divergencia": {
+      "name": "divergencia",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verificacao_id": {
+          "name": "verificacao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "causa_provavel": {
+          "name": "causa_provavel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "divergencia_tenant_id_index": {
+          "name": "divergencia_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "divergencia_tenant_id_tenant_id_fk": {
+          "name": "divergencia_tenant_id_tenant_id_fk",
+          "tableFrom": "divergencia",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "divergencia_execucao_id_execucao_etapa_id_fk": {
+          "name": "divergencia_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "divergencia",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "divergencia_verificacao_id_verificacao_id_fk": {
+          "name": "divergencia_verificacao_id_verificacao_id_fk",
+          "tableFrom": "divergencia",
+          "tableTo": "verificacao",
+          "columnsFrom": [
+            "verificacao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "divergencia_usuario_id_usuario_id_fk": {
+          "name": "divergencia_usuario_id_usuario_id_fk",
+          "tableFrom": "divergencia",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "divergencia_verificacao_id_unique": {
+          "name": "divergencia_verificacao_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "verificacao_id"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.execucao_etapa": {
+      "name": "execucao_etapa",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa_id": {
+          "name": "etapa_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_prevista": {
+          "name": "data_prevista",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anunciada_por_id": {
+          "name": "anunciada_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_execucao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'anunciada'"
+        },
+        "rodada_atual": {
+          "name": "rodada_atual",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "execucao_etapa_tenant_id_obra_id_status_index": {
+          "name": "execucao_etapa_tenant_id_obra_id_status_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "execucao_aberta_unica": {
+          "name": "execucao_aberta_unica",
+          "columns": [
+            {
+              "expression": "local_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "etapa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"execucao_etapa\".\"status\" not in ('liberada', 'cancelada')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "execucao_etapa_tenant_id_tenant_id_fk": {
+          "name": "execucao_etapa_tenant_id_tenant_id_fk",
+          "tableFrom": "execucao_etapa",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "execucao_etapa_obra_id_obra_id_fk": {
+          "name": "execucao_etapa_obra_id_obra_id_fk",
+          "tableFrom": "execucao_etapa",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "execucao_etapa_etapa_id_etapa_id_fk": {
+          "name": "execucao_etapa_etapa_id_etapa_id_fk",
+          "tableFrom": "execucao_etapa",
+          "tableTo": "etapa",
+          "columnsFrom": [
+            "etapa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "execucao_etapa_local_id_local_id_fk": {
+          "name": "execucao_etapa_local_id_local_id_fk",
+          "tableFrom": "execucao_etapa",
+          "tableTo": "local",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "execucao_etapa_anunciada_por_id_usuario_id_fk": {
+          "name": "execucao_etapa_anunciada_por_id_usuario_id_fk",
+          "tableFrom": "execucao_etapa",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "anunciada_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.liberacao": {
+      "name": "liberacao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rodada": {
+          "name": "rodada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decisao": {
+          "name": "decisao",
+          "type": "decisao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justificativa": {
+          "name": "justificativa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "engenheiro_id": {
+          "name": "engenheiro_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal": {
+          "name": "canal",
+          "type": "canal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "liberacao_tenant_id_execucao_id_index": {
+          "name": "liberacao_tenant_id_execucao_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "execucao_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "liberacao_tenant_id_tenant_id_fk": {
+          "name": "liberacao_tenant_id_tenant_id_fk",
+          "tableFrom": "liberacao",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "liberacao_execucao_id_execucao_etapa_id_fk": {
+          "name": "liberacao_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "liberacao",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "liberacao_engenheiro_id_usuario_id_fk": {
+          "name": "liberacao_engenheiro_id_usuario_id_fk",
+          "tableFrom": "liberacao",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "engenheiro_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "liberacao_execucao_id_rodada_unique": {
+          "name": "liberacao_execucao_id_rodada_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "execucao_id",
+            "rodada"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "recusa_exige_justificativa": {
+          "name": "recusa_exige_justificativa",
+          "value": "\"liberacao\".\"decisao\" <> 'recusada' or length(trim(coalesce(\"liberacao\".\"justificativa\", ''))) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.verificacao": {
+      "name": "verificacao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ponto_id": {
+          "name": "ponto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rodada": {
+          "name": "rodada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "tentativa": {
+          "name": "tentativa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "valor_medido": {
+          "name": "valor_medido",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valor_referencia": {
+          "name": "valor_referencia",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mesma_referencia_nivel": {
+          "name": "mesma_referencia_nivel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diferenca": {
+          "name": "diferenca",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "unidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dentro_tolerancia": {
+          "name": "dentro_tolerancia",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canal": {
+          "name": "canal",
+          "type": "canal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estruturada": {
+          "name": "estruturada",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flow_token": {
+          "name": "flow_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "geo": {
+          "name": "geo",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "verificacao_tenant_id_index": {
+          "name": "verificacao_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "verificacao_tenant_id_tenant_id_fk": {
+          "name": "verificacao_tenant_id_tenant_id_fk",
+          "tableFrom": "verificacao",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "verificacao_execucao_id_execucao_etapa_id_fk": {
+          "name": "verificacao_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "verificacao",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "verificacao_ponto_id_ponto_controle_id_fk": {
+          "name": "verificacao_ponto_id_ponto_controle_id_fk",
+          "tableFrom": "verificacao",
+          "tableTo": "ponto_controle",
+          "columnsFrom": [
+            "ponto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "verificacao_usuario_id_usuario_id_fk": {
+          "name": "verificacao_usuario_id_usuario_id_fk",
+          "tableFrom": "verificacao",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "verificacao_execucao_id_ponto_id_rodada_tentativa_unique": {
+          "name": "verificacao_execucao_id_ponto_id_rodada_tentativa_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "execucao_id",
+            "ponto_id",
+            "rodada",
+            "tentativa"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "rodada_tentativa_positivas": {
+          "name": "rodada_tentativa_positivas",
+          "value": "\"verificacao\".\"rodada\" >= 1 and \"verificacao\".\"tentativa\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.estado_etapa_local": {
+      "name": "estado_etapa_local",
+      "schema": "",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa_id": {
+          "name": "etapa_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_etapa_local",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'nao_iniciada'"
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "estado_etapa_local_tenant_id_obra_id_index": {
+          "name": "estado_etapa_local_tenant_id_obra_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "estado_etapa_local_tenant_id_tenant_id_fk": {
+          "name": "estado_etapa_local_tenant_id_tenant_id_fk",
+          "tableFrom": "estado_etapa_local",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "estado_etapa_local_obra_id_obra_id_fk": {
+          "name": "estado_etapa_local_obra_id_obra_id_fk",
+          "tableFrom": "estado_etapa_local",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "estado_etapa_local_local_id_local_id_fk": {
+          "name": "estado_etapa_local_local_id_local_id_fk",
+          "tableFrom": "estado_etapa_local",
+          "tableTo": "local",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "estado_etapa_local_etapa_id_etapa_id_fk": {
+          "name": "estado_etapa_local_etapa_id_etapa_id_fk",
+          "tableFrom": "estado_etapa_local",
+          "tableTo": "etapa",
+          "columnsFrom": [
+            "etapa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "estado_etapa_local_local_id_etapa_id_pk": {
+          "name": "estado_etapa_local_local_id_etapa_id_pk",
+          "columns": [
+            "local_id",
+            "etapa_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.etapa": {
+      "name": "etapa",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "etapa_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ponto_sem_volta": {
+          "name": "ponto_sem_volta",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "etapa_codigo_unique": {
+          "name": "etapa_codigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codigo"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.local": {
+      "name": "local",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_local",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pai_id": {
+          "name": "pai_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "local_tenant_id_index": {
+          "name": "local_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "local_tenant_id_tenant_id_fk": {
+          "name": "local_tenant_id_tenant_id_fk",
+          "tableFrom": "local",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "local_obra_id_obra_id_fk": {
+          "name": "local_obra_id_obra_id_fk",
+          "tableFrom": "local",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "local_pai_id_local_id_fk": {
+          "name": "local_pai_id_local_id_fk",
+          "tableFrom": "local",
+          "tableTo": "local",
+          "columnsFrom": [
+            "pai_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "local_obra_id_tipo_nome_unique": {
+          "name": "local_obra_id_tipo_nome_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "obra_id",
+            "tipo",
+            "nome"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.obra": {
+      "name": "obra",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endereco": {
+          "name": "endereco",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "area_m2": {
+          "name": "area_m2",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "status_obra",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ativa'"
+        },
+        "engenheiro_responsavel_id": {
+          "name": "engenheiro_responsavel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "horario_anuncio": {
+          "name": "horario_anuncio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'16:00'"
+        },
+        "fuso_horario": {
+          "name": "fuso_horario",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'America/Sao_Paulo'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "obra_tenant_id_index": {
+          "name": "obra_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "obra_tenant_id_tenant_id_fk": {
+          "name": "obra_tenant_id_tenant_id_fk",
+          "tableFrom": "obra",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obra_engenheiro_responsavel_id_usuario_id_fk": {
+          "name": "obra_engenheiro_responsavel_id_usuario_id_fk",
+          "tableFrom": "obra",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "engenheiro_responsavel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "horario_anuncio_formato": {
+          "name": "horario_anuncio_formato",
+          "value": "\"obra\".\"horario_anuncio\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.obra_membro": {
+      "name": "obra_membro",
+      "schema": "",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "papel": {
+          "name": "papel",
+          "type": "papel",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "obra_membro_tenant_id_index": {
+          "name": "obra_membro_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "obra_membro_tenant_id_tenant_id_fk": {
+          "name": "obra_membro_tenant_id_tenant_id_fk",
+          "tableFrom": "obra_membro",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obra_membro_obra_id_obra_id_fk": {
+          "name": "obra_membro_obra_id_obra_id_fk",
+          "tableFrom": "obra_membro",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obra_membro_usuario_id_usuario_id_fk": {
+          "name": "obra_membro_usuario_id_usuario_id_fk",
+          "tableFrom": "obra_membro",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "obra_membro_obra_id_usuario_id_pk": {
+          "name": "obra_membro_obra_id_usuario_id_pk",
+          "columns": [
+            "obra_id",
+            "usuario_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ponto_controle": {
+      "name": "ponto_controle",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa_id": {
+          "name": "etapa_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "regiao": {
+          "name": "regiao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grandeza": {
+          "name": "grandeza",
+          "type": "grandeza",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor_esperado": {
+          "name": "valor_esperado",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "unidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tolerancia_mais": {
+          "name": "tolerancia_mais",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tolerancia_menos": {
+          "name": "tolerancia_menos",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eh_interface": {
+          "name": "eh_interface",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "local_referencia_id": {
+          "name": "local_referencia_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referencia_nivel": {
+          "name": "referencia_nivel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "exige_foto": {
+          "name": "exige_foto",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "origem": {
+          "name": "origem",
+          "type": "origem_ponto",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_revisao": {
+          "name": "status_revisao",
+          "type": "status_revisao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sugerido'"
+        },
+        "projeto_id": {
+          "name": "projeto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trecho_origem": {
+          "name": "trecho_origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revisado_por_id": {
+          "name": "revisado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revisado_em": {
+          "name": "revisado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ponto_controle_checklist_idx": {
+          "name": "ponto_controle_checklist_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "etapa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "local_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status_revisao",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ponto_controle_tenant_id_tenant_id_fk": {
+          "name": "ponto_controle_tenant_id_tenant_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_obra_id_obra_id_fk": {
+          "name": "ponto_controle_obra_id_obra_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_etapa_id_etapa_id_fk": {
+          "name": "ponto_controle_etapa_id_etapa_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "etapa",
+          "columnsFrom": [
+            "etapa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_local_id_local_id_fk": {
+          "name": "ponto_controle_local_id_local_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "local",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_local_referencia_id_local_id_fk": {
+          "name": "ponto_controle_local_referencia_id_local_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "local",
+          "columnsFrom": [
+            "local_referencia_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_projeto_id_projeto_id_fk": {
+          "name": "ponto_controle_projeto_id_projeto_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "projeto",
+          "columnsFrom": [
+            "projeto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ponto_controle_revisado_por_id_usuario_id_fk": {
+          "name": "ponto_controle_revisado_por_id_usuario_id_fk",
+          "tableFrom": "ponto_controle",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "revisado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "valor_esperado_conforme_grandeza": {
+          "name": "valor_esperado_conforme_grandeza",
+          "value": "(\"ponto_controle\".\"grandeza\" = 'existencia') = (\"ponto_controle\".\"valor_esperado\" is null)"
+        },
+        "tolerancias_nao_negativas": {
+          "name": "tolerancias_nao_negativas",
+          "value": "coalesce(\"ponto_controle\".\"tolerancia_mais\", 0) >= 0 and coalesce(\"ponto_controle\".\"tolerancia_menos\", 0) >= 0"
+        },
+        "interface_tem_referencia": {
+          "name": "interface_tem_referencia",
+          "value": "not \"ponto_controle\".\"eh_interface\" or \"ponto_controle\".\"local_referencia_id\" is not null"
+        },
+        "ia_cita_origem": {
+          "name": "ia_cita_origem",
+          "value": "\"ponto_controle\".\"origem\" <> 'ia' or \"ponto_controle\".\"trecho_origem\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.extracao_projeto": {
+      "name": "extracao_projeto",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "projeto_id": {
+          "name": "projeto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "textos": {
+          "name": "textos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "camadas": {
+          "name": "camadas",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blocos": {
+          "name": "blocos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cotas_nivel": {
+          "name": "cotas_nivel",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ambientes": {
+          "name": "ambientes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carimbo": {
+          "name": "carimbo",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao_extrator": {
+          "name": "versao_extrator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "extracao_projeto_tenant_id_index": {
+          "name": "extracao_projeto_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "extracao_projeto_tenant_id_tenant_id_fk": {
+          "name": "extracao_projeto_tenant_id_tenant_id_fk",
+          "tableFrom": "extracao_projeto",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extracao_projeto_projeto_id_projeto_id_fk": {
+          "name": "extracao_projeto_projeto_id_projeto_id_fk",
+          "tableFrom": "extracao_projeto",
+          "tableTo": "projeto",
+          "columnsFrom": [
+            "projeto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "extracao_projeto_projeto_id_unique": {
+          "name": "extracao_projeto_projeto_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "projeto_id"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pendencia": {
+      "name": "pendencia",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "projeto_id": {
+          "name": "projeto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto_original": {
+          "name": "texto_original",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "etapa_bloqueada_id": {
+          "name": "etapa_bloqueada_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "risco": {
+          "name": "risco",
+          "type": "risco",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_pendencia",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'aberta'"
+        },
+        "classificado_por": {
+          "name": "classificado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resolvida_por_id": {
+          "name": "resolvida_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolvida_em": {
+          "name": "resolvida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nota_resolucao": {
+          "name": "nota_resolucao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pendencia_tenant_id_obra_id_status_index": {
+          "name": "pendencia_tenant_id_obra_id_status_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "obra_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pendencia_tenant_id_tenant_id_fk": {
+          "name": "pendencia_tenant_id_tenant_id_fk",
+          "tableFrom": "pendencia",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pendencia_obra_id_obra_id_fk": {
+          "name": "pendencia_obra_id_obra_id_fk",
+          "tableFrom": "pendencia",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pendencia_projeto_id_projeto_id_fk": {
+          "name": "pendencia_projeto_id_projeto_id_fk",
+          "tableFrom": "pendencia",
+          "tableTo": "projeto",
+          "columnsFrom": [
+            "projeto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pendencia_etapa_bloqueada_id_etapa_id_fk": {
+          "name": "pendencia_etapa_bloqueada_id_etapa_id_fk",
+          "tableFrom": "pendencia",
+          "tableTo": "etapa",
+          "columnsFrom": [
+            "etapa_bloqueada_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pendencia_resolvida_por_id_usuario_id_fk": {
+          "name": "pendencia_resolvida_por_id_usuario_id_fk",
+          "tableFrom": "pendencia",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "resolvida_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.projeto": {
+      "name": "projeto",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "disciplina": {
+          "name": "disciplina",
+          "type": "disciplina",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_arquivo": {
+          "name": "tipo_arquivo",
+          "type": "tipo_arquivo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arquivo_key": {
+          "name": "arquivo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arquivo_sha256": {
+          "name": "arquivo_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_extracao": {
+          "name": "status_extracao",
+          "type": "status_extracao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "erro_extracao": {
+          "name": "erro_extracao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "substituido_por_id": {
+          "name": "substituido_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enviado_por_id": {
+          "name": "enviado_por_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "projeto_tenant_id_index": {
+          "name": "projeto_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "projeto_tenant_id_tenant_id_fk": {
+          "name": "projeto_tenant_id_tenant_id_fk",
+          "tableFrom": "projeto",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projeto_obra_id_obra_id_fk": {
+          "name": "projeto_obra_id_obra_id_fk",
+          "tableFrom": "projeto",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projeto_substituido_por_id_projeto_id_fk": {
+          "name": "projeto_substituido_por_id_projeto_id_fk",
+          "tableFrom": "projeto",
+          "tableTo": "projeto",
+          "columnsFrom": [
+            "substituido_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projeto_enviado_por_id_usuario_id_fk": {
+          "name": "projeto_enviado_por_id_usuario_id_fk",
+          "tableFrom": "projeto",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "enviado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "projeto_obra_id_codigo_revisao_unique": {
+          "name": "projeto_obra_id_codigo_revisao_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "obra_id",
+            "codigo",
+            "revisao"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tenant": {
+      "name": "tenant",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cnpj": {
+          "name": "cnpj",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plano": {
+          "name": "plano",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'piloto'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "stripe_customer_id": {
+          "name": "stripe_customer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_subscription_id": {
+          "name": "stripe_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assinatura_status": {
+          "name": "assinatura_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assinatura_periodicidade": {
+          "name": "assinatura_periodicidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assinatura_fim_periodo": {
+          "name": "assinatura_fim_periodo",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assinatura_cancela_no_fim": {
+          "name": "assinatura_cancela_no_fim",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "assinatura_atualizada_em": {
+          "name": "assinatura_atualizada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tenant_cnpj_unique": {
+          "name": "tenant_cnpj_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cnpj"
+          ]
+        },
+        "tenant_stripe_customer_id_unique": {
+          "name": "tenant_stripe_customer_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "stripe_customer_id"
+          ]
+        },
+        "tenant_stripe_subscription_id_unique": {
+          "name": "tenant_stripe_subscription_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "stripe_subscription_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_proprio": {
+          "name": "tenant_proprio",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tolerancia_padrao": {
+      "name": "tolerancia_padrao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grandeza": {
+          "name": "grandeza",
+          "type": "grandeza",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tolerancia_mais": {
+          "name": "tolerancia_mais",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tolerancia_menos": {
+          "name": "tolerancia_menos",
+          "type": "numeric(12, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "unidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tolerancia_padrao_tenant_id_tenant_id_fk": {
+          "name": "tolerancia_padrao_tenant_id_tenant_id_fk",
+          "tableFrom": "tolerancia_padrao",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tolerancia_padrao_tenant_id_grandeza_unique": {
+          "name": "tolerancia_padrao_tenant_id_grandeza_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "grandeza"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "tolerancia_padrao_nao_negativa": {
+          "name": "tolerancia_padrao_nao_negativa",
+          "value": "\"tolerancia_padrao\".\"tolerancia_mais\" >= 0 and \"tolerancia_padrao\".\"tolerancia_menos\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.usuario": {
+      "name": "usuario",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whatsapp_e164": {
+          "name": "whatsapp_e164",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "whatsapp_wa_id": {
+          "name": "whatsapp_wa_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "papel": {
+          "name": "papel",
+          "type": "papel",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "auth_user_id": {
+          "name": "auth_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "usuario_tenant_id_tenant_id_fk": {
+          "name": "usuario_tenant_id_tenant_id_fk",
+          "tableFrom": "usuario",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "usuario_whatsapp_e164_unique": {
+          "name": "usuario_whatsapp_e164_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "whatsapp_e164"
+          ]
+        },
+        "usuario_auth_user_id_unique": {
+          "name": "usuario_auth_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "auth_user_id"
+          ]
+        },
+        "usuario_tenant_id_email_unique": {
+          "name": "usuario_tenant_id_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "email"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "whatsapp_e164_formato": {
+          "name": "whatsapp_e164_formato",
+          "value": "\"usuario\".\"whatsapp_e164\" ~ '^\\+[1-9][0-9]{7,14}$'"
+        },
+        "painel_exige_email": {
+          "name": "painel_exige_email",
+          "value": "\"usuario\".\"papel\" = 'encarregado' or \"usuario\".\"email\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.flow_sessao": {
+      "name": "flow_sessao",
+      "schema": "",
+      "columns": {
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_flow_sessao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expira_em": {
+          "name": "expira_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concluida_em": {
+          "name": "concluida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "flow_sessao_tenant_id_index": {
+          "name": "flow_sessao_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "flow_sessao_tenant_id_tenant_id_fk": {
+          "name": "flow_sessao_tenant_id_tenant_id_fk",
+          "tableFrom": "flow_sessao",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "flow_sessao_usuario_id_usuario_id_fk": {
+          "name": "flow_sessao_usuario_id_usuario_id_fk",
+          "tableFrom": "flow_sessao",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "flow_sessao_execucao_id_execucao_etapa_id_fk": {
+          "name": "flow_sessao_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "flow_sessao",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mensagem_whatsapp": {
+      "name": "mensagem_whatsapp",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wa_message_id": {
+          "name": "wa_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "direcao": {
+          "name": "direcao",
+          "type": "direcao_mensagem",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_entrega": {
+          "name": "status_entrega",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "erro_entrega": {
+          "name": "erro_entrega",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "classificacao": {
+          "name": "classificacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interpretacao": {
+          "name": "interpretacao",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ponto_id": {
+          "name": "ponto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "execucao_id": {
+          "name": "execucao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "mensagem_whatsapp_tenant_id_usuario_id_criado_em_index": {
+          "name": "mensagem_whatsapp_tenant_id_usuario_id_criado_em_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "usuario_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mensagem_whatsapp_tenant_id_tenant_id_fk": {
+          "name": "mensagem_whatsapp_tenant_id_tenant_id_fk",
+          "tableFrom": "mensagem_whatsapp",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mensagem_whatsapp_usuario_id_usuario_id_fk": {
+          "name": "mensagem_whatsapp_usuario_id_usuario_id_fk",
+          "tableFrom": "mensagem_whatsapp",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mensagem_whatsapp_obra_id_obra_id_fk": {
+          "name": "mensagem_whatsapp_obra_id_obra_id_fk",
+          "tableFrom": "mensagem_whatsapp",
+          "tableTo": "obra",
+          "columnsFrom": [
+            "obra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mensagem_whatsapp_ponto_id_ponto_controle_id_fk": {
+          "name": "mensagem_whatsapp_ponto_id_ponto_controle_id_fk",
+          "tableFrom": "mensagem_whatsapp",
+          "tableTo": "ponto_controle",
+          "columnsFrom": [
+            "ponto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mensagem_whatsapp_execucao_id_execucao_etapa_id_fk": {
+          "name": "mensagem_whatsapp_execucao_id_execucao_etapa_id_fk",
+          "tableFrom": "mensagem_whatsapp",
+          "tableTo": "execucao_etapa",
+          "columnsFrom": [
+            "execucao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "mensagem_whatsapp_wa_message_id_unique": {
+          "name": "mensagem_whatsapp_wa_message_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "wa_message_id"
+          ]
+        }
+      },
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "entrada_tem_wamid": {
+          "name": "entrada_tem_wamid",
+          "value": "\"mensagem_whatsapp\".\"direcao\" <> 'entrada' or \"mensagem_whatsapp\".\"wa_message_id\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.midia": {
+      "name": "midia",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origem": {
+          "name": "origem",
+          "type": "origem_midia",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_midia",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "fonte": {
+          "name": "fonte",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_key": {
+          "name": "storage_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tamanho_bytes": {
+          "name": "tamanho_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verificacao_id": {
+          "name": "verificacao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "divergencia_id": {
+          "name": "divergencia_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mensagem_id": {
+          "name": "mensagem_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "midia_tenant_id_index": {
+          "name": "midia_tenant_id_index",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "midia_tenant_id_tenant_id_fk": {
+          "name": "midia_tenant_id_tenant_id_fk",
+          "tableFrom": "midia",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "midia_verificacao_id_verificacao_id_fk": {
+          "name": "midia_verificacao_id_verificacao_id_fk",
+          "tableFrom": "midia",
+          "tableTo": "verificacao",
+          "columnsFrom": [
+            "verificacao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "midia_divergencia_id_divergencia_id_fk": {
+          "name": "midia_divergencia_id_divergencia_id_fk",
+          "tableFrom": "midia",
+          "tableTo": "divergencia",
+          "columnsFrom": [
+            "divergencia_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "midia_mensagem_id_mensagem_whatsapp_id_fk": {
+          "name": "midia_mensagem_id_mensagem_whatsapp_id_fk",
+          "tableFrom": "midia",
+          "tableTo": "mensagem_whatsapp",
+          "columnsFrom": [
+            "mensagem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "canteiro_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "midia_um_dono": {
+          "name": "midia_um_dono",
+          "value": "num_nonnulls(\"midia\".\"verificacao_id\", \"midia\".\"divergencia_id\", \"midia\".\"mensagem_id\") <= 1"
+        },
+        "midia_armazenada_completa": {
+          "name": "midia_armazenada_completa",
+          "value": "\"midia\".\"status\" <> 'armazenada' or (\"midia\".\"storage_key\" is not null and \"midia\".\"sha256\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.ator_tipo": {
+      "name": "ator_tipo",
+      "schema": "public",
+      "values": [
+        "usuario",
+        "sistema",
+        "ia"
+      ]
+    },
+    "public.canal": {
+      "name": "canal",
+      "schema": "public",
+      "values": [
+        "flow",
+        "conversa",
+        "painel"
+      ]
+    },
+    "public.decisao": {
+      "name": "decisao",
+      "schema": "public",
+      "values": [
+        "liberada",
+        "recusada"
+      ]
+    },
+    "public.direcao_mensagem": {
+      "name": "direcao_mensagem",
+      "schema": "public",
+      "values": [
+        "entrada",
+        "saida"
+      ]
+    },
+    "public.disciplina": {
+      "name": "disciplina",
+      "schema": "public",
+      "values": [
+        "arquitetura",
+        "estrutura",
+        "instalacoes",
+        "interiores"
+      ]
+    },
+    "public.grandeza": {
+      "name": "grandeza",
+      "schema": "public",
+      "values": [
+        "nivel",
+        "distancia",
+        "prumo",
+        "esquadro",
+        "existencia"
+      ]
+    },
+    "public.momento_check": {
+      "name": "momento_check",
+      "schema": "public",
+      "values": [
+        "antes",
+        "durante",
+        "depois"
+      ]
+    },
+    "public.origem_midia": {
+      "name": "origem_midia",
+      "schema": "public",
+      "values": [
+        "flow_cdn",
+        "whatsapp_media",
+        "upload_painel"
+      ]
+    },
+    "public.origem_ponto": {
+      "name": "origem_ponto",
+      "schema": "public",
+      "values": [
+        "ia",
+        "manual"
+      ]
+    },
+    "public.papel": {
+      "name": "papel",
+      "schema": "public",
+      "values": [
+        "admin",
+        "engenheiro",
+        "encarregado"
+      ]
+    },
+    "public.risco": {
+      "name": "risco",
+      "schema": "public",
+      "values": [
+        "alto",
+        "medio",
+        "baixo"
+      ]
+    },
+    "public.status_etapa_local": {
+      "name": "status_etapa_local",
+      "schema": "public",
+      "values": [
+        "nao_iniciada",
+        "em_andamento",
+        "concluida"
+      ]
+    },
+    "public.status_execucao": {
+      "name": "status_execucao",
+      "schema": "public",
+      "values": [
+        "anunciada",
+        "em_conferencia",
+        "bloqueada",
+        "aguardando_liberacao",
+        "liberada",
+        "recusada",
+        "cancelada"
+      ]
+    },
+    "public.status_extracao": {
+      "name": "status_extracao",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "processando",
+        "concluida",
+        "falhou",
+        "nao_aplicavel"
+      ]
+    },
+    "public.status_midia": {
+      "name": "status_midia",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "armazenada",
+        "falhou"
+      ]
+    },
+    "public.status_obra": {
+      "name": "status_obra",
+      "schema": "public",
+      "values": [
+        "ativa",
+        "pausada",
+        "concluida"
+      ]
+    },
+    "public.status_pendencia": {
+      "name": "status_pendencia",
+      "schema": "public",
+      "values": [
+        "aberta",
+        "resolvida",
+        "descartada"
+      ]
+    },
+    "public.status_revisao": {
+      "name": "status_revisao",
+      "schema": "public",
+      "values": [
+        "sugerido",
+        "aprovado",
+        "descartado"
+      ]
+    },
+    "public.tipo_arquivo": {
+      "name": "tipo_arquivo",
+      "schema": "public",
+      "values": [
+        "dwg",
+        "pdf"
+      ]
+    },
+    "public.tipo_cronograma": {
+      "name": "tipo_cronograma",
+      "schema": "public",
+      "values": [
+        "mpp",
+        "xml"
+      ]
+    },
+    "public.tipo_custo": {
+      "name": "tipo_custo",
+      "schema": "public",
+      "values": [
+        "whatsapp_template",
+        "whatsapp_servico",
+        "llm_tokens",
+        "transcricao_audio"
+      ]
+    },
+    "public.tipo_flow_sessao": {
+      "name": "tipo_flow_sessao",
+      "schema": "public",
+      "values": [
+        "anuncio",
+        "checklist",
+        "recusa"
+      ]
+    },
+    "public.tipo_local": {
+      "name": "tipo_local",
+      "schema": "public",
+      "values": [
+        "pavimento",
+        "laje",
+        "ambiente",
+        "eixo"
+      ]
+    },
+    "public.tipo_resposta": {
+      "name": "tipo_resposta",
+      "schema": "public",
+      "values": [
+        "sim_nao",
+        "opcao",
+        "data",
+        "medida",
+        "texto"
+      ]
+    },
+    "public.unidade": {
+      "name": "unidade",
+      "schema": "public",
+      "values": [
+        "m",
+        "cm",
+        "mm",
+        "booleano"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

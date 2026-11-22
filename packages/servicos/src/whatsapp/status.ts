@@ -2,7 +2,16 @@ import { atualizarStatusEntrega, schema, withTenant } from "@canteirocheck/db";
 import type { StatusWebhook } from "@canteirocheck/whatsapp";
 import { and, eq } from "drizzle-orm";
 
-const { eventoCusto, mensagemWhatsapp } = schema;
+const { eventoCusto, mensagemWhatsapp, checkEnvio } = schema;
+
+/** Status da Cloud API → `check_envio.entrega`. */
+const ENTREGA: Record<string, "enviado" | "entregue" | "lido" | "falhou"> = {
+  sent: "enviado",
+  delivered: "entregue",
+  read: "lido",
+  failed: "falhou",
+};
+const ORDEM_DA_ENTREGA = ["enviado", "entregue", "lido"];
 
 /**
  * Preço por mensagem entregue, por categoria (USD). ESTIMATIVA: a Meta cobra por mensagem desde
@@ -35,6 +44,24 @@ function precos(): Record<string, string> {
 export async function registrarStatus(s: StatusWebhook): Promise<{ custo: boolean }> {
   const erro = s.errors?.length ? s.errors : undefined;
   const alvo = await atualizarStatusEntrega(s.id, s.status, erro);
+  const entrega = ENTREGA[s.status];
+  if (alvo?.tenantId && entrega) {
+    // A primeira pergunta do check: o envio copia a entrega dela (sem voltar de lido para entregue).
+    await withTenant(alvo.tenantId, async (tx) => {
+      const [e] = await tx
+        .select({ id: checkEnvio.id, entrega: checkEnvio.entrega })
+        .from(checkEnvio)
+        .where(eq(checkEnvio.mensagemId, alvo.mensagemId));
+      if (!e) return;
+      const regride =
+        entrega !== "falhou" && ORDEM_DA_ENTREGA.indexOf(entrega) < ORDEM_DA_ENTREGA.indexOf(e.entrega ?? "");
+      if (regride) return;
+      await tx
+        .update(checkEnvio)
+        .set({ entrega, ...(entrega === "lido" ? { lidoEm: new Date() } : {}) })
+        .where(eq(checkEnvio.id, e.id));
+    });
+  }
   if (!alvo?.tenantId || s.pricing?.type !== "regular") return { custo: false };
   const categoria = s.pricing.category ?? "utility";
   const tenantId = alvo.tenantId;

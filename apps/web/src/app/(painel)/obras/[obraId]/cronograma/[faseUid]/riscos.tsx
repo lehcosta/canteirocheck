@@ -25,7 +25,9 @@ const origemDoProjeto = (r: RiscoDaFase) =>
 
 /** Os dois trechos de onde o risco saiu, numa linha: o do projeto entre aspas, × a linha do cronograma. */
 const provaResumida = (r: RiscoDaFase) =>
-  `${origemDoProjeto(r)}: “${r.projetoTrecho}”  ×  ${linha(r)}: ${r.cronogramaTrecho}`;
+  r.tipo === "sequencia"
+    ? `Antes: ${r.projetoTrecho} (${r.projetoReferencia ?? "cronograma"})  →  ${linha(r)}: ${r.cronogramaTrecho}`
+    : `${origemDoProjeto(r)}: “${r.projetoTrecho}”  ×  ${linha(r)}: ${r.cronogramaTrecho}`;
 
 /**
  * Em que pé está o risco pela última resposta das perguntas ligadas a ele. "Antes sem alerta" diz
@@ -55,24 +57,36 @@ function Prova({ risco: r, fase, obraId }: { risco: RiscoDaFase; fase: FaseDoCro
     r.cronogramaInicio && r.cronogramaTermino
       ? `de ${dataCurta(r.cronogramaInicio)} a ${dataCurta(r.cronogramaTermino)}`
       : "sem data no cronograma";
+  const sequencia = r.tipo === "sequencia";
+  const versao = `v${fase.versaoCruzada ?? fase.versaoNumero}`;
   return (
     <div id={`prova-${r.codigo}`} className="space-y-4 px-4 pt-0.5 pb-[18px]">
       <div className="flex items-stretch">
-        <Lado
-          rotulo="O projeto diz"
-          dito={`“${r.projetoTrecho}”`}
-          codigo={origemDoProjeto(r)}
-          origem={[r.projeto?.titulo, r.projetoReferencia].filter(Boolean).join(" · ")}
-          acao={r.projeto && { texto: "Ver na prancha", href: `/obras/${obraId}/projetos/${r.projeto.id}` }}
-        />
+        {sequencia ? (
+          <Lado
+            rotulo="Precisa estar pronta"
+            dito={r.projetoTrecho}
+            codigo={versao}
+            origem={r.projetoReferencia ?? ""}
+            acao={{ texto: "Ver no cronograma", href: `/obras/${obraId}/cronograma` }}
+          />
+        ) : (
+          <Lado
+            rotulo="O projeto diz"
+            dito={`“${r.projetoTrecho}”`}
+            codigo={origemDoProjeto(r)}
+            origem={[r.projeto?.titulo, r.projetoReferencia].filter(Boolean).join(" · ")}
+            acao={r.projeto && { texto: "Ver na prancha", href: `/obras/${obraId}/projetos/${r.projeto.id}` }}
+          />
+        )}
         <span
           aria-hidden
           className="flex w-12 shrink-0 items-center justify-center font-heading text-[30px] leading-8 font-extrabold"
         >
-          ×
+          {sequencia ? "→" : "×"}
         </span>
         <Lado
-          rotulo="O cronograma diz"
+          rotulo={sequencia ? "Antes de começar" : "O cronograma diz"}
           dito={r.cronogramaTrecho}
           codigo={`v${fase.versaoCruzada ?? fase.versaoNumero} · ${linha(r)}`}
           origem={periodo}
@@ -80,7 +94,9 @@ function Prova({ risco: r, fase, obraId }: { risco: RiscoDaFase; fase: FaseDoCro
         />
       </div>
       <p className="flex items-baseline gap-4">
-        <span className={cn(ROTULO, "w-[108px] shrink-0")}>Se nada mudar</span>
+        <span className={cn(ROTULO, "w-[108px] shrink-0")}>
+          {sequencia ? "Se começar antes" : "Se nada mudar"}
+        </span>
         <span className="text-[15px] leading-[22px]">{r.consequencia}</span>
       </p>
     </div>
@@ -152,8 +168,8 @@ export function RiscosDaFase({
       <div className="space-y-1">
         <TituloSecao id="titulo-riscos">Riscos do cruzamento</TituloSecao>
         <p className="text-[15px] leading-[22px] text-muted-foreground">
-          O que o projeto e o cronograma dizem juntos sobre esta fase. Cada risco cita os dois trechos de onde
-          saiu.
+          O que o projeto e o cronograma dizem juntos sobre esta fase, e as passagens entre tarefas: o que
+          precisa estar pronto antes de a seguinte começar. Cada risco cita de onde saiu.
         </p>
         {/* os riscos são do último cruzamento concluído, que pode ser de uma versão anterior à vigente */}
         {fase.versaoCruzada !== null && fase.versaoCruzada !== fase.versaoNumero && (

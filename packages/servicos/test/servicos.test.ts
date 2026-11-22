@@ -3,9 +3,10 @@ import { podeEntrarNoPainel, schema, withTenant } from "@canteirocheck/db";
 import { comDono, criarTenantComAdmin, urlsDeTeste } from "@canteirocheck/db/testing";
 import { eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
-import type { Contexto } from "../src/contexto";
+import { type Contexto, ErroDeCampo } from "../src/contexto";
 import {
   adicionarMembro,
+  andamentoDaObra,
   criarLocal,
   criarObra,
   criarUsuario,
@@ -147,6 +148,19 @@ describe("obras", () => {
     );
   });
 
+  it("erro de formato aponta o campo, para o formulário mostrar embaixo dele", async () => {
+    const erro = await criarObra(admin, {
+      nome: "X",
+      areaM2: "12,5,0",
+      engenheiroResponsavelId: engenheiro.usuarioId,
+    }).catch((e) => e);
+    expect(erro).toBeInstanceOf(ErroDeCampo);
+    expect(erro).toMatchObject({ campo: "areaM2", message: "Área inválida. Ex.: 1250,50" });
+    await expect(
+      criarObra(admin, { nome: "X", engenheiroResponsavelId: encarregadoId }),
+    ).rejects.toMatchObject({ campo: "engenheiroResponsavelId" });
+  });
+
   it("locais: hierarquia na mesma obra e nome único por tipo", async () => {
     const l4 = await criarLocal(engenheiro, { obraId, tipo: "laje", nome: "L4" });
     await criarLocal(engenheiro, { obraId, tipo: "eixo", nome: "A", paiId: l4.id });
@@ -168,6 +182,22 @@ describe("obras", () => {
     await removerMembro(admin, { obraId, usuarioId: encarregadoId });
     const obra = await obterObra(admin, obraId);
     expect(obra?.membros.map((m) => m.usuarioId)).toEqual([engenheiro.usuarioId]);
+  });
+
+  it("andamento: equipe sem encarregado, locais contados, nada anunciado; outra construtora não vê", async () => {
+    const a = await andamentoDaObra(admin, obraId);
+    expect(a?.fatos).toEqual({ temEncarregado: false, locais: 2, pontosAprovados: 0, etapaAnunciada: false });
+    expect(a?.pontosSugeridos).toEqual({ ia: 0, manual: 0 });
+    expect(a?.leitura).toBeNull();
+    const disponiveis = a?.encarregadosDisponiveis ?? 0;
+    expect(disponiveis).toBeGreaterThan(0);
+    await adicionarMembro(engenheiro, { obraId, usuarioId: encarregadoId });
+    const b = await andamentoDaObra(admin, obraId);
+    expect(b?.fatos.temEncarregado).toBe(true);
+    expect(b?.encarregadosDisponiveis).toBe(disponiveis - 1);
+    await removerMembro(admin, { obraId, usuarioId: encarregadoId });
+    expect(await andamentoDaObra(outro, obraId)).toBeNull();
+    expect(await andamentoDaObra(admin, "nao-e-uuid")).toBeNull();
   });
 
   it("outra construtora não vê nem mexe na obra", async () => {

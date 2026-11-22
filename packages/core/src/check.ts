@@ -63,6 +63,49 @@ export function datasDoCheck(
   return datas;
 }
 
+/** Uma saída do check: a data e as perguntas que vão nela. */
+export interface SaidaDoCheck {
+  data: string;
+  perguntas: string[];
+}
+
+/**
+ * Quando cada pergunta sai. Em "durante" e "depois" todas saem juntas nas datas da regra. Em
+ * "antes", a pergunta com âncora (a tarefa que vai começar, na passagem entre tarefas) sai `dias`
+ * antes do início DESSA tarefa; as outras, `dias` antes do início da fase. Perguntas com a mesma
+ * data saem no mesmo envio. Pergunta sem data de referência não sai.
+ */
+export function saidasDoCheck(
+  regra: { momento: Momento; dias: number },
+  fase: { inicio: string | null; termino: string | null },
+  perguntas: { id: string; ancoraInicio: string | null }[],
+): SaidaDoCheck[] {
+  if (perguntas.length === 0) return [];
+  if (regra.momento !== "antes")
+    return datasDoCheck(regra, fase).map((data) => ({ data, perguntas: perguntas.map((p) => p.id) }));
+  const porData = new Map<string, string[]>();
+  for (const p of perguntas) {
+    const base = p.ancoraInicio ?? fase.inicio;
+    if (!base) continue;
+    const data = iso(ms(base) - regra.dias * DIA);
+    porData.set(data, [...(porData.get(data) ?? []), p.id]);
+  }
+  return [...porData].sort(([a], [b]) => a.localeCompare(b)).map(([data, ids]) => ({ data, perguntas: ids }));
+}
+
+/** Dias corridos de `de` até `ate` (AAAA-MM-DD); negativo se `ate` vem antes. */
+export const diasEntre = (de: string, ate: string) => Math.round((ms(ate) - ms(de)) / DIA);
+
+/** "2026-11-02", "02/11/2026", "02/11/26" ou "02/11" (ano de `hoje`) → "2026-11-02"; null se não for data. */
+export function lerDataDaResposta(valor: string, hoje: string): string | null {
+  const v = valor.trim();
+  const curta = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?$/.exec(v);
+  if (!curta) return lerData(v);
+  const [, d = "", m = "", a] = curta;
+  const ano = a ? (a.length === 2 ? `20${a}` : a) : hoje.slice(0, 4);
+  return lerData(`${ano}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`);
+}
+
 /** A primeira data de hoje em diante; se todas já passaram, a última; null sem datas. */
 export function proximaSaida(datas: string[], hoje: string): string | null {
   const ordenadas = [...datas].sort();

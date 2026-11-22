@@ -4,8 +4,12 @@ import { cn } from "@/lib/utils";
  * Logotipo e marca da EngCheck (estudo C do paper-explorer `logo-engcheck`, aprovado 2026-11-19).
  * A régua de nível vira a marca à esquerda — contorno da cor do texto, líquido `liquido`, bolha branca no centro —
  * e "EngCheck" vem ao lado em Archivo 800 (a mesma família dos títulos, via `--font-archivo`).
+ * A régua é desenhada como linha de projeto (estudo B do `logo-regua`, aprovado 2026-11-19): contorno de 2 em 26 de altura
+ * e riscos curtos, que não tocam o contorno.
  * Em repouso a bolha fica no centro; só o `LogotipoVivo` (logotipo-vivo.tsx) a move, seguindo o mouse ou a inclinação do celular.
- * Cor das letras e da régua = `currentColor`. A palavra depende da fonte Archivo (é o partido tipográfico do estudo C).
+ * "Check" vai no verde do nível, o conferido (estudo A do `logo-fonte`, aprovado 2026-11-21): `--nivel` é verde escuro no
+ * tema claro e o verde do líquido no escuro. Sobre um fundo escuro fora do tema escuro, envolva o logotipo em `.dark`.
+ * Cor de "Eng" e da régua = `currentColor`. A palavra depende da fonte Archivo (é o partido tipográfico do estudo C).
  */
 export function Logotipo({
   className,
@@ -18,15 +22,17 @@ export function Logotipo({
   refBolha?: React.Ref<SVGGElement>;
 }) {
   return (
-    <svg viewBox="0 9 178 29" role="img" aria-label={titulo} className={cn("h-7 w-auto", className)}>
+    <svg viewBox="0 7.5 176 29" role="img" aria-label={titulo} className={cn("h-7 w-auto", className)}>
       <Regua
-        x={3.5}
-        y={11.5}
-        largura={39}
-        altura={21}
-        traco={7}
-        riscos={[14.24, 28.96]}
-        bolha={[17.56, 17.74, 10.88, 7.41]}
+        x={1}
+        y={10}
+        largura={44}
+        altura={24}
+        traco={2}
+        risco={1.4}
+        alturaRisco={11}
+        riscos={[12.8, 31.8]}
+        bolha={[16, 17.5, 14, 9]}
         refBolha={refBolha}
       />
       <text
@@ -38,7 +44,7 @@ export function Logotipo({
         letterSpacing={-0.76}
         style={{ fontFamily: "var(--font-archivo), system-ui, sans-serif" }}
       >
-        EngCheck
+        Eng<tspan fill="var(--nivel)">Check</tspan>
       </text>
     </svg>
   );
@@ -49,13 +55,15 @@ export function MarcaRegua({ className, titulo = "EngCheck" }: { className?: str
   return (
     <svg viewBox="0 14 64 36" role="img" aria-label={titulo} className={cn("h-5 w-auto", className)}>
       <Regua
-        x={7}
-        y={21}
-        largura={50}
-        altura={22}
-        traco={8}
-        riscos={[20.74, 40.06]}
-        bolha={[24.86, 27.74, 14.28, 7.41]}
+        x={4.25}
+        y={18.25}
+        largura={55.5}
+        altura={27.5}
+        traco={2.5}
+        risco={1.8}
+        alturaRisco={13.5}
+        riscos={[19.2, 43]}
+        bolha={[23.2, 26.5, 17.6, 11]}
       />
     </svg>
   );
@@ -67,6 +75,8 @@ function Regua({
   largura,
   altura,
   traco,
+  risco,
+  alturaRisco,
   riscos,
   bolha,
   refBolha,
@@ -76,14 +86,17 @@ function Regua({
   largura: number;
   altura: number;
   traco: number;
+  /** Largura de cada risco. */
+  risco: number;
+  /** Altura de cada risco, centrado na régua. Sem ela, o risco vai de borda a borda do líquido. */
+  alturaRisco?: number;
   riscos: [number, number];
   bolha: [number, number, number, number];
   refBolha?: React.Ref<SVGGElement>;
 }) {
   const r = altura / 2;
-  const t = traco * 0.4;
-  const yi = y + traco / 2;
-  const hi = altura - traco;
+  const hi = alturaRisco ?? altura - traco;
+  const yi = y + (altura - hi) / 2;
   return (
     <>
       <rect x={x} y={y} width={largura} height={altura} rx={r} fill="var(--liquido)" />
@@ -101,7 +114,7 @@ function Regua({
         <rect x={bolha[0]} y={bolha[1]} width={bolha[2]} height={bolha[3]} rx={bolha[3] / 2} fill="#ffffff" />
       </g>
       {riscos.map((rx) => (
-        <rect key={rx} x={rx} y={yi} width={t} height={hi} fill="currentColor" />
+        <rect key={rx} x={rx} y={yi} width={risco} height={hi} fill="currentColor" />
       ))}
     </>
   );

@@ -83,7 +83,7 @@ const s = StyleSheet.create({
 });
 
 /**
- * Logotipo EngCheck (estudo C): a régua de nível como marca à esquerda e "EngCheck" ao lado.
+ * Logotipo EngCheck (estudo C): a régua de nível como marca à esquerda e "EngCheck" ao lado, com "Check" no verde do nível.
  * No PDF a palavra usa a fonte forte do relatório (Helvetica-Bold), não a Archivo do app — registrar
  * a Archivo no react-pdf exigiria o TTF; a forma da marca (régua + nome) é a mesma.
  */
@@ -92,24 +92,24 @@ export function Logotipo({ altura = 16 }: { altura?: number }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: altura * 0.3 }}>
       <Svg width={larguraRegua} height={altura} viewBox="0 8 46 28">
-        <Rect x={3.5} y={11.5} width={39} height={21} rx={10.5} ry={10.5} fill={COR.liquido} />
+        <Rect x={1} y={10} width={44} height={24} rx={12} ry={12} fill={COR.liquido} />
         <Rect
-          x={3.5}
-          y={11.5}
-          width={39}
-          height={21}
-          rx={10.5}
-          ry={10.5}
+          x={1}
+          y={10}
+          width={44}
+          height={24}
+          rx={12}
+          ry={12}
           fill="none"
           stroke={COR.ink}
-          strokeWidth={7}
+          strokeWidth={2}
         />
-        <Rect x={17.56} y={17.74} width={10.88} height={7.41} rx={3.7} ry={3.7} fill={COR.branco} />
-        <Rect x={14.24} y={15} width={2.8} height={14} fill={COR.ink} />
-        <Rect x={28.96} y={15} width={2.8} height={14} fill={COR.ink} />
+        <Rect x={16} y={17.5} width={14} height={9} rx={4.5} ry={4.5} fill={COR.branco} />
+        <Rect x={12.8} y={16.5} width={1.4} height={11} fill={COR.ink} />
+        <Rect x={31.8} y={16.5} width={1.4} height={11} fill={COR.ink} />
       </Svg>
       <Text style={{ fontFamily: FONTE.forte, fontSize: altura * 1.02, color: COR.ink, letterSpacing: -0.3 }}>
-        EngCheck
+        Eng<Text style={{ color: COR.nivel }}>Check</Text>
       </Text>
     </View>
   );

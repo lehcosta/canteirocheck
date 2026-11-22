@@ -275,7 +275,7 @@ function CartaoDoCheck({
   }, [focar, onFocado]);
 
   const botaoEditar = travado ? (
-    <Button key="editar" variant="outline" size="sm" disabled className={TRAVADO}>
+    <Button key="editar" variant="outline" size="sm" disabled className={cn("h-11", TRAVADO)}>
       <Pencil {...ICONE} />
       Editar
     </Button>
@@ -285,12 +285,13 @@ function CartaoDoCheck({
       ref={linkEditar}
       href={editar}
       scroll={false}
-      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-11")}
     >
       <Pencil {...ICONE} />
       Editar
     </Link>
   );
+  // o rodapé fica todo em 44 px: a ação principal não tem tamanho pequeno (button.tsx)
   // o botão travado não recebe o mouse: o motivo fica no title da caixa em volta e, para o leitor
   // de tela, no texto ligado ao botão
   const semEnvio = (
@@ -304,7 +305,7 @@ function CartaoDoCheck({
         size="sm"
         disabled
         aria-describedby={semEnvioId}
-        className={cn("w-full", TRAVADO)}
+        className={cn("h-11 w-full", TRAVADO)}
       >
         {Icone && <Icone {...ICONE} />}
         {rotulo}
@@ -320,7 +321,7 @@ function CartaoDoCheck({
           key="aprovar"
           variant={principal ? "default" : "outline"}
           size="sm"
-          className={cn("flex-1", TRAVADO)}
+          className={cn("h-11 flex-1", TRAVADO)}
           disabled={travado}
           onClick={onAprovar}
         >
@@ -334,7 +335,7 @@ function CartaoDoCheck({
           key="desfazer"
           variant="outline"
           size="sm"
-          className={cn("flex-1", TRAVADO)}
+          className={cn("h-11 flex-1", TRAVADO)}
           disabled={travado}
           onClick={onDesfazer}
         >
@@ -414,6 +415,12 @@ function ItemPergunta({ pergunta: p }: { pergunta: PerguntaDoCheck }) {
           <EtiquetaRisco key={c} codigo={c} pequena />
         ))}
       </p>
+      {/* pergunta de passagem entre tarefas: tem a data da tarefa dela, não a da fase */}
+      {p.saiEm && (
+        <p className="text-xs leading-4 text-muted-foreground">
+          Sai {diaCurto(p.saiEm.data)}, antes de {p.saiEm.tarefa}
+        </p>
+      )}
     </li>
   );
 }

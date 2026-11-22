@@ -42,6 +42,8 @@ export const JOBS = {
   avisar_pendencia: { fila: "execucao", payload: z.object({ ...comTenant, execucaoId: uuid }) },
   /** A cada 2 min: reenfileira o que ficou parado em `pendente` (mensagem, mídia, extração, leitura, cruzamento). */
   varredura: { fila: "agenda", payload: z.object({}) },
+  /** A cada 5 min: manda pelo WhatsApp os checks aprovados que chegaram no dia e na hora. */
+  despachar_checks: { fila: "agenda", payload: z.object({}) },
   /** Cron por obra (Job Scheduler no fuso da obra). */
   anuncio_diario: { fila: "agenda", payload: z.object({ ...comTenant, obraId: uuid }) },
   /** PDF de uma execução (execucaoId) ou da obra inteira (execucaoId null). */

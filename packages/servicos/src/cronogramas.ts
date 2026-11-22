@@ -114,6 +114,8 @@ export const esquemaLeitura = z.object({
       inicio: dataIso,
       termino: dataIso,
       percentual: z.number().int().min(0).max(100),
+      // leitor antigo não manda: fica sem vínculo
+      predecessoras: z.array(z.number().int()).default([]),
     }),
   ),
 });
@@ -216,6 +218,7 @@ export async function processarLeituraCronograma(
           inicio: t.inicio,
           termino: t.termino,
           percentual: t.percentual,
+          predecessoras: t.predecessoras,
         })),
       );
     }

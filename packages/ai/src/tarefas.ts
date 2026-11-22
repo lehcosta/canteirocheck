@@ -213,7 +213,25 @@ export function tarefaInterpretacao(
 
 // ─────────────────────────── Cruzamento do cronograma com os projetos ───────────────────────────
 
-export const VERSAO_CRUZAMENTO = "cruzamento-v1";
+export const VERSAO_CRUZAMENTO = "cruzamento-v2";
+
+const esquemaPerguntaDoCruzamento = z.object({
+  momento: z.enum(["antes", "durante", "depois"]),
+  texto: z.string().describe("pergunta curta, que o encarregado responde em campo pelo celular"),
+  tipo: z.enum(["sim_nao", "opcao", "data", "medida", "texto"]),
+  opcoes: z
+    .array(z.string())
+    .describe(
+      'opcao: as opções, até 30 caracteres cada; medida: só a unidade, ["m"], ["cm"] ou ["mm"]; outros: []',
+    ),
+  esperada: z
+    .string()
+    .nullable()
+    .describe(
+      'resposta certa, quando houver: "Sim"/"Não"; uma das opções; "<=AAAA-MM-DD" ou ">=AAAA-MM-DD"; "min..max" com ponto decimal',
+    ),
+  pede_foto: z.boolean(),
+});
 
 export const esquemaCruzamento = z.object({
   riscos: z.array(
@@ -226,27 +244,24 @@ export const esquemaCruzamento = z.object({
       cronograma_linha: z.number().int().nullable().describe("linha do cronograma citada"),
       cronograma_trecho: z.string().describe("o que a linha citada mostra: nome, datas, %"),
       consequencia: z.string().describe("o que acontece na obra se nada mudar"),
-      perguntas: z.array(
-        z.object({
-          momento: z.enum(["antes", "durante", "depois"]),
-          texto: z.string().describe("pergunta curta, que o encarregado responde em campo pelo celular"),
-          tipo: z.enum(["sim_nao", "opcao", "data", "medida", "texto"]),
-          opcoes: z
-            .array(z.string())
-            .describe(
-              'opcao: as opções, até 30 caracteres cada; medida: só a unidade, ["m"], ["cm"] ou ["mm"]; outros: []',
-            ),
-          esperada: z
-            .string()
-            .nullable()
-            .describe(
-              'resposta certa, quando houver: "Sim"/"Não"; uma das opções; "<=AAAA-MM-DD" ou ">=AAAA-MM-DD"; "min..max" com ponto decimal',
-            ),
-          pede_foto: z.boolean(),
-        }),
-      ),
+      perguntas: z.array(esquemaPerguntaDoCruzamento),
     }),
   ),
+  passagens: z
+    .array(
+      z.object({
+        anterior_linha: z.number().int().describe("linha da tarefa que precisa estar pronta antes"),
+        proxima_linha: z.number().int().describe("linha da tarefa que depende dela e ainda vai começar"),
+        nivel: z.enum(["alto", "medio", "baixo"]),
+        titulo: z
+          .string()
+          .describe("frase curta: a tarefa X começa em tal data e depende de Y, que está em N%"),
+        consequencia: z.string().describe("o que acontece se a próxima começar sem a anterior pronta"),
+        perguntas: z.array(esquemaPerguntaDoCruzamento),
+      }),
+    )
+    .optional()
+    .describe("passagens entre tarefas do cronograma; lista vazia quando nenhuma merece pergunta"),
 });
 export type SaidaCruzamento = z.infer<typeof esquemaCruzamento>;
 
@@ -264,6 +279,13 @@ Para cada risco:
 4. cronograma_trecho: o que a linha citada mostra (nome, datas, %). consequencia: o que acontece na obra se nada mudar.
 5. nivel: alto = retrabalho caro, estrutural ou de segurança; medio = retrabalho de sistemas ou acabamento; baixo = ajuste simples.
 6. perguntas: curtas, para o encarregado responder em campo pelo celular; pelo menos uma por risco, distribuídas nos três momentos (antes de a fase começar, durante, depois de terminar). Use "esperada" quando houver resposta certa: "Sim" ou "Não" (sim_nao); uma das opções (opcao, com até 30 caracteres por opção); "<=AAAA-MM-DD" ou ">=AAAA-MM-DD" (data); "min..max" com ponto decimal (medida, na unidade que vai em opcoes: ["m"], ["cm"] ou ["mm"]). Peça foto quando a evidência ajudar.
+
+Aponte também PASSAGENS ENTRE TAREFAS, que nascem só do cronograma: uma tarefa que ainda vai começar (ou mal começou) e que só fica boa se outra, anterior, estiver pronta. Ex.: a pintura começa em 3 dias e o forro, que vem antes dela, está em 40%; antes de começar a pintura, pergunte se o forro já fechou.
+- Só quando a ordem importa na obra: o serviço seguinte cobre, fecha, suja ou depende do anterior (forro antes de pintura, infra antes de fechar parede ou forro, impermeabilização e teste antes de piso, contrapiso curado antes do revestimento).
+- "depende de: linha N" é o vínculo declarado no MS Project e é a evidência mais forte. Sem vínculo, vale a ordem técnica evidente entre duas linhas do mesmo cronograma; não crie passagem por ordem que você apenas supõe.
+- Não aponte passagem cuja tarefa anterior já está em 100%, nem cuja próxima já terminou. Prefira as que começam em breve em relação a hoje. No máximo duas por fase; uma obra inteira raramente pede mais de dez.
+- anterior_linha e proxima_linha são linhas da lista recebida, diferentes entre si. perguntas: ao menos uma no momento "antes" (antes de a próxima começar), sim_nao com esperada "Sim" quando couber; peça foto quando a foto prova o serviço pronto.
+Sem passagem que mereça pergunta, devolva passagens vazia.
 
 Não invente: nada de valor, prazo ou exigência que não esteja nos textos recebidos ou nas linhas do cronograma. Prefira poucos riscos certeiros a muitos genéricos. Se o material não sustenta nenhum risco, devolva a lista vazia. Os riscos e as perguntas são SUGESTÕES: o engenheiro revisa e aprova antes de qualquer envio.`;
 
@@ -285,12 +307,15 @@ export interface MaterialCruzamento {
     inicio: string | null;
     termino: string | null;
     percentual: number;
+    /** Linhas de que a fase depende (vínculos do MS Project). */
+    dependeDe?: number[];
     tarefas: {
       linha: number;
       nome: string;
       inicio: string | null;
       termino: string | null;
       percentual: number;
+      dependeDe?: number[];
     }[];
   }[];
 }
@@ -298,6 +323,8 @@ export interface MaterialCruzamento {
 export function tarefaCruzamento(m: MaterialCruzamento): TarefaEstruturada<SaidaCruzamento> {
   const datas = (inicio: string | null, termino: string | null) =>
     `${inicio ?? "sem início"} a ${termino ?? "sem término"}`;
+  const vinculo = (linhas?: number[]) =>
+    linhas?.length ? ` · depende de: ${linhas.map((l) => `linha ${l}`).join(", ")}` : "";
   return {
     nome: VERSAO_CRUZAMENTO,
     modelo: process.env.IA_MODELO_CRUZAMENTO || modelos().pontos,
@@ -321,9 +348,10 @@ export function tarefaCruzamento(m: MaterialCruzamento): TarefaEstruturada<Saida
         m.fases
           .map((f) =>
             [
-              `- fase uid ${f.uid} · linha ${f.linha} · ${f.nome}${f.etapa ? ` (etapa: ${f.etapa})` : ""} · ${datas(f.inicio, f.termino)} · ${f.percentual}%`,
+              `- fase uid ${f.uid} · linha ${f.linha} · ${f.nome}${f.etapa ? ` (etapa: ${f.etapa})` : ""} · ${datas(f.inicio, f.termino)} · ${f.percentual}%${vinculo(f.dependeDe)}`,
               ...f.tarefas.map(
-                (t) => `  - linha ${t.linha} · ${t.nome} · ${datas(t.inicio, t.termino)} · ${t.percentual}%`,
+                (t) =>
+                  `  - linha ${t.linha} · ${t.nome} · ${datas(t.inicio, t.termino)} · ${t.percentual}%${vinculo(t.dependeDe)}`,
               ),
             ].join("\n"),
           )

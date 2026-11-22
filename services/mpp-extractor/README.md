@@ -25,14 +25,15 @@ valida a resposta com o `esquemaLeitura`. Mudou o JSON aqui, mude o esquema lá.
   "projeto": { "nome": "Cronograma_EdTeste_rev04", "inicio": "2026-08-03", "termino": "2027-06-30" },
   "tarefas": [
     { "uid": 1, "nome": "Infraestrutura", "nivel": 1, "resumo": true, "marco": false,
-      "inicio": "2026-08-03", "termino": "2026-10-30", "percentual": 100 }
+      "inicio": "2026-08-03", "termino": "2026-10-30", "percentual": 100, "predecessoras": [] }
   ]
 }
 ```
 
 As tarefas vêm na ordem do arquivo (pelo ID). Ficam de fora a tarefa-resumo do projeto (nível 0),
 as linhas em branco e as tarefas inativas. `inicio` e `termino` são `null` quando o arquivo não
-traz a data.
+traz a data. `predecessoras` são os `uid` das tarefas de que a linha depende (os vínculos do MS
+Project); é o que o cruzamento usa para perguntar se a anterior terminou antes de a seguinte começar.
 
 ## Rodar
 

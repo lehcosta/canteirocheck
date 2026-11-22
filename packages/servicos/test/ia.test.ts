@@ -12,6 +12,7 @@ import { garantirBucket } from "@canteirocheck/storage";
 import { and, eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  andamentoDaObra,
   anunciarExecucoes,
   type Contexto,
   confirmarMedidaDaConversa,
@@ -162,6 +163,21 @@ describe("pontos sugeridos pela IA", () => {
     ...extra,
   });
 
+  it("andamento diz o desfecho das sugestões: gerando até a IA responder, nenhuma quando o desenho não tem medida", async () => {
+    const semMedida = await projetoExtraido("ARQ-03"); // o DWG mais recente da obra é o que o andamento olha
+    expect((await andamentoDaObra(admin, obraId))?.leitura).toMatchObject({
+      codigo: "ARQ-03",
+      status: "concluida",
+      sugestoes: "gerando",
+    });
+    const vazio = new LlmFalso({ pontos: () => ({ pontos: [] }) });
+    expect(await gerarPontosSugeridos(admin.tenantId, semMedida, vazio)).toMatchObject({
+      criados: 0,
+      status: "ok",
+    });
+    expect((await andamentoDaObra(admin, obraId))?.leitura?.sugestoes).toBe("nenhuma");
+  });
+
   it("interface com trecho_origem entra como sugerido; trecho inventado e tolerância negativa são descartados", async () => {
     const llm = new LlmFalso({
       pontos: () => ({
@@ -236,6 +252,7 @@ describe("pontos sugeridos pela IA", () => {
     expect(custos.map((c) => c.referencia).sort()).toEqual([
       "claude-haiku-5-5@pendencias-v1",
       "claude-opus-5-5@pontos-v1",
+      "claude-opus-5-5@pontos-v1", // a rodada sem sugestão também custa
     ]);
   });
 });

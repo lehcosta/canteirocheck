@@ -60,6 +60,8 @@ export const cronogramaTarefa = pgTable(
     inicio: date("inicio"),
     termino: date("termino"),
     percentual: integer("percentual").notNull().default(0),
+    /** uid das tarefas de que esta depende (vínculos do MS Project). Vazio em versão lida antes disso. */
+    predecessoras: integer("predecessoras").array().notNull().default(sql`'{}'::integer[]`),
   },
   (t) => [unique().on(t.versaoId, t.ordem), index().on(t.tenantId), isolamentoTenant()],
 );

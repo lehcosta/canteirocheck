@@ -34,7 +34,7 @@ export function EnvioProjeto({ obraId }: { obraId: string }) {
           setOk(
             corpo.tipo === "dwg"
               ? "Enviado. A leitura do projeto roda em segundo plano."
-              : "PDF anexado como referência.",
+              : "PDF guardado para consulta. Ele não é lido: para receber pontos sugeridos, envie o DWG.",
           );
           router.refresh();
         });

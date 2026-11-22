@@ -346,7 +346,7 @@ describe("cruzamento", () => {
     expect(r.fases.find((f) => f.uid === PAVIMENTOS)).toMatchObject({ nivel: null, riscos: 0 });
 
     const c = await cruzamentoNoBanco(pedido.cruzamentoId);
-    expect(c.geradoPor).toBe("claude-opus-5-5@cruzamento-v1");
+    expect(c.geradoPor).toBe("claude-opus-5-5@cruzamento-v2");
     expect(c.iniciadoEm).not.toBeNull();
     const custos = await withTenant(admin.tenantId, (tx) =>
       tx
@@ -354,7 +354,7 @@ describe("cruzamento", () => {
         .from(schema.eventoCusto)
         .where(eq(schema.eventoCusto.obraId, obraId)),
     );
-    expect(custos.map((x) => x.referencia)).toContain("claude-opus-5-5@cruzamento-v1");
+    expect(custos.map((x) => x.referencia)).toContain("claude-opus-5-5@cruzamento-v2");
   });
 
   it("a página da fase traz a prova do risco, as perguntas e a equipe", async () => {
@@ -431,6 +431,83 @@ describe("cruzamento", () => {
 });
 
 describe("limites na saída da IA", () => {
+  it("passagem entre tarefas: vira risco de sequência com os trechos tirados do cronograma; a pronta, a repetida e a sem pergunta saem", () => {
+    const linha = (ordem: number, nome: string, percentual: number) => ({
+      ordem,
+      uid: 1000 + ordem,
+      nome,
+      nivel: 3,
+      marco: false,
+      inicio: "2026-12-01",
+      termino: "2026-12-10",
+      percentual,
+      predecessoras: [],
+    });
+    const forro = linha(30, "Forro de gesso", 40);
+    const pintura = linha(31, "Pintura", 0);
+    const drywall = linha(29, "Drywall", 100);
+    const passagem = (
+      anterior: number,
+      proxima: number,
+      perguntas = [pergunta("antes", "O forro já fechou?")],
+    ) => ({
+      anterior_linha: anterior,
+      proxima_linha: proxima,
+      nivel: "medio" as const,
+      titulo: "A pintura começa em 01/12 e o forro está em 40%",
+      consequencia: "Pintar antes de fechar o forro suja e obriga a repintar.",
+      perguntas,
+    });
+    const { riscos, descartados } = validarCruzamento(
+      {
+        riscos: [],
+        passagens: [
+          passagem(30, 31),
+          passagem(30, 31), // repetida
+          passagem(29, 31), // a anterior já está pronta
+          passagem(30, 999), // linha que não existe
+          passagem(30, 29, []), // sem pergunta e com a seguinte já terminada
+        ],
+      },
+      {
+        fases: [{ uid: REVESTIMENTOS, ordem: 28, tarefas: [drywall, forro, pintura] }],
+        projetos: [],
+        linhas: new Set([28, 29, 30, 31]),
+        cronograma: [drywall, forro, pintura],
+      },
+    );
+    expect(riscos).toEqual([
+      {
+        faseUid: REVESTIMENTOS,
+        nivel: "medio",
+        tipo: "sequencia",
+        titulo: "A pintura começa em 01/12 e o forro está em 40%",
+        projetoId: null,
+        projetoTrecho: "Forro de gesso",
+        projetoReferencia: "linha 30 · 2026-12-01 a 2026-12-10 · 40%",
+        cronogramaOrdem: 31,
+        cronogramaTrecho: "Pintura · 2026-12-01 a 2026-12-10 · 0%",
+        consequencia: "Pintar antes de fechar o forro suja e obriga a repintar.",
+        perguntas: [
+          {
+            momento: "antes",
+            texto: "O forro já fechou?",
+            tipo: "sim_nao",
+            opcoes: [],
+            esperada: "Sim",
+            pedeFoto: false,
+          },
+        ],
+      },
+    ]);
+    expect(descartados.map((d) => d.motivo)).toEqual([
+      "passagem repetida",
+      "a tarefa anterior já está pronta",
+      "as linhas da passagem não estão no cronograma",
+      "a tarefa seguinte já terminou",
+    ]);
+  });
+
   it("pergunta longa demais ou com opções demais sai; título e consequência são cortados na palavra", () => {
     const titulo = `O projeto pede escoramento ${"prolongado ".repeat(20)}e o cronograma não`;
     const consequencia = `A laje ${"fissura ".repeat(50)}e precisa de reforço`;

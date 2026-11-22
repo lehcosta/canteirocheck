@@ -92,6 +92,8 @@ export interface LinhaDoCronograma {
   inicio: string | null;
   termino: string | null;
   percentual: number;
+  /** uid das tarefas de que esta depende (vínculos do MS Project). */
+  predecessoras: number[];
 }
 
 export interface FaseDaVersao extends LinhaDoCronograma {
@@ -113,6 +115,7 @@ export async function linhasDaVersao(tx: Tx, versaoId: string) {
       inicio: cronogramaTarefa.inicio,
       termino: cronogramaTarefa.termino,
       percentual: cronogramaTarefa.percentual,
+      predecessoras: cronogramaTarefa.predecessoras,
     })
     .from(cronogramaTarefa)
     .where(eq(cronogramaTarefa.versaoId, versaoId))
@@ -298,6 +301,9 @@ async function montarMaterial(tenantId: string, c: typeof cruzamento.$inferSelec
         ),
       };
     });
+    const linhaDoUid = new Map(linhas.map((l) => [l.uid, l.ordem]));
+    const dependeDe = (l: LinhaDoCronograma) =>
+      l.predecessoras.map((uid) => linhaDoUid.get(uid)).filter((n): n is number => n !== undefined);
     const material: MaterialCruzamento = {
       hoje: hojeNoFuso(o?.fuso ?? "America/Sao_Paulo"),
       projetos: projetos.map(({ codigo, revisao, titulo, disciplina, textos }) => ({
@@ -315,16 +321,18 @@ async function montarMaterial(tenantId: string, c: typeof cruzamento.$inferSelec
         inicio: f.inicio,
         termino: f.termino,
         percentual: f.percentual,
+        dependeDe: dependeDe(f),
         tarefas: f.tarefas.map((t) => ({
           linha: t.ordem,
           nome: t.nome,
           inicio: t.inicio,
           termino: t.termino,
           percentual: t.percentual,
+          dependeDe: dependeDe(t),
         })),
       })),
     };
-    return { material, projetos, fases, linhas: new Set(linhas.map((l) => l.ordem)) };
+    return { material, projetos, fases, linhas: new Set(linhas.map((l) => l.ordem)), cronograma: linhas };
   });
 }
 
@@ -358,9 +366,12 @@ export interface PerguntaValidada {
 export interface RiscoValidado {
   faseUid: number;
   nivel: "alto" | "medio" | "baixo";
+  /** "sequencia": passagem entre tarefas, só do cronograma (sem projeto; o trecho é o nome da anterior). */
+  tipo: "projeto" | "sequencia";
   titulo: string;
-  projetoId: string;
+  projetoId: string | null;
   projetoTrecho: string;
+  projetoReferencia: string | null;
   cronogramaOrdem: number | null;
   cronogramaTrecho: string;
   consequencia: string;
@@ -372,34 +383,28 @@ export interface RiscoValidado {
  * não está no material ou cujo trecho não aparece nos textos daquele projeto (anti-alucinação).
  * Descarta a pergunta vazia ou longa demais, com opções demais ou acima do limite do Flow, ou de
  * medida sem unidade. Título e consequência longos são cortados na última palavra inteira.
+ *
+ * Passagem entre tarefas: as duas linhas têm de existir, ser diferentes, a próxima tem de estar numa
+ * fase, a anterior não pode estar pronta nem a próxima terminada, e precisa sobrar ao menos uma
+ * pergunta. Os dois trechos são montados aqui, das linhas do cronograma, não pela IA.
  */
 export function validarCruzamento(
   saida: SaidaCruzamento,
   m: {
-    fases: { uid: number }[];
+    fases: { uid: number; ordem?: number; tarefas?: LinhaDoCronograma[] }[];
     projetos: { id: string; codigo: string; textos: string[] }[];
     linhas: Set<number>;
+    /** Todas as linhas da versão; sem elas nenhuma passagem é aceita. */
+    cronograma?: LinhaDoCronograma[];
   },
 ): { riscos: RiscoValidado[]; descartados: { titulo: string; motivo: string }[] } {
   const fases = new Set(m.fases.map((f) => f.uid));
   const projetos = new Map(m.projetos.map((p) => [p.codigo.trim(), p]));
   const riscos: RiscoValidado[] = [];
   const descartados: { titulo: string; motivo: string }[] = [];
-  for (const r of saida.riscos) {
-    const codigo = r.projeto.trim();
-    const p = projetos.get(codigo) ?? projetos.get(codigo.split(/\s+/)[0] ?? "");
-    const trecho = espacos(r.projeto_trecho);
-    let motivo: string | null = null;
-    if (!fases.has(r.fase_uid)) motivo = "a fase não está no cronograma";
-    else if (!p) motivo = "o projeto não está no material do cruzamento";
-    else if (trecho.length < 3 || !p.textos.some((t) => espacos(t).includes(trecho)))
-      motivo = "o trecho citado não aparece no projeto";
-    if (motivo || !p) {
-      descartados.push({ titulo: r.titulo, motivo: motivo ?? "" });
-      continue;
-    }
+  const validarPerguntas = (lista: SaidaCruzamento["riscos"][number]["perguntas"]) => {
     const perguntas: PerguntaValidada[] = [];
-    for (const q of r.perguntas) {
+    for (const q of lista) {
       const texto = espacos(q.texto);
       const unidade = q.tipo === "medida" ? unidadeDaMedida(q.opcoes) : null;
       const opcoes = q.tipo === "opcao" ? q.opcoes.map(espacos).filter(Boolean) : unidade ? [unidade] : [];
@@ -417,9 +422,27 @@ export function validarCruzamento(
         esperada = null;
       perguntas.push({ momento: q.momento, texto, tipo: q.tipo, opcoes, esperada, pedeFoto: q.pede_foto });
     }
+    return perguntas;
+  };
+  for (const r of saida.riscos) {
+    const codigo = r.projeto.trim();
+    const p = projetos.get(codigo) ?? projetos.get(codigo.split(/\s+/)[0] ?? "");
+    const trecho = espacos(r.projeto_trecho);
+    let motivo: string | null = null;
+    if (!fases.has(r.fase_uid)) motivo = "a fase não está no cronograma";
+    else if (!p) motivo = "o projeto não está no material do cruzamento";
+    else if (trecho.length < 3 || !p.textos.some((t) => espacos(t).includes(trecho)))
+      motivo = "o trecho citado não aparece no projeto";
+    if (motivo || !p) {
+      descartados.push({ titulo: r.titulo, motivo: motivo ?? "" });
+      continue;
+    }
+    const perguntas = validarPerguntas(r.perguntas);
     riscos.push({
       faseUid: r.fase_uid,
       nivel: r.nivel,
+      tipo: "projeto",
+      projetoReferencia: null,
       titulo: cortarNaPalavra(espacos(r.titulo), MAXIMO_DO_TITULO),
       projetoId: p.id,
       projetoTrecho: r.projeto_trecho.trim(),
@@ -430,12 +453,57 @@ export function validarCruzamento(
       perguntas,
     });
   }
+
+  const porLinha = new Map((m.cronograma ?? []).map((l) => [l.ordem, l]));
+  const faseDaLinha = new Map<number, number>();
+  for (const f of m.fases) {
+    if (f.ordem !== undefined) faseDaLinha.set(f.ordem, f.uid);
+    for (const t of f.tarefas ?? []) faseDaLinha.set(t.ordem, f.uid);
+  }
+  const descreve = (l: LinhaDoCronograma) =>
+    `${l.inicio ?? "sem início"} a ${l.termino ?? "sem término"} · ${l.percentual}%`;
+  const vistas = new Set<string>();
+  for (const p of saida.passagens ?? []) {
+    const anterior = porLinha.get(p.anterior_linha);
+    const proxima = porLinha.get(p.proxima_linha);
+    const faseUid = faseDaLinha.get(p.proxima_linha);
+    const perguntas = validarPerguntas(p.perguntas);
+    let motivo: string | null = null;
+    if (!anterior || !proxima || anterior.ordem === proxima.ordem)
+      motivo = "as linhas da passagem não estão no cronograma";
+    else if (faseUid === undefined) motivo = "a tarefa que vai começar não está numa fase";
+    else if (anterior.percentual >= 100) motivo = "a tarefa anterior já está pronta";
+    else if (proxima.percentual >= 100) motivo = "a tarefa seguinte já terminou";
+    else if (vistas.has(`${anterior.ordem}>${proxima.ordem}`)) motivo = "passagem repetida";
+    else if (perguntas.length === 0) motivo = "passagem sem pergunta válida";
+    if (motivo || !anterior || !proxima || faseUid === undefined) {
+      descartados.push({ titulo: p.titulo, motivo: motivo ?? "" });
+      continue;
+    }
+    vistas.add(`${anterior.ordem}>${proxima.ordem}`);
+    riscos.push({
+      faseUid,
+      nivel: p.nivel,
+      tipo: "sequencia",
+      titulo: cortarNaPalavra(espacos(p.titulo), MAXIMO_DO_TITULO),
+      projetoId: null,
+      projetoTrecho: anterior.nome,
+      projetoReferencia: `linha ${anterior.ordem} · ${descreve(anterior)}`,
+      cronogramaOrdem: proxima.ordem,
+      cronogramaTrecho: `${proxima.nome} · ${descreve(proxima)}`,
+      consequencia: cortarNaPalavra(espacos(p.consequencia), MAXIMO_DA_CONSEQUENCIA),
+      perguntas,
+    });
+  }
   return { riscos, descartados };
 }
 
-/** Mesmo risco entre cruzamentos: a mesma fase, o mesmo projeto e o mesmo trecho citado. */
-const chaveDoRisco = (faseUid: number, projetoId: string, trecho: string) =>
-  `${faseUid}|${projetoId}|${espacos(trecho)}`;
+/**
+ * Mesmo risco entre cruzamentos: a mesma fase, o mesmo projeto e o mesmo trecho citado. Na passagem
+ * entre tarefas, a mesma fase e a mesma tarefa anterior (pelo nome).
+ */
+const chaveDoRisco = (faseUid: number, projetoId: string | null, trecho: string, tipo = "projeto") =>
+  `${faseUid}|${tipo === "sequencia" ? "sequencia" : projetoId}|${espacos(trecho)}`;
 
 /**
  * Job `cruzar_cronograma`. Só um job por vez: ele TOMA o cruzamento (pendente, ou processando
@@ -507,7 +575,7 @@ export async function processarCruzamento(
   if (!llm) return falhar(ERRO_SEM_IA);
   if (!c.projetos.some((p) => p.tipoArquivo === "dwg")) return falhar(ERRO_SEM_PROJETO);
 
-  const { material, projetos, fases, linhas } = await montarMaterial(tenantId, c);
+  const { material, projetos, fases, linhas, cronograma } = await montarMaterial(tenantId, c);
   let usos: UsoLlm[] = [];
   let saida: SaidaCruzamento = { riscos: [] };
   let geradoPor: string | null = null;
@@ -538,7 +606,7 @@ export async function processarCruzamento(
     saida = r.resultado.saida;
     geradoPor = `${usos.at(-1)?.modelo ?? llm.nome}@${VERSAO_CRUZAMENTO}`;
   }
-  const { riscos, descartados } = validarCruzamento(saida, { fases, projetos, linhas });
+  const { riscos, descartados } = validarCruzamento(saida, { fases, projetos, linhas, cronograma });
 
   return withTenant(tenantId, async (tx) => {
     await travarObra(tx, c.obraId);
@@ -580,7 +648,7 @@ export async function processarCruzamento(
         .values({ tenantId, obraId: c.obraId, cruzamentoId, ordem, ...dados })
         .returning({ id: riscoFase.id });
       if (!novo) throw new Error("falha ao gravar o risco");
-      const chave = chaveDoRisco(r.faseUid, r.projetoId, r.projetoTrecho);
+      const chave = chaveDoRisco(r.faseUid, r.projetoId, r.projetoTrecho, r.tipo);
       if (!novos.has(chave)) novos.set(chave, novo.id);
       for (const q of perguntas) {
         const k = `${r.faseUid}:${q.momento}`;
@@ -596,13 +664,17 @@ export async function processarCruzamento(
         faseUid: riscoFase.faseUid,
         projetoId: riscoFase.projetoId,
         trecho: riscoFase.projetoTrecho,
+        tipo: riscoFase.tipo,
       })
       .from(checkPergunta)
       .innerJoin(riscoFase, eq(riscoFase.id, checkPergunta.riscoId))
       .where(and(eq(riscoFase.obraId, c.obraId), ne(riscoFase.cruzamentoId, cruzamentoId)));
     let reapontadas = 0;
     for (const p of ligadas) {
-      const novo = p.projetoId ? novos.get(chaveDoRisco(p.faseUid, p.projetoId, p.trecho)) : undefined;
+      const novo =
+        p.projetoId || p.tipo === "sequencia"
+          ? novos.get(chaveDoRisco(p.faseUid, p.projetoId, p.trecho, p.tipo))
+          : undefined;
       if (!novo) continue;
       await tx.update(checkPergunta).set({ riscoId: novo }).where(eq(checkPergunta.id, p.id));
       reapontadas++;

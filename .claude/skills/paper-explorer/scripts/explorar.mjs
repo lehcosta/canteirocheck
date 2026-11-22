@@ -22,9 +22,11 @@ import {
   ARQUIVO,
   acharArquivo,
   alturaPar,
+  desempilhar,
   exportar,
   garantirPaginas,
   Paper,
+  relatoDesempilhar,
   sincronizarTokens,
 } from "../../sincronizar-paper/scripts/paper.mjs";
 import {
@@ -349,12 +351,14 @@ async function enviar(page, manifesto, tokens, vars, ferramentas) {
     const info = await paper.chamar("get_basic_info", { fileId, pageId });
     const pranchetas = info.artboards ?? [];
     const antigas = pranchetas.filter((a) => a.name.startsWith(prefixo));
-    // modo projeto: as variações ancoram abaixo da prancheta da rota. Senão: abaixo do que já há na página.
+    // modo projeto: as variações ancoram abaixo da prancheta da rota e dos estados dela ("<rota> · …", do
+    // sincronizar --estado). Senão: abaixo do que já há na página.
     let baseX = 0;
     let baseY;
     if (modo === "projeto") {
       baseX = alvo.rota.worldX ?? 0;
-      baseY = (alvo.rota.worldY ?? 0) + (alvo.rota.height ?? 0) + ESPACO_LINHAS;
+      const coluna = [alvo.rota, ...pranchetas.filter((a) => a.name.startsWith(`${alvo.rota.name} · `))];
+      baseY = Math.max(...coluna.map((a) => (a.worldY ?? 0) + (a.height ?? 0))) + ESPACO_LINHAS;
     } else {
       const outras = pranchetas.filter((a) => !a.name.startsWith(prefixo));
       baseY = antigas.length
@@ -411,6 +415,8 @@ async function enviar(page, manifesto, tokens, vars, ferramentas) {
       y += alturaLinha + ESPACO_LINHAS;
     }
     await paper.chamar("finish_working_on_nodes", { fileId, nodeIds: ids });
+    // cada prancheta no seu lugar: a exploração que caiu sobre outra (ou sob uma rota que cresceu) desce
+    console.log(relatoDesempilhar(PAGINA, await desempilhar(paper, fileId, pageId)));
 
     // conferência: cada prancheta exportada do Paper contra a prévia do Chrome
     const { caminhos, repetidos } = await exportar(
@@ -594,6 +600,8 @@ async function aprovarProjeto(paper, manifesto, id, { fileId, pageId, rota, subs
     await paper.chamar("finish_working_on_nodes", { fileId, nodeIds: [alvo.id] });
   }
   if (explor.length) await paper.chamar("delete_nodes", { fileId, nodeIds: explor.map((a) => a.id) });
+  // a rota que recebeu a variação pode ter crescido sobre o que está embaixo dela
+  if (substitui) console.log(relatoDesempilhar(ESPELHO_CLARO, await desempilhar(paper, fileId, pageId)));
   manifesto.aprovado = id;
   gravarManifesto(manifesto);
   console.log(

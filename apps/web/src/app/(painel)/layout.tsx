@@ -1,3 +1,4 @@
+import { listarObras } from "@canteirocheck/servicos";
 import Link from "next/link";
 import { BotaoSair } from "@/components/botao-sair";
 import { LogotipoVivo } from "@/components/logotipo-vivo";
@@ -15,17 +16,26 @@ function iniciais(nome: string): string {
 
 export default async function LayoutPainel({ children }: { children: React.ReactNode }) {
   const s = await exigirSessao();
+  const obras = await listarObras(s.contexto);
+  const ativas = obras
+    .filter((o) => o.status === "ativa")
+    .map((o) => ({
+      id: o.id,
+      nome: o.nome,
+      execucoesBloqueadas: o.execucoesBloqueadas,
+      pendenciasAbertas: o.pendenciasAbertas,
+    }));
   return (
     <div className="flex min-h-dvh flex-col bg-background md:flex-row">
       <nav
         aria-label="Principal"
-        className="flex flex-col gap-6 border-b bg-card px-4 py-4 md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:gap-8 md:border-r md:border-b-0 md:py-6"
+        className="flex flex-col gap-6 border-b bg-card px-4 py-4 md:sticky md:top-0 md:h-dvh md:w-72 md:shrink-0 md:gap-6 md:border-r md:border-b-0 md:py-6"
       >
         <Link href="/obras" className="self-start px-3 text-foreground">
           <LogotipoVivo className="h-7" />
         </Link>
-        <NavegacaoPainel />
-        <div className="flex items-center gap-3 border-t px-1 pt-4 md:mt-auto">
+        <NavegacaoPainel ativas={ativas} total={obras.length} papel={s.papel} />
+        <div className="flex items-center gap-3 border-t px-1 pt-4">
           <span
             aria-hidden
             className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-foreground text-[13px] font-semibold text-background"

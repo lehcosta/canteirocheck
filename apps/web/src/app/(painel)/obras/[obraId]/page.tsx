@@ -1,15 +1,19 @@
-import type { StatusExecucao } from "@canteirocheck/core";
+import { passosDaObra, type StatusExecucao } from "@canteirocheck/core";
 import { listarUsuarios, obterObra, painelDaObra } from "@canteirocheck/servicos";
+import { Check } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TituloSecao } from "@/components/cabecalho-pagina";
 import { Campo, CampoSelect } from "@/components/campos";
 import { FormularioAcao } from "@/components/formulario-acao";
+import { quandoPergunta } from "@/components/passos-obra";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { adicionarMembroAction, criarLocalAction, removerMembroAction } from "@/features/obras/actions";
+import { carregarAndamento } from "@/features/obras/andamento";
 import { formatarData, formatarWhatsapp, PAPEL, TIPO_LOCAL } from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
 import { cn } from "@/lib/utils";
@@ -51,9 +55,198 @@ export default async function DetalheObra({ params }: { params: Promise<{ obraId
   const aguardando = painel?.aguardandoDecisao ?? [];
   const emAndamento = painel?.emAndamento ?? 0;
   const pendencias = painel?.pendenciasAbertas ?? 0;
+  // obra em implantação (falta passo, ou pronta antes da primeira etapa): Equipe e Locais sobem, na ordem dos
+  // passos, e dizem o que falta
+  const andamento = await carregarAndamento(obraId);
+  const passos = andamento ? passosDaObra(andamento.fatos) : null;
+  const implantacao = passos?.visivel ?? false;
+  const encarregados = obra.membros.filter((m) => m.papel === "encarregado").map((m) => m.nome);
+  const quando = quandoPergunta(obra.horarioAnuncio, obra.fusoHorario);
+
+  const cardLocais = (
+    <Card>
+      <CardHeader>
+        <CardTitle>Locais</CardTitle>
+        <CardDescription>Pavimentos, lajes, ambientes e eixos usados nos pontos de controle.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {obra.locais.length === 0 ? (
+          <p className="text-[15px] text-muted-foreground">
+            {!implantacao
+              ? "Nenhum local cadastrado."
+              : passos?.atual === 3
+                ? "Nenhum local ainda. Comece pelo pavimento ou pela laje da primeira etapa."
+                : "Nenhum local ainda. Ele vem no passo 3."}
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-0">Tipo</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Dentro de</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {obra.locais.map((l) => (
+                <TableRow key={l.id}>
+                  <TableCell className="pl-0 text-muted-foreground">{TIPO_LOCAL[l.tipo]}</TableCell>
+                  <TableCell className="font-semibold">{l.nome}</TableCell>
+                  <TableCell>
+                    {l.paiId ? nomeLocal.get(l.paiId) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        <FormularioAcao
+          acao={criarLocalAction}
+          className="grid gap-3 space-y-0 border-t pt-5 sm:grid-cols-3 [&>p]:col-span-full"
+        >
+          <input type="hidden" name="obraId" value={obra.id} />
+          <CampoSelect
+            rotulo="Tipo"
+            nome="tipo"
+            required
+            opcoes={Object.entries(TIPO_LOCAL).map(([valor, rotulo]) => ({ valor, rotulo }))}
+          />
+          <Campo
+            rotulo="Nome"
+            nome="nome"
+            required
+            placeholder={obra.locais.length === 0 ? "Térreo" : "2º pavimento"}
+          />
+          <CampoSelect
+            rotulo="Dentro de"
+            nome="paiId"
+            vazio="—"
+            opcoes={obra.locais.map((l) => ({ valor: l.id, rotulo: nomeLocal.get(l.id) ?? l.nome }))}
+          />
+          <div className="sm:col-span-3">
+            <Button type="submit" variant={passos?.atual === 3 ? "default" : "outline"} className="h-11">
+              Adicionar local
+            </Button>
+          </div>
+        </FormularioAcao>
+      </CardContent>
+    </Card>
+  );
+  const cardEquipe = (
+    <Card>
+      <CardHeader>
+        <CardTitle>Equipe</CardTitle>
+        <CardDescription>
+          Encarregados recebem a pergunta diária e os checklists pelo WhatsApp.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="pl-0">Nome</TableHead>
+              <TableHead className="hidden sm:table-cell">Papel</TableHead>
+              <TableHead>WhatsApp</TableHead>
+              <TableHead>
+                <span className="sr-only">Ações</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {obra.membros.map((m) => (
+              <TableRow key={m.usuarioId}>
+                <TableCell className="pl-0">
+                  <span className="font-semibold">{m.nome}</span>
+                  <span className="block text-[13px] text-muted-foreground sm:hidden">{PAPEL[m.papel]}</span>
+                </TableCell>
+                <TableCell className="hidden text-muted-foreground sm:table-cell">{PAPEL[m.papel]}</TableCell>
+                <TableCell className="font-mono text-sm tabular-nums">
+                  {formatarWhatsapp(m.whatsappE164)}
+                </TableCell>
+                <TableCell className="pr-0 text-right">
+                  {m.usuarioId === obra.engenheiroResponsavel.id ? (
+                    <span className="inline-flex h-9 items-center px-3 text-[13px] text-muted-foreground">
+                      Responsável
+                    </span>
+                  ) : (
+                    <FormularioAcao acao={removerMembroAction}>
+                      <input type="hidden" name="obraId" value={obra.id} />
+                      <input type="hidden" name="usuarioId" value={m.usuarioId} />
+                      <Button type="submit" variant="ghost" size="sm" aria-label={`Remover ${m.nome}`}>
+                        Remover
+                      </Button>
+                    </FormularioAcao>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {implantacao &&
+          (encarregados.length > 0 ? (
+            <p className="flex items-center gap-2 text-sm text-nivel">
+              <Check aria-hidden className="size-4 shrink-0" strokeWidth={2.6} />
+              {encarregados.length === 1
+                ? `${encarregados[0]} recebe`
+                : `Os ${encarregados.length} encarregados recebem`}{" "}
+              a pergunta {quando}.
+            </p>
+          ) : andamento?.encarregadosDisponiveis === 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm text-prumo-text">Nenhum encarregado cadastrado na construtora.</p>
+              <p className="text-sm text-muted-foreground">
+                Cadastre em Usuários, com o WhatsApp dele, e volte aqui.
+              </p>
+              <Link href="/configuracoes/usuarios" className={buttonVariants()}>
+                Cadastrar encarregado
+              </Link>
+            </div>
+          ) : (
+            <p className="text-sm text-prumo-text">
+              Nenhum encarregado ainda: ninguém recebe a pergunta das {obra.horarioAnuncio.slice(0, 5)}.
+            </p>
+          ))}
+        {candidatos.length > 0 && (
+          <FormularioAcao
+            acao={adicionarMembroAction}
+            className="flex flex-wrap items-end gap-3 space-y-0 border-t pt-5 [&>p]:basis-full"
+          >
+            <input type="hidden" name="obraId" value={obra.id} />
+            <CampoSelect
+              rotulo="Adicionar à equipe"
+              nome="usuarioId"
+              required
+              vazio="Selecione…"
+              className="min-w-56 flex-1"
+              opcoes={candidatos.map((u) => ({ valor: u.id, rotulo: `${u.nome} (${PAPEL[u.papel]})` }))}
+            />
+            <Button type="submit" variant={passos?.atual === 2 ? "default" : "outline"} className="h-11">
+              Adicionar
+            </Button>
+          </FormularioAcao>
+        )}
+      </CardContent>
+    </Card>
+  );
+  const equipeELocais = (
+    <div className="grid gap-6 lg:grid-cols-2">
+      {implantacao ? (
+        <>
+          {cardEquipe}
+          {cardLocais}
+        </>
+      ) : (
+        <>
+          {cardLocais}
+          {cardEquipe}
+        </>
+      )}
+    </div>
+  );
 
   return (
     <>
+      {implantacao && equipeELocais}
       <div className="grid gap-6 lg:grid-cols-3">
         <section aria-labelledby="titulo-decisao" className="space-y-4 lg:col-span-2">
           <div className="space-y-1">
@@ -190,141 +383,7 @@ export default async function DetalheObra({ params }: { params: Promise<{ obraId
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Locais</CardTitle>
-            <CardDescription>
-              Pavimentos, lajes, ambientes e eixos usados nos pontos de controle.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {obra.locais.length === 0 ? (
-              <p className="text-[15px] text-muted-foreground">Nenhum local cadastrado.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="pl-0">Tipo</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Dentro de</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {obra.locais.map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell className="pl-0 text-muted-foreground">{TIPO_LOCAL[l.tipo]}</TableCell>
-                      <TableCell className="font-semibold">{l.nome}</TableCell>
-                      <TableCell>
-                        {l.paiId ? nomeLocal.get(l.paiId) : <span className="text-muted-foreground">—</span>}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-            <FormularioAcao
-              acao={criarLocalAction}
-              className="grid gap-3 space-y-0 border-t pt-5 sm:grid-cols-3 [&>p]:col-span-full"
-            >
-              <input type="hidden" name="obraId" value={obra.id} />
-              <CampoSelect
-                rotulo="Tipo"
-                nome="tipo"
-                required
-                opcoes={Object.entries(TIPO_LOCAL).map(([valor, rotulo]) => ({ valor, rotulo }))}
-              />
-              <Campo rotulo="Nome" nome="nome" required placeholder="L4" />
-              <CampoSelect
-                rotulo="Dentro de"
-                nome="paiId"
-                vazio="—"
-                opcoes={obra.locais.map((l) => ({ valor: l.id, rotulo: nomeLocal.get(l.id) ?? l.nome }))}
-              />
-              <div className="sm:col-span-3">
-                <Button type="submit" variant="outline" className="h-11">
-                  Adicionar local
-                </Button>
-              </div>
-            </FormularioAcao>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Equipe</CardTitle>
-            <CardDescription>
-              Encarregados recebem a pergunta diária e os checklists pelo WhatsApp.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="pl-0">Nome</TableHead>
-                  <TableHead className="hidden sm:table-cell">Papel</TableHead>
-                  <TableHead>WhatsApp</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Ações</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {obra.membros.map((m) => (
-                  <TableRow key={m.usuarioId}>
-                    <TableCell className="pl-0">
-                      <span className="font-semibold">{m.nome}</span>
-                      <span className="block text-[13px] text-muted-foreground sm:hidden">
-                        {PAPEL[m.papel]}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground sm:table-cell">
-                      {PAPEL[m.papel]}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm tabular-nums">
-                      {formatarWhatsapp(m.whatsappE164)}
-                    </TableCell>
-                    <TableCell className="pr-0 text-right">
-                      {m.usuarioId === obra.engenheiroResponsavel.id ? (
-                        <span className="inline-flex h-9 items-center px-3 text-[13px] text-muted-foreground">
-                          Responsável
-                        </span>
-                      ) : (
-                        <FormularioAcao acao={removerMembroAction}>
-                          <input type="hidden" name="obraId" value={obra.id} />
-                          <input type="hidden" name="usuarioId" value={m.usuarioId} />
-                          <Button type="submit" variant="ghost" size="sm" aria-label={`Remover ${m.nome}`}>
-                            Remover
-                          </Button>
-                        </FormularioAcao>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {candidatos.length > 0 && (
-              <FormularioAcao
-                acao={adicionarMembroAction}
-                className="flex flex-wrap items-end gap-3 space-y-0 border-t pt-5 [&>p]:basis-full"
-              >
-                <input type="hidden" name="obraId" value={obra.id} />
-                <CampoSelect
-                  rotulo="Adicionar à equipe"
-                  nome="usuarioId"
-                  required
-                  vazio="Selecione…"
-                  className="min-w-56 flex-1"
-                  opcoes={candidatos.map((u) => ({ valor: u.id, rotulo: `${u.nome} (${PAPEL[u.papel]})` }))}
-                />
-                <Button type="submit" variant="outline" className="h-11">
-                  Adicionar
-                </Button>
-              </FormularioAcao>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {!implantacao && equipeELocais}
     </>
   );
 }

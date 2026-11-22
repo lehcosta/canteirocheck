@@ -1,11 +1,22 @@
-import { CATALOGO, ehPlanoPago, limiteDeObras } from "@canteirocheck/core";
+import { CATALOGO, ehPlanoPago, type FatosDaObra, limiteDeObras } from "@canteirocheck/core";
 import { registrarAuditoria, schema, type Tx, withTenant } from "@canteirocheck/db";
-import { and, asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ator, type Contexto, ErroDominio, exigirPapel, traduzirErroBanco } from "./contexto";
+import { ator, type Contexto, ErroDeCampo, ErroDominio, exigirPapel, traduzirErroBanco } from "./contexto";
 import { primeiraMensagem, textoObrigatorio, textoOpcional, uuid } from "./validacao";
 
-const { obra, obraMembro, local, usuario, pendencia, execucaoEtapa, tenant } = schema;
+const {
+  obra,
+  obraMembro,
+  local,
+  usuario,
+  pendencia,
+  execucaoEtapa,
+  tenant,
+  pontoControle,
+  projeto,
+  auditLog,
+} = schema;
 
 // ─────────────────────────── Leitura ───────────────────────────
 
@@ -120,6 +131,130 @@ export async function obterObra(ctx: Contexto, obraId: string): Promise<DetalheO
   });
 }
 
+/** O que a faixa "Até a primeira conferência" precisa saber da obra (os passos vêm de `passosDaObra`). */
+export interface AndamentoObra {
+  fatos: FatosDaObra;
+  /** Encarregados ativos da construtora que ainda não estão na equipe desta obra. */
+  encarregadosDisponiveis: number;
+  pontosSugeridos: { ia: number; manual: number };
+  /** A leitura do DWG mais recente (PDFs de referência não contam). */
+  leitura: {
+    status: "pendente" | "processando" | "concluida" | "falhou";
+    codigo: string;
+    revisao: string;
+    disciplina: string;
+    /**
+     * As sugestões de ponto desta leitura (só com a leitura concluída): a IA ainda não respondeu, sugeriu
+     * pontos, não achou medida no desenho ou falhou.
+     */
+    sugestoes: "gerando" | "feitas" | "nenhuma" | "falhou" | null;
+  } | null;
+  /** PDFs de referência da obra. Não são lidos: sozinhos, nunca geram sugestão. */
+  pdfsDeReferencia: number;
+}
+
+export async function andamentoDaObra(ctx: Contexto, obraId: string): Promise<AndamentoObra | null> {
+  if (!uuid.safeParse(obraId).success) return null;
+  return withTenant(ctx.tenantId, async (tx) => {
+    const [o] = await tx.select({ id: obra.id }).from(obra).where(eq(obra.id, obraId));
+    if (!o) return null;
+    const equipe = await tx
+      .select({ usuarioId: obraMembro.usuarioId, papel: obraMembro.papel })
+      .from(obraMembro)
+      .where(eq(obraMembro.obraId, obraId));
+    const naEquipe = equipe.map((m) => m.usuarioId);
+    const [disponiveis] = await tx
+      .select({ n: count() })
+      .from(usuario)
+      .where(
+        and(
+          eq(usuario.papel, "encarregado"),
+          eq(usuario.ativo, true),
+          naEquipe.length ? notInArray(usuario.id, naEquipe) : undefined,
+        ),
+      );
+    const [locais] = await tx.select({ n: count() }).from(local).where(eq(local.obraId, obraId));
+    const pontos = await tx
+      .select({ status: pontoControle.statusRevisao, origem: pontoControle.origem, n: count() })
+      .from(pontoControle)
+      .where(eq(pontoControle.obraId, obraId))
+      .groupBy(pontoControle.statusRevisao, pontoControle.origem);
+    const soma = (f: (p: (typeof pontos)[number]) => boolean) =>
+      pontos.filter(f).reduce((t, p) => t + p.n, 0);
+    const [ultima] = await tx
+      .select({
+        id: projeto.id,
+        status: projeto.statusExtracao,
+        codigo: projeto.codigo,
+        revisao: projeto.revisao,
+        disciplina: projeto.disciplina,
+      })
+      .from(projeto)
+      .where(and(eq(projeto.obraId, obraId), ne(projeto.statusExtracao, "nao_aplicavel")))
+      .orderBy(desc(projeto.criadoEm))
+      .limit(1);
+    const [pdfs] = await tx
+      .select({ n: count() })
+      .from(projeto)
+      .where(and(eq(projeto.obraId, obraId), eq(projeto.statusExtracao, "nao_aplicavel")));
+    // A IA roda depois da leitura e deixa o desfecho na auditoria: é o que separa "ainda gerando" de "nada a sugerir".
+    const [desfecho] =
+      ultima?.status === "concluida"
+        ? await tx
+            .select({ acao: auditLog.acao, depois: auditLog.depois })
+            .from(auditLog)
+            .where(
+              and(
+                eq(auditLog.entidade, "projeto"),
+                eq(auditLog.entidadeId, ultima.id),
+                inArray(auditLog.acao, ["projeto.pontos_sugeridos", "projeto.pontos_falhou"]),
+              ),
+            )
+            .orderBy(desc(auditLog.id))
+            .limit(1)
+        : [];
+    const sugestoes =
+      ultima?.status !== "concluida"
+        ? null
+        : !desfecho
+          ? "gerando"
+          : desfecho.acao === "projeto.pontos_falhou"
+            ? "falhou"
+            : Number((desfecho.depois as { criados?: number } | null)?.criados ?? 0) > 0
+              ? "feitas"
+              : "nenhuma";
+    const [anunciada] = await tx
+      .select({ id: execucaoEtapa.id })
+      .from(execucaoEtapa)
+      .where(eq(execucaoEtapa.obraId, obraId))
+      .limit(1);
+    return {
+      fatos: {
+        temEncarregado: equipe.some((m) => m.papel === "encarregado"),
+        locais: locais?.n ?? 0,
+        pontosAprovados: soma((p) => p.status === "aprovado"),
+        etapaAnunciada: Boolean(anunciada),
+      },
+      encarregadosDisponiveis: disponiveis?.n ?? 0,
+      pontosSugeridos: {
+        ia: soma((p) => p.status === "sugerido" && p.origem === "ia"),
+        manual: soma((p) => p.status === "sugerido" && p.origem === "manual"),
+      },
+      leitura:
+        ultima && ultima.status !== "nao_aplicavel"
+          ? {
+              status: ultima.status,
+              codigo: ultima.codigo,
+              revisao: ultima.revisao,
+              disciplina: ultima.disciplina,
+              sugestoes,
+            }
+          : null,
+      pdfsDeReferencia: pdfs?.n ?? 0,
+    };
+  });
+}
+
 // ─────────────────────────── Escrita ───────────────────────────
 
 export const entradaCriarObra = z.object({
@@ -175,7 +310,12 @@ async function conferirLimiteDeObras(tx: Tx, tenantId: string): Promise<void> {
 export async function criarObra(ctx: Contexto, entrada: unknown): Promise<{ id: string }> {
   exigirPapel(ctx, ["admin"]);
   const r = entradaCriarObra.safeParse(entrada);
-  if (!r.success) throw new ErroDominio("invalido", primeiraMensagem(r.error));
+  if (!r.success) {
+    // o formulário mostra a mensagem embaixo do campo que errou
+    const campo = r.error.issues[0]?.path[0];
+    if (typeof campo === "string") throw new ErroDeCampo(campo, primeiraMensagem(r.error));
+    throw new ErroDominio("invalido", primeiraMensagem(r.error));
+  }
   const dados = r.data;
 
   return withTenant(ctx.tenantId, async (tx) => {
@@ -189,7 +329,8 @@ export async function criarObra(ctx: Contexto, entrada: unknown): Promise<{ id: 
           eq(usuario.ativo, true),
         ),
       );
-    if (!eng) throw new ErroDominio("invalido", "Escolha um engenheiro ativo como responsável.");
+    if (!eng)
+      throw new ErroDeCampo("engenheiroResponsavelId", "Escolha um engenheiro ativo como responsável.");
     await conferirLimiteDeObras(tx, ctx.tenantId);
 
     const [nova] = await tx

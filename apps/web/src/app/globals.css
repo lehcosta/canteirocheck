@@ -30,6 +30,8 @@
   --color-ink-muted: var(--ink-muted);
   --color-prumo: var(--prumo);
   --color-on-prumo: var(--on-prumo);
+  --color-acao: var(--acao);
+  --color-on-acao: var(--on-acao);
   --color-prumo-text: var(--prumo-text);
   --color-liquido: var(--liquido);
   --color-nivel: var(--nivel);
@@ -86,6 +88,9 @@
   --ink-muted: #57544d;
   --prumo: #f5540f;
   --on-prumo: #191816;
+  /* fundo e texto do botão da ação principal: branco em Archivo 800 ≥ 19 px (texto grande, 3,4:1) */
+  --acao: #f5540f;
+  --on-acao: #ffffff;
   --prumo-text: #b23a05;
   --liquido: #6be39c;
   --nivel: #0b5e36;
@@ -102,6 +107,9 @@
   --ink-muted: #aba79e;
   --prumo: #ff6a26;
   --on-prumo: #191816;
+  /* o botão mantém o laranja do claro: no #ff6a26 o branco cai para 2,9:1 */
+  --acao: #f5540f;
+  --on-acao: #ffffff;
   --prumo-text: #ff8e57;
   --liquido: #6be39c;
   --nivel: #6be39c;
@@ -118,8 +126,8 @@
   --card-foreground: var(--ink);
   --popover: var(--surface-raised);
   --popover-foreground: var(--ink);
-  --primary: var(--prumo);
-  --primary-foreground: var(--on-prumo);
+  --primary: var(--acao);
+  --primary-foreground: var(--on-acao);
   --secondary: var(--surface);
   --secondary-foreground: var(--ink);
   --muted: var(--surface);

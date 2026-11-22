@@ -4,6 +4,7 @@ import { schema, type Tx } from "@canteirocheck/db";
 import { idJob } from "@canteirocheck/queue";
 import type { ConteudoEntrada } from "@canteirocheck/whatsapp";
 import { and, asc, eq, exists, inArray } from "drizzle-orm";
+import { anexarFotoAoCheck, responderCheckPorTexto, tratarBotaoDoCheck } from "../checks-envio";
 import { type Contexto, ErroDominio } from "../contexto";
 import { confirmarMedidaDaConversa } from "../conversa";
 import { decidirExecucao } from "../execucoes/anuncio-e-decisao";
@@ -65,7 +66,12 @@ export async function processarMensagemRecebida(
           );
         case "flow":
           return { acao: "flow:resposta_recebida" }; // já tratado de forma síncrona no endpoint
-        case "texto":
+        case "texto": {
+          // Quem tem um check esperando resposta está respondendo a ele.
+          const doCheck = await comSavepoint(tx, efeitos, (sp, ef) =>
+            responderCheckPorTexto(sp, ef, ctx, conteudo.texto),
+          );
+          if (doCheck) return doCheck;
           // Com IA: tenta extrair medida (fallback conversacional); a resposta sai do job.
           if (llmPadrao()) {
             efeitos.enfileirar(
@@ -77,6 +83,7 @@ export async function processarMensagemRecebida(
           }
           await mandarMenu(tx, efeitos, ctx, u.nome);
           return { acao: "menu:texto" };
+        }
         case "audio":
           efeitos.enfileirar(
             "transcrever_audio",
@@ -101,6 +108,10 @@ export async function processarMensagemRecebida(
               { tenantId, midiaId: foto.id },
               { jobId: idJob("midia", foto.id) },
             );
+          const noCheck = foto
+            ? await comSavepoint(tx, efeitos, (sp, ef) => anexarFotoAoCheck(sp, ef, ctx, foto.id))
+            : null;
+          if (noCheck) return noCheck;
           await responder(
             "Foto recebida e guardada. Para ligar a foto a uma medida, envie pela conferência (formulário).",
           );
@@ -123,6 +134,8 @@ export async function processarMensagemRecebida(
 async function tratarBotao(tx: Tx, efeitos: Efeitos, ctx: Contexto, id: string): Promise<{ acao: string }> {
   const [tipo, alvo, rodadaTexto] = id.split(":");
   switch (tipo) {
+    case "chk":
+      return tratarBotaoDoCheck(tx, efeitos, ctx, id);
     case "menu":
       if (alvo === "anunciar") {
         await enviarFlowAnuncio(tx, efeitos, { tenantId: ctx.tenantId, usuarioId: ctx.usuarioId });

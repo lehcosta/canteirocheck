@@ -1,0 +1,2 @@
+ALTER TABLE "risco_fase" ADD COLUMN "tipo" text DEFAULT 'projeto' NOT NULL;--> statement-breakpoint
+ALTER TABLE "cronograma_tarefa" ADD COLUMN "predecessoras" integer[] DEFAULT '{}'::integer[] NOT NULL;

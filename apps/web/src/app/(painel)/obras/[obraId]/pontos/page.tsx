@@ -1,5 +1,5 @@
 import { listarPontos, obterObra, opcoesEtapas } from "@canteirocheck/servicos";
-import { Check, FileText, Plus } from "lucide-react";
+import { Check, CircleAlert, FileText, LoaderCircle, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,11 +8,13 @@ import { Campo, CampoSelect } from "@/components/campos";
 import { FormularioAcao } from "@/components/formulario-acao";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { carregarAndamento } from "@/features/obras/andamento";
 import { criarPontoAction, revisarPontoAction } from "@/features/pontos/actions";
 import { separarEsperado } from "@/features/pontos/esperado";
 import { GRANDEZA, TIPO_LOCAL, UNIDADE } from "@/lib/rotulos";
 import { exigirSessao } from "@/lib/sessao";
 import { cn } from "@/lib/utils";
+import { rotuloDisciplina } from "../projetos/disciplinas";
 
 export const metadata: Metadata = { title: "Pontos de controle" };
 
@@ -60,6 +62,17 @@ export default async function Pontos({
   const lista = pontos.filter((p) => p.statusRevisao === filtro);
   const sugeridosIa = pontos.filter((p) => p.statusRevisao === "sugerido" && p.origem === "ia").length;
   const sugeridosManuais = contagem.sugerido - sugeridosIa;
+  // sem nenhum ponto, o vazio diz em que pé está a leitura do DWG mais recente
+  const andamento = pontos.length === 0 ? await carregarAndamento(obraId) : null;
+  const leitura = andamento?.leitura;
+  const temPdf = (andamento?.pdfsDeReferencia ?? 0) > 0;
+  const arquivo = leitura && `${leitura.codigo} ${leitura.revisao}`;
+  const projetos = `/obras/${obraId}/projetos`;
+  const aMao = (rotulo: string) => (
+    <a href="#novo-ponto" className={cn(buttonVariants({ variant: "outline" }), "h-11")}>
+      {rotulo}
+    </a>
+  );
 
   return (
     <>
@@ -132,12 +145,105 @@ export default async function Pontos({
         </nav>
 
         <div className="rounded-md border bg-card">
-          {lista.length === 0 ? (
-            <p className="px-4 py-8 text-center text-[15px] text-muted-foreground">
-              {pontos.length === 0
-                ? "Nenhum ponto cadastrado. Envie o projeto em DWG para receber sugestões ou crie um ponto manual."
-                : VAZIO[filtro]}
-            </p>
+          {pontos.length === 0 ? (
+            leitura?.status === "pendente" || leitura?.status === "processando" ? (
+              <div className="space-y-4 p-6">
+                <p className="flex items-center gap-3 text-base leading-6 font-semibold">
+                  <LoaderCircle
+                    aria-hidden
+                    className="size-[22px] shrink-0 animate-spin motion-reduce:animate-none"
+                  />
+                  Lendo {arquivo} — {rotuloDisciplina(leitura.disciplina)}…
+                </p>
+                <p className="text-[15px] text-muted-foreground">
+                  Os pontos sugeridos aparecem aqui em alguns minutos. Dá para sair desta tela: a leitura
+                  continua.
+                </p>
+                {aMao("Criar ponto à mão enquanto isso")}
+              </div>
+            ) : leitura?.status === "falhou" ? (
+              <div className="space-y-4 p-6">
+                <p className="flex items-center gap-2.5 text-base leading-6 font-semibold text-divergencia">
+                  <CircleAlert aria-hidden className="size-4 shrink-0" />
+                  Não deu para ler {arquivo}.
+                </p>
+                <p className="text-[15px] text-muted-foreground">
+                  Envie o DWG de novo (outra revisão ou o arquivo salvo de novo) ou crie os pontos à mão.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={projetos} className={buttonVariants()}>
+                    Enviar de novo
+                  </Link>
+                  {aMao("Criar ponto à mão")}
+                </div>
+              </div>
+            ) : leitura?.sugestoes === "gerando" ? (
+              <div className="space-y-4 p-6">
+                <p className="flex items-center gap-3 text-base leading-6 font-semibold">
+                  <LoaderCircle
+                    aria-hidden
+                    className="size-[22px] shrink-0 animate-spin motion-reduce:animate-none"
+                  />
+                  Gerando as sugestões de {arquivo}…
+                </p>
+                <p className="text-[15px] text-muted-foreground">
+                  A leitura terminou. Os pontos sugeridos aparecem aqui em um ou dois minutos: atualize a
+                  página.
+                </p>
+                {aMao("Criar ponto à mão enquanto isso")}
+              </div>
+            ) : leitura?.sugestoes === "nenhuma" ? (
+              <div className="space-y-4 p-6">
+                <p className="text-base leading-6 font-semibold">
+                  A leitura de {arquivo} não achou medidas para sugerir.
+                </p>
+                <p className="max-w-[72ch] text-[15px] text-muted-foreground">
+                  Ponto de controle sai de medida escrita no desenho: nível, cota, altura. Este tem só nomes
+                  de ambiente, áreas e notas. Envie um executivo cotado em DWG ou crie os pontos à mão.
+                  {temPdf && " O PDF enviado fica guardado para consulta e não é lido."}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={projetos} className={buttonVariants()}>
+                    Enviar outro DWG
+                  </Link>
+                  {aMao("Criar ponto à mão")}
+                </div>
+              </div>
+            ) : leitura?.sugestoes === "falhou" ? (
+              <div className="space-y-4 p-6">
+                <p className="flex items-center gap-2.5 text-base leading-6 font-semibold text-divergencia">
+                  <CircleAlert aria-hidden className="size-4 shrink-0" />
+                  Não deu para gerar as sugestões de {arquivo}.
+                </p>
+                <p className="text-[15px] text-muted-foreground">
+                  A leitura terminou, mas a geração dos pontos falhou. Leia o projeto de novo na página dele
+                  ou crie os pontos à mão.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={projetos} className={buttonVariants()}>
+                    Abrir os projetos
+                  </Link>
+                  {aMao("Criar ponto à mão")}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 p-6">
+                <p className="text-base leading-6 font-semibold">Nenhum ponto cadastrado.</p>
+                <p className="max-w-[72ch] text-[15px] text-muted-foreground">
+                  {temPdf && !leitura
+                    ? "O PDF enviado fica guardado para consulta, mas não é lido. Para receber sugestões, envie o projeto em DWG, ou crie os pontos à mão. Precisa de pelo menos um aprovado."
+                    : "Envie o projeto em DWG para receber sugestões, ou crie os pontos à mão. Precisa de pelo menos um aprovado."}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={projetos} className={buttonVariants()}>
+                    Enviar o DWG
+                  </Link>
+                  {aMao("Criar ponto à mão")}
+                </div>
+              </div>
+            )
+          ) : lista.length === 0 ? (
+            <p className="px-4 py-8 text-center text-[15px] text-muted-foreground">{VAZIO[filtro]}</p>
           ) : (
             <Table
               aria-label={`Pontos de controle: ${ROTULO_FILTRO[filtro].toLowerCase()}`}

@@ -121,8 +121,10 @@ const RE_AREA = new RegExp(
   String.raw`^(?:Á|A)(?:REA)?\s*[:=]?\s*${NUMERO}\s*m(?:²|2)\s*$|^${NUMERO}\s*m(?:²|2)$`,
   "i",
 );
+// O sinal é obrigatório: "+", "-" ou "−" (menos tipográfico). O hífen vai escapado: "[+-−]" seria a faixa
+// de U+002B a U+2212, com dígitos e letras dentro, e a área "47,65" virava o nível -7,65.
 const RE_NIVEL =
-  /^(N\.?\s?A\.?|N\.?\s?P\.?|N[ÍI]VEL|NIV\.?|EL\.?|COTA)?\s*([+-−])\s*(\d{1,3}[.,]\d{2,3})\s*m?$/i;
+  /^(N\.?\s?A\.?|N\.?\s?P\.?|N[ÍI]VEL|NIV\.?|EL\.?|COTA)?\s*([+\-−])\s*(\d{1,3}[.,]\d{2,3})\s*m?$/i;
 const RE_NIVEL_ZERO = /^(N\.?\s?A\.?|N\.?\s?P\.?|N[ÍI]VEL|EL\.?)?\s*±\s*0[.,]0{2,3}$/i;
 const RE_PENDENCIA =
   /\b(a\s+definir|a\s+confirmar|aguardando|verificar|conferir\s+(?:no|em)\s+(?:local|obra)|confirmar\s+(?:no|em)\s+(?:local|obra)|ver\s+projeto|pendente|em\s+aberto|a\s+ser\s+(?:definid|confirmad))/i;

@@ -18,9 +18,11 @@ export {
   avaliarResposta,
   DIAS_PARA_PEDIR_APROVACAO,
   datasDoCheck,
+  diasEntre,
   type EstadoCheck,
   esperadaValida,
   estadoDoCheck,
+  lerDataDaResposta,
   MAXIMO_DA_OPCAO,
   MAXIMO_DE_OPCOES,
   MAXIMO_DE_PERGUNTAS,
@@ -32,6 +34,8 @@ export {
   proximaSaida,
   REGRA_PADRAO,
   resumoDaEtapa,
+  type SaidaDoCheck,
+  saidasDoCheck,
   simOuNao,
   type TipoResposta,
   UNIDADES_DE_MEDIDA,
@@ -82,6 +86,7 @@ export {
   MENSAGEM_ERRO_NUMERO,
   paraBanco,
 } from "./numero";
+export { type FatosDaObra, type PassosDaObra, passosDaObra, type SituacaoPasso } from "./passos";
 export {
   CATALOGO,
   chavePreco,

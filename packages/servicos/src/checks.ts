@@ -12,12 +12,14 @@ import {
   type Momento,
   maiorNivel,
   proximaSaida,
+  saidasDoCheck,
   simOuNao,
   type TipoResposta,
   unidadeDaMedida,
 } from "@canteirocheck/core";
 import { registrarAuditoria, schema, type Tx, withTenant } from "@canteirocheck/db";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { ancorasDasPerguntas, saidasDoCheckNaVersao } from "./checks-envio";
 import { ator, type Contexto, ErroDeCampo, ErroDominio, exigirPapel } from "./contexto";
 import {
   type FaseDaVersao,
@@ -94,6 +96,8 @@ export interface RiscoDaFase {
   /** "R1", "R2"… */
   codigo: string;
   nivel: Nivel;
+  /** "sequencia": passagem entre tarefas do cronograma; `projetoTrecho` é o nome da tarefa anterior. */
+  tipo: "projeto" | "sequencia";
   titulo: string;
   projeto: { id: string; codigo: string; revisao: string; titulo: string; tipoArquivo: "dwg" | "pdf" } | null;
   projetoTrecho: string;
@@ -117,6 +121,11 @@ export interface PerguntaDoCheck {
   pedeFoto: boolean;
   /** Códigos dos riscos ligados ("R1"). */
   riscos: string[];
+  /**
+   * Pergunta de passagem entre tarefas: sai antes da tarefa que vai começar, não antes da fase.
+   * A data e o nome dessa tarefa; null quando a pergunta sai com o check.
+   */
+  saiEm: { data: string; tarefa: string } | null;
 }
 
 export interface RespostaDoCheck {
@@ -379,7 +388,8 @@ export async function obterFase(
   return withTenant(ctx.tenantId, async (tx) => {
     const vigente = await vigenteDaObra(tx, obraId);
     if (!vigente) return null;
-    const fase = (await linhasDaVersao(tx, vigente.id)).fases.find((f) => f.uid === faseUid);
+    const { linhas, fases } = await linhasDaVersao(tx, vigente.id);
+    const fase = fases.find((f) => f.uid === faseUid);
     if (!fase) return null;
 
     const concluido = await ultimoConcluido(tx, obraId);
@@ -510,6 +520,7 @@ export async function obterFase(
         id: r.id,
         codigo: codigoDoRisco(r.ordem),
         nivel: r.nivel,
+        tipo: r.tipo,
         titulo: r.titulo,
         projeto: p ?? null,
         projetoTrecho: r.projetoTrecho,
@@ -523,9 +534,28 @@ export async function obterFase(
       };
     });
 
+    // a pergunta de passagem sai antes da tarefa dela (só no check "antes")
+    const ancoras = await ancorasDasPerguntas(
+      tx,
+      linhas,
+      perguntas.filter((p) => p.removidaEm === null),
+    );
     const checksDaFase = MOMENTOS.flatMap((m) => checks.filter((k) => k.momento === m)).map(
       (k): CheckDaFase => {
         const ativas = perguntas.filter((p) => p.checkId === k.id && p.removidaEm === null);
+        const saidas =
+          k.momento === "antes"
+            ? saidasDoCheck(
+                k,
+                fase,
+                ativas.map((p) => ({ id: p.id, ancoraInicio: ancoras.get(p.id)?.inicio ?? null })),
+              )
+            : [];
+        const saiEm = (p: { id: string }) => {
+          const tarefa = ancoras.get(p.id);
+          const data = saidas.find((s) => s.perguntas.includes(p.id))?.data;
+          return tarefa?.inicio && data ? { data, tarefa: tarefa.nome } : null;
+        };
         const doCheck = envios.filter((e) => e.checkId === k.id);
         const { datas, estado, proxima } = contas(k, fase, doCheck, hoje);
         const responsavel = nomeDe(k.responsavelId);
@@ -549,6 +579,7 @@ export async function obterFase(
             esperada: p.esperada,
             pedeFoto: p.pedeFoto,
             riscos: riscosDa(p),
+            saiEm: saiEm(p),
           })),
           envios: doCheck.map((e) => {
             const rs = respostas
@@ -567,7 +598,7 @@ export async function obterFase(
               respondidoEm: e.respondidoEm,
               respondidoPor: nomeDe(e.respondidoPorId),
               foraDoEsperado: e.foraDoEsperado,
-              total: e.respondidoEm ? rs.length : ativas.length,
+              total: e.respondidoEm ? rs.length : (e.perguntaIds?.length ?? ativas.length),
               respostas: rs.map(({ r, p }) => ({
                 perguntaId: p.id,
                 texto: p.texto,
@@ -880,7 +911,18 @@ export async function aprovarCheck(ctx: Contexto, checkId: string): Promise<{ sa
     if (!(await ehEncarregadoDaObra(tx, k.obraId, k.responsavelId)))
       throw new ErroDominio("invalido", "Quem responde precisa ser um encarregado da equipe da obra.");
     const fase = await faseDoCheck(tx, k);
-    const datas = fase ? datasDoCheck({ momento: k.momento, dias: k.dias }, fase) : [];
+    const vigente = await vigenteDaObra(tx, k.obraId);
+    const ativas = await tx
+      .select({ id: checkPergunta.id, riscoId: checkPergunta.riscoId })
+      .from(checkPergunta)
+      .where(and(eq(checkPergunta.checkId, k.id), isNull(checkPergunta.removidaEm)));
+    // a pergunta de passagem entre tarefas tem a data da tarefa dela, não a da fase
+    const datas =
+      fase && vigente
+        ? (
+            await saidasDoCheckNaVersao(tx, k, fase, (await linhasDaVersao(tx, vigente.id)).linhas, ativas)
+          ).saidas.map((s) => s.data)
+        : [];
     if (datas.length === 0)
       throw new ErroDominio("invalido", "A fase não tem no cronograma a data de que este check precisa.");
     const [o] = await tx.select({ fuso: obra.fusoHorario }).from(obra).where(eq(obra.id, k.obraId));

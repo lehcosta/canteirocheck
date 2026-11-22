@@ -494,7 +494,7 @@ export function EditorDoCheck({
           </p>
         )}
         <div className="flex gap-2 border-t px-4 pt-3.5 pb-4">
-          <Link href={sair} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+          <Link href={sair} scroll={false} className={cn(buttonVariants({ variant: "outline" }), "h-11")}>
             Cancelar
           </Link>
           {pendente ? (
@@ -503,7 +503,7 @@ export function EditorDoCheck({
               variant="secondary"
               size="sm"
               disabled
-              className="flex-1 border-line disabled:opacity-100"
+              className="h-11 flex-1 border-line disabled:opacity-100"
             >
               <span className="text-muted-foreground">Salvando…</span>
             </Button>

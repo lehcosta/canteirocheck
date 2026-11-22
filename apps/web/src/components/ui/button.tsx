@@ -7,8 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // laranja só para a ação principal da tela (uma por tela); texto sempre on-prumo
-        default: "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklch,var(--prumo),var(--ink)_10%)]",
+        // laranja só para a ação principal da tela (uma por tela): branco em Archivo 800, grande o bastante
+        // (≥ 19 px, nos compoundVariants) para valer como texto grande no laranja; o hover escurece para o
+        // grafite fixo, que no tema escuro não clareia. Travado, fica cinza como o TRAVADO dos checks: branco
+        // esmaecido no laranja cai para 1,6:1 (o "Enviando…" dos formulários volta ao laranja no className)
+        default:
+          "bg-primary font-heading font-extrabold tracking-[-0.01em] text-primary-foreground hover:bg-[color-mix(in_oklch,var(--acao),#191816_10%)] disabled:border-line disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100",
         outline: "border-concreto bg-card text-foreground hover:bg-muted aria-expanded:bg-muted",
         secondary: "bg-muted text-foreground hover:bg-line/70 aria-expanded:bg-muted",
         ghost: "text-muted-foreground hover:bg-muted hover:text-foreground aria-expanded:bg-muted",
@@ -26,6 +30,15 @@ const buttonVariants = cva(
         "icon-lg": "size-12",
       },
     },
+    compoundVariants: [
+      // a ação principal não tem tamanho pequeno: abaixo de 18,66 px o branco no laranja não passa no AA
+      {
+        variant: "default",
+        size: ["default", "sm", "xs"],
+        class: "h-11 gap-2 rounded-md px-5 text-[19px] [&_svg:not([class*='size-'])]:size-5",
+      },
+      { variant: "default", size: "lg", class: "text-[20px] [&_svg:not([class*='size-'])]:size-5" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
