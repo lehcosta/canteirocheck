@@ -5,7 +5,10 @@
 //
 // uso (da raiz do repositório):
 //   node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs [--rotas /login,/obras] [--temas claro,escuro] [--previa]
+//     [--estado '/obras/[obraId] · passo 2=/obras/<id>' ...]
 // --previa: desenha a conversão no próprio Chrome e compara com o gabarito, sem nenhuma chamada ao Paper.
+// --estado: um estado da rota, fotografado na URL dada; a prancheta "<rota> · <estado>" fica abaixo da
+//   prancheta da rota. Só sem --rotas e sem --estado a sincronização é completa (e apaga rotas órfãs).
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,9 +19,12 @@ import {
   ARQUIVO,
   acharArquivo,
   alturaPar,
+  desempilhar,
+  ESPACO_ROTAS,
   exportar,
   garantirPaginas,
   Paper,
+  relatoDesempilhar,
   sincronizarTokens,
 } from "./paper.mjs";
 import {
@@ -35,13 +41,13 @@ import {
 const PAGINAS = { claro: "Claro", escuro: "Escuro" };
 const LARGURA = 1440;
 const ALTURA_JANELA = 900;
-const ESPACO_ENTRE_PRANCHETAS = 160;
 
 const { values: opcoes } = parseArgs({
   options: {
     rotas: { type: "string" },
     temas: { type: "string", default: "claro,escuro" },
     previa: { type: "boolean", default: false },
+    estado: { type: "string", multiple: true },
   },
 });
 const TEMAS = opcoes.temas.split(",").map((t) => t.trim());
@@ -185,7 +191,7 @@ async function escrever(paper, fileId, alvo, modo, no, caminhos, pai) {
  * Grava a captura numa prancheta. Todo o conteúdo fica num frame "página": na ressincronização ele é
  * trocado de uma vez (write_html replace) e a prancheta mantém nome, posição e comentários.
  */
-async function gravarPrancheta(paper, fileId, pageId, existente, rota, captura, caminhos, indice) {
+async function gravarPrancheta(paper, fileId, pageId, existente, nome, captura, caminhos, onde) {
   const pagina = paginaDe(captura);
   // a página tem a altura da tela; a prancheta, a par mais próxima (ver alturaPar)
   const tamanho = { width: `${captura.largura}px`, height: `${alturaPar(captura.altura)}px` };
@@ -208,10 +214,10 @@ async function gravarPrancheta(paper, fileId, pageId, existente, rota, captura, 
   const criada = await paper.chamar("create_artboard", {
     fileId,
     pageId,
-    name: rota,
+    name: nome,
     styles: { ...tamanho, backgroundColor: captura.fundo, position: "relative" },
   });
-  const posicao = { left: `${indice * (LARGURA + ESPACO_ENTRE_PRANCHETAS)}px`, top: "0px" };
+  const posicao = { left: `${onde.x}px`, top: `${onde.y}px` };
   await paper.chamar("update_styles", { fileId, updates: [{ nodeIds: [criada.id], styles: posicao }] });
   await escrever(paper, fileId, criada.id, "insert-children", pagina, caminhos, criada.id);
   return criada.id;
@@ -220,13 +226,38 @@ async function gravarPrancheta(paper, fileId, pageId, existente, rota, captura, 
 // ── execução ─────────────────────────────────────────────────────────────────────────────
 const todas = descobrirRotas();
 const filtro = opcoes.rotas?.split(",").map((r) => r.trim());
-const rotas = filtro ? todas.filter((r) => filtro.includes(r)) : todas;
+const estados = opcoes.estado ?? [];
+const completa = !filtro && !estados.length;
+const rotas = completa ? todas : todas.filter((r) => filtro?.includes(r));
 if (filtro && rotas.length !== filtro.length) {
   console.error(
     `rotas desconhecidas: ${filtro.filter((r) => !todas.includes(r)).join(", ")}\nrotas do app: ${todas.join(", ")}`,
   );
   process.exit(1);
 }
+/** Prancheta de um estado: "<rota> · <estado>", na URL dada (um registro do banco desta worktree). */
+const casaRota = (rota, url) =>
+  new RegExp(`^${rota.replace(/\[[^\]]+\]/g, "[^/]+").replace(/[.]/g, "\\.")}/?$`).test(url.split(/[?#]/)[0]);
+const alvos = [
+  ...rotas.map((rota) => ({ nome: rota, rota })),
+  ...estados.map((e) => {
+    const i = e.indexOf("=");
+    const nome = e.slice(0, i).trim();
+    const url = e.slice(i + 1).trim();
+    const rota = nome.split(" · ")[0];
+    if (
+      i < 0 ||
+      !nome.includes(" · ") ||
+      !todas.includes(rota) ||
+      !url.startsWith("/") ||
+      !casaRota(rota, url)
+    ) {
+      console.error(`--estado '${e}': use '<rota> · <estado>=<url da rota>', com uma rota do app`);
+      process.exit(1);
+    }
+    return { nome, rota, url };
+  }),
+];
 
 const navegador = await chromium.launch({ channel: process.env.PW_CHANNEL ?? "chrome", headless: true });
 const novoContexto = () =>
@@ -249,15 +280,15 @@ try {
   const cache = new Map();
   const capturas = [];
   let tokens;
-  for (const [indice, rota] of rotas.entries()) {
-    const url = await resolverRota(page, rota, todas, cache);
+  for (const { nome: rota, rota: padrao, url: fixa } of alvos) {
+    const url = fixa ?? (await resolverRota(page, padrao, todas, cache));
     if (!url) {
       for (const tema of TEMAS)
         relatorio.push({ rota, tema, status: "sem dados no banco para resolver os parâmetros" });
       continue;
     }
     for (const tema of TEMAS) {
-      const nomeArquivo = `${rota.replace(/[/[\]]+/g, "_").replace(/^_|_$/g, "") || "inicio"}-${tema}`;
+      const nomeArquivo = `${rota.replace(/[/[\]\s·]+/g, "_").replace(/^_|_$/g, "") || "inicio"}-${tema}`;
       await anonimo.goto(APP + url, { waitUntil: "networkidle" });
       const quem = new URL(anonimo.url()).pathname === url ? anonimo : page;
       const { gabarito, fontesNext } = await capturar(quem, url, tema, nomeArquivo);
@@ -272,7 +303,7 @@ try {
       );
       const linha = { rota, url, tema, gabarito, status: "capturada" };
       relatorio.push(linha);
-      capturas.push({ linha, indice, nomeArquivo, captura, caminhos });
+      capturas.push({ linha, nomeArquivo, captura, caminhos });
       if (opcoes.previa) {
         linha.previa = join(SAIDA, `${nomeArquivo}-previa.png`);
         await renderizarPrevia(quem, captura, caminhos, tokens, linha.previa);
@@ -298,33 +329,60 @@ try {
     for (const tema of TEMAS) {
       const pageId = paginas[PAGINAS[tema]];
       const daPagina = capturas.filter((c) => c.linha.tema === tema);
-      const existentes = new Map(
-        ((await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? []).map((a) => [a.name, a]),
-      );
+      const pranchetas = (await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? [];
+      const existentes = new Map(pranchetas.map((a) => [a.name, a]));
+      // prancheta nova entra no fim da fileira, depois de tudo o que já há na página (o índice da rota
+      // muda de um branch para outro e jogava pranchetas diferentes no mesmo lugar)
+      let proximoX = pranchetas.length
+        ? Math.max(...pranchetas.map((a) => (a.worldX ?? 0) + (a.width ?? 0))) + ESPACO_ROTAS
+        : 0;
+      // o estado novo entra abaixo da prancheta da rota e dos estados que ela já tem
+      const abaixoDaRota = (nome) => {
+        const rota = nome.split(" · ")[0];
+        const coluna = pranchetas.filter((a) => a.name === rota || a.name.startsWith(`${rota} · `));
+        const daRota = coluna.find((a) => a.name === rota);
+        if (!daRota) return null;
+        return { x: daRota.worldX, y: Math.max(...coluna.map((a) => a.worldY + a.height)) + ESPACO_ROTAS };
+      };
       const ids = new Map();
       for (const c of daPagina) {
-        ids.set(
-          c,
-          await gravarPrancheta(
-            paper,
-            fileId,
-            pageId,
-            existentes.get(c.linha.rota),
-            c.linha.rota,
-            c.captura,
-            c.caminhos,
-            c.indice,
-          ),
+        const existente = existentes.get(c.linha.rota);
+        const onde = (c.linha.rota.includes(" · ") && abaixoDaRota(c.linha.rota)) || { x: proximoX, y: 0 };
+        const id = await gravarPrancheta(
+          paper,
+          fileId,
+          pageId,
+          existente,
+          c.linha.rota,
+          c.captura,
+          c.caminhos,
+          onde,
         );
+        ids.set(c, id);
+        if (existente) continue;
+        pranchetas.push({
+          id,
+          name: c.linha.rota,
+          worldX: onde.x,
+          worldY: onde.y,
+          width: c.captura.largura,
+          height: alturaPar(c.captura.altura),
+        });
+        if (onde.y === 0) proximoX += c.captura.largura + ESPACO_ROTAS;
       }
-      // pranchetas de rotas que sumiram do app saem do Paper (só numa sincronização completa)
-      const orfas = filtro
-        ? []
-        : [...existentes.values()].filter((a) => a.name.startsWith("/") && !rotas.includes(a.name));
+      // pranchetas de rotas que sumiram do app saem do Paper (só numa sincronização completa); um estado
+      // ("<rota> · …") sai junto com a rota dele, e fica enquanto ela existir
+      const orfas = completa
+        ? [...existentes.values()].filter(
+            (a) => a.name.startsWith("/") && !rotas.includes(a.name.split(" · ")[0]),
+          )
+        : [];
       if (orfas.length) {
         await paper.chamar("delete_nodes", { fileId, nodeIds: orfas.map((a) => a.id) });
         console.log(`removidas de ${PAGINAS[tema]}: ${orfas.map((a) => a.name).join(", ")}`);
       }
+      // cada prancheta no seu lugar: uma rota que cresceu não invade o que está embaixo dela
+      console.log(relatoDesempilhar(PAGINAS[tema], await desempilhar(paper, fileId, pageId)));
       if (!ids.size) continue;
       await paper.chamar("finish_working_on_nodes", { fileId, nodeIds: [...ids.values()] });
 

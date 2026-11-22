@@ -909,7 +909,7 @@ async function gravarRiscosEChecks(
       cronogramaVersaoId: versaoId,
       status: "concluida",
       projetos: retrato(projetos),
-      geradoPor: "claude-opus-5-5@cruzamento-v1",
+      geradoPor: "claude-opus-5-5@cruzamento-v2",
       criadoEm: em("2026-11-17", "18:58"),
       iniciadoEm: em("2026-11-17", "18:59"),
       concluidoEm: em("2026-11-17", "19:02"),

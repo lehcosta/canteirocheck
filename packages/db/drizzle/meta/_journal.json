@@ -50,6 +50,20 @@
       "when": 1795036089834,
       "tag": "0006_assinatura_stripe",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795261175759,
+      "tag": "0007_passagens",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795262130952,
+      "tag": "0008_envio_checks",
+      "breakpoints": true
     }
   ]
 }

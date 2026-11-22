@@ -74,6 +74,7 @@ A exploração vai para o arquivo "Prumo — espelho do app" (os tokens são do 
 - Aprovado: as pranchetas do estudo aprovado ganham ` ✓` no fim do nome (`login-direita · A · 1 ✓`).
 - Comentários: o usuário comenta nas pranchetas. O `comentarios` lista os abertos da página e o `resolver` marca os atendidos.
 - Exploração nova: entra 400 px abaixo da última prancheta da página.
+- Cada prancheta no seu lugar: no fim do `enviar` (e do `aprovar` que troca a rota) a página é desempilhada. As pranchetas de uma exploração andam juntas e descem inteiras até ficar 200 px abaixo do que encostavam; uma prancheta de rota que caia sobre outra vai para o fim da fileira do topo. A regra mora em `planoDesempilhar` (`sincronizar-paper/scripts/paper.mjs`).
 - Reenvio: as pranchetas com o mesmo prefixo são apagadas e recriadas a partir do mesmo topo.
 - Conferência: cada prancheta exportada é comparada com a prévia pelo mesmo critério do espelho (`sincronizar-paper/CONVERSOR.md`).
 
@@ -90,7 +91,7 @@ Os pesos aceitos são os que o app carrega de fato (`document.fonts`), não uma 
 
 `explorar.mjs` importa de `.claude/skills/sincronizar-paper/scripts/`:
 
-- `paper.mjs`: cliente MCP, arquivo, páginas e tokens no Paper;
+- `paper.mjs`: cliente MCP, arquivo, páginas, tokens e o desempilhar das pranchetas no Paper;
 - `prumo.mjs`: caminhos, `.env`, tokens do `globals.css`, login, rotas e a tela em repouso (`abrirEmRepouso`, a mesma do gabarito do espelho);
 - `comparar.mjs`: conferência por blocos.
 

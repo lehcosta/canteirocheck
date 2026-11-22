@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 import org.mpxj.ProjectFile;
+import org.mpxj.Relation;
 import org.mpxj.Task;
 import org.mpxj.reader.UniversalProjectReader;
 
@@ -139,7 +140,20 @@ public final class Servidor {
       s.append(",\"marco\":").append(t.getMilestone());
       s.append(",\"inicio\":").append(data(t.getStart()));
       s.append(",\"termino\":").append(data(t.getFinish()));
-      s.append(",\"percentual\":").append(percentual).append('}');
+      s.append(",\"percentual\":").append(percentual);
+      // De quem a tarefa depende (uid): é o que deixa perguntar "a anterior terminou?" antes de ela começar.
+      s.append(",\"predecessoras\":[");
+      boolean primeiraDep = true;
+      for (Relation r : t.getPredecessors()) {
+        Task antes = r.getPredecessorTask();
+        if (antes == null) continue;
+        Integer uid = antes.getUniqueID() == null ? antes.getID() : antes.getUniqueID();
+        if (uid == null) continue;
+        if (!primeiraDep) s.append(',');
+        primeiraDep = false;
+        s.append(uid);
+      }
+      s.append("]}");
     }
     return s.append("]}").toString();
   }

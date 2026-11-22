@@ -1,6 +1,7 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { comoSistema } from "./interno/como-sistema";
 import { auth_user as authUser } from "./schema/auth";
+import { checkFase } from "./schema/check";
 import type { Papel } from "./schema/comum";
 import { obra } from "./schema/obra";
 import { tenant, usuario } from "./schema/tenant";
@@ -239,6 +240,22 @@ export async function listarObrasParaAgenda(): Promise<ObraParaAgenda[]> {
       .from(obra)
       .innerJoin(tenant, eq(tenant.id, obra.tenantId))
       .where(eq(obra.status, "ativa")),
+  );
+}
+
+/**
+ * Worker: os checks aprovados, com quem responde, de obras ativas de todas as construtoras. Só ids:
+ * se é dia e hora de sair, quem decide é o despacho, com RLS.
+ */
+export async function listarChecksAprovados(): Promise<{ tenantId: string; checkId: string }[]> {
+  return comoSistema((tx) =>
+    tx
+      .select({ tenantId: checkFase.tenantId, checkId: checkFase.id })
+      .from(checkFase)
+      .innerJoin(obra, eq(obra.id, checkFase.obraId))
+      .where(
+        and(eq(obra.status, "ativa"), isNotNull(checkFase.aprovadoEm), isNotNull(checkFase.responsavelId)),
+      ),
   );
 }
 

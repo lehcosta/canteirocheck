@@ -99,6 +99,120 @@ export async function exportar(paper, fileId, pageId, ids) {
   return { caminhos, repetidos };
 }
 
+// ── cada prancheta no seu lugar ─────────────────────────────────────────────────────────────
+/** Distância mínima entre pranchetas: o nome de cada uma é desenhado logo acima dela. */
+const FOLGA = 80;
+export const ESPACO_ROTAS = 160;
+const ESPACO_GRUPOS = 200;
+
+const caixa = (membros) => {
+  const x = Math.min(...membros.map((a) => a.worldX));
+  const y = Math.min(...membros.map((a) => a.worldY));
+  return {
+    x,
+    y,
+    direita: Math.max(...membros.map((a) => a.worldX + a.width)),
+    baixo: Math.max(...membros.map((a) => a.worldY + a.height)),
+  };
+};
+const encosta = (a, b) =>
+  a.x < b.direita + FOLGA && b.x < a.direita + FOLGA && a.y < b.baixo + FOLGA && b.y < a.baixo + FOLGA;
+
+/**
+ * Onde cada prancheta deve ir para nenhuma encostar em outra (a menos de FOLGA). Puro: recebe as
+ * pranchetas do `get_basic_info` e devolve as que mudam, `[{ id, nome, de: [x, y], para: [x, y] }]`.
+ * - Prancheta de rota ("/…") anda sozinha e fica na fileira do topo: a que chegou primeiro fica; a que caiu
+ *   sobre ela vai para o fim da fileira.
+ * - As pranchetas de uma exploração, de um conjunto de estados ("<nome> · …") ou dos estados de uma rota no
+ *   espelho ("/rota · …") andam juntas: o grupo que encosta em algo já assentado desce, inteiro, até ficar
+ *   livre. Assentam-se de cima para baixo e, no empate, na ordem de criação.
+ */
+export function planoDesempilhar(pranchetas) {
+  const medidas = pranchetas
+    .map((a, ordem) => ({ ...a, ordem }))
+    .filter((a) => [a.worldX, a.worldY, a.width, a.height].every(Number.isFinite));
+  const grupos = new Map();
+  for (const a of medidas) {
+    const chave = a.name.includes(" · ")
+      ? `grupo ${a.name.split(" · ")[0]}`
+      : a.name.startsWith("/")
+        ? `rota ${a.id}`
+        : `solta ${a.id}`;
+    if (!grupos.has(chave)) grupos.set(chave, []);
+    grupos.get(chave).push(a);
+  }
+  const lista = [...grupos].map(([chave, membros]) => ({
+    rota: chave.startsWith("rota "),
+    membros,
+    ordem: Math.min(...membros.map((a) => a.ordem)),
+    dx: 0,
+    dy: 0,
+  }));
+  const caixaDe = (g) => {
+    const c = caixa(g.membros);
+    return { x: c.x + g.dx, y: c.y + g.dy, direita: c.direita + g.dx, baixo: c.baixo + g.dy };
+  };
+  const assentadas = [];
+  const fimDaFileira = () =>
+    Math.max(...medidas.map((a) => a.worldX + a.width), ...assentadas.map((c) => c.direita));
+  const porPosicao = (a, b) =>
+    caixaDe(a).y - caixaDe(b).y || caixaDe(a).x - caixaDe(b).x || a.ordem - b.ordem;
+  for (const g of lista.filter((g) => g.rota).sort((a, b) => a.ordem - b.ordem)) {
+    if (assentadas.some((c) => encosta(caixaDe(g), c))) {
+      const c = caixaDe(g);
+      g.dx = fimDaFileira() + ESPACO_ROTAS - c.x;
+      g.dy = -c.y;
+    }
+    assentadas.push(caixaDe(g));
+  }
+  for (const g of lista.filter((g) => !g.rota).sort(porPosicao)) {
+    let batidas = assentadas.filter((o) => encosta(caixaDe(g), o));
+    while (batidas.length) {
+      g.dy += Math.max(...batidas.map((o) => o.baixo)) + ESPACO_GRUPOS - caixaDe(g).y;
+      batidas = assentadas.filter((o) => encosta(caixaDe(g), o));
+    }
+    assentadas.push(caixaDe(g));
+  }
+  return lista
+    .filter((g) => g.dx || g.dy)
+    .flatMap((g) =>
+      g.membros.map((a) => ({
+        id: a.id,
+        nome: a.name,
+        de: [a.worldX, a.worldY],
+        para: [a.worldX + g.dx, a.worldY + g.dy],
+      })),
+    );
+}
+
+/**
+ * Tira as sobreposições de uma página: lê as pranchetas e move as que encostam em outra, numa chamada
+ * só (2 no total). Devolve as mudanças de `planoDesempilhar`.
+ */
+export async function desempilhar(paper, fileId, pageId) {
+  const pranchetas = (await paper.chamar("get_basic_info", { fileId, pageId })).artboards ?? [];
+  const mudancas = planoDesempilhar(pranchetas);
+  if (mudancas.length)
+    await paper.chamar("update_styles", {
+      fileId,
+      updates: mudancas.map((m) => ({
+        nodeIds: [m.id],
+        styles: { left: `${Math.round(m.para[0])}px`, top: `${Math.round(m.para[1])}px` },
+      })),
+    });
+  return mudancas;
+}
+
+/** Uma linha por prancheta movida, para o log dos scripts. */
+export const relatoDesempilhar = (pagina, mudancas) =>
+  mudancas.length
+    ? mudancas
+        .map(
+          (m) => `desempilhada em ${pagina}: ${m.nome} (${m.de.map(Math.round)} → ${m.para.map(Math.round)})`,
+        )
+        .join("\n")
+    : `sem sobreposição em ${pagina}`;
+
 // ── o arquivo do espelho ────────────────────────────────────────────────────────────────────
 /**
  * Um arquivo só para as duas skills: os tokens são do arquivo. Páginas "Claro" e "Escuro" são do

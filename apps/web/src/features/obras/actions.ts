@@ -14,7 +14,8 @@ export async function criarObraAction(_: EstadoAcao, form: FormData): Promise<Es
   } catch (e) {
     return tratarErro(e);
   }
-  revalidatePath("/obras");
+  // "layout" revalida o layout do painel: a obra nova aparece na barra lateral após o redirect
+  revalidatePath("/obras", "layout");
   redirect(`/obras/${id}`);
 }
 

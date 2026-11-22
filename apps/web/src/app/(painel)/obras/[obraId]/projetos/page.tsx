@@ -28,7 +28,8 @@ export default async function Projetos({ params }: { params: Promise<{ obraId: s
             <TituloSecao id="titulo-projetos">Projetos</TituloSecao>
             <p className="max-w-3xl text-[15px] text-muted-foreground">
               O DWG é lido automaticamente: textos, camadas, ambientes, níveis, carimbo e notas. O PDF fica
-              como referência. Uma revisão nova do mesmo código substitui a anterior.
+              guardado para consulta e não é lido: só o DWG gera pontos sugeridos. Uma revisão nova do mesmo
+              código substitui a anterior.
             </p>
           </div>
           <a href="#enviar-projeto" className={cn(buttonVariants({ variant: "outline" }), "h-11")}>
@@ -85,6 +86,9 @@ export default async function Projetos({ params }: { params: Promise<{ obraId: s
                     <TableCell className="px-4 py-3.5">{rotuloDisciplina(p.disciplina)}</TableCell>
                     <TableCell className="px-4 py-3.5">
                       <SeloExtracao status={p.statusExtracao} />
+                      {p.statusExtracao === "nao_aplicavel" && (
+                        <span className={SUBLINHA}>Não é lido: não gera pontos</span>
+                      )}
                     </TableCell>
                     <TableCell className="px-4 py-3.5">
                       {p.enviadoPor}

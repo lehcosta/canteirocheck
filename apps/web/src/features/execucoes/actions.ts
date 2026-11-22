@@ -20,6 +20,8 @@ export async function decidirAction(_: EstadoAcao, form: FormData): Promise<Esta
     return tratarErro(e);
   }
   revalidatePath(`/obras/${d.obraId}`, "layout");
+  // o layout do painel também: o contador de bloqueadas da barra lateral muda com a decisão
+  revalidatePath("/obras", "layout");
   return {
     ok:
       decisao === "liberada"

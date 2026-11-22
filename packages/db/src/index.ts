@@ -13,6 +13,7 @@ export {
   type EntradaWhatsapp,
   type ItemParado,
   itensParados,
+  listarChecksAprovados,
   listarObrasParaAgenda,
   type MetricaEtapa,
   metricasPorEtapa,

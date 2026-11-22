@@ -1,22 +1,53 @@
-import { listarUsuarios } from "@canteirocheck/servicos";
+import { listarUsuarios, nomeDoPlano, obterAssinatura } from "@canteirocheck/servicos";
+import { CircleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CabecalhoPagina } from "@/components/cabecalho-pagina";
-import { Campo, CampoSelect } from "@/components/campos";
-import { FormularioAcao } from "@/components/formulario-acao";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { criarObraAction } from "@/features/obras/actions";
+import { ProgressoCadastro, TrilhoCadastro } from "@/components/passos-obra";
+import { buttonVariants } from "@/components/ui/button";
 import { exigirSessao } from "@/lib/sessao";
-import { cn } from "@/lib/utils";
+import { FormularioObra } from "./formulario-obra";
 
 export const metadata: Metadata = { title: "Nova obra" };
+
+/** O motivo de o cadastro não poder seguir, no lugar do formulário, com o caminho para resolver. */
+function Aviso({
+  titulo,
+  textos,
+  acao,
+}: {
+  titulo: string;
+  textos: string[];
+  acao: { href: string; rotulo: string };
+}) {
+  return (
+    <section aria-labelledby="titulo-aviso" className="space-y-4 rounded-md border bg-card p-5 md:p-6">
+      <h2 id="titulo-aviso" className="flex items-center gap-2.5 text-lg leading-6 font-semibold">
+        <CircleAlert aria-hidden className="size-4 shrink-0" />
+        {titulo}
+      </h2>
+      <div className="space-y-1.5 text-[15px] leading-[22px]">
+        {textos.map((t) => (
+          <p key={t}>{t}</p>
+        ))}
+      </div>
+      <Link href={acao.href} className={buttonVariants()}>
+        {acao.rotulo}
+      </Link>
+    </section>
+  );
+}
 
 export default async function NovaObra() {
   const s = await exigirSessao();
   if (s.papel !== "admin") redirect("/obras");
-  const engenheiros = (await listarUsuarios(s.contexto)).filter((u) => u.papel === "engenheiro" && u.ativo);
+  const [usuarios, assinatura] = await Promise.all([listarUsuarios(s.contexto), obterAssinatura(s.contexto)]);
+  const engenheiros = usuarios.filter((u) => u.papel === "engenheiro" && u.ativo);
+  // o teto do plano avisa antes de preencher; o serviço confere de novo ao criar (duas abas ao mesmo tempo)
+  const { limiteObras, obrasAtivas } = assinatura;
+  const noLimite = limiteObras !== null && obrasAtivas >= limiteObras;
+  const travado = engenheiros.length === 0 ? "Falta um engenheiro" : noLimite ? "Plano no limite" : undefined;
 
   return (
     <>
@@ -38,53 +69,39 @@ export default async function NovaObra() {
         />
       </div>
 
-      <Card className="max-w-2xl">
-        <CardContent>
+      <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-12">
+        <TrilhoCadastro travado={travado} />
+        <ProgressoCadastro />
+        <div className="min-w-0 flex-1">
           {engenheiros.length === 0 ? (
-            <p className="text-[15px] text-muted-foreground">
-              Cadastre ao menos um engenheiro em{" "}
-              <Link
-                href="/configuracoes/usuarios"
-                className="font-semibold text-prumo-text underline underline-offset-4"
-              >
-                Usuários
-              </Link>{" "}
-              antes de criar uma obra.
-            </p>
+            <Aviso
+              titulo="Falta um engenheiro"
+              textos={[
+                "Cadastre ao menos um engenheiro em Usuários antes de criar uma obra.",
+                "Ele vira o responsável e entra na equipe da obra.",
+              ]}
+              acao={{ href: "/configuracoes/usuarios", rotulo: "Cadastrar engenheiro" }}
+            />
+          ) : limiteObras === 0 ? (
+            <Aviso
+              titulo="Assinatura inativa"
+              textos={["A assinatura não está ativa. Regularize em Assinatura para abrir obras."]}
+              acao={{ href: "/configuracoes/assinatura", rotulo: "Regularizar assinatura" }}
+            />
+          ) : noLimite ? (
+            <Aviso
+              titulo="Limite de obras do plano"
+              textos={[
+                `O plano ${nomeDoPlano(assinatura.plano)} vai até ${limiteObras} obras ativas. Troque de plano em Assinatura para abrir outra.`,
+                `Hoje: ${obrasAtivas} de ${limiteObras} obras ativas.`,
+              ]}
+              acao={{ href: "/configuracoes/assinatura", rotulo: "Trocar de plano" }}
+            />
           ) : (
-            <FormularioAcao
-              acao={criarObraAction}
-              className="grid gap-5 space-y-0 sm:grid-cols-2 [&>p]:col-span-full"
-            >
-              <Campo rotulo="Nome da obra" nome="nome" required className="sm:col-span-2" />
-              <Campo rotulo="Endereço" nome="endereco" className="sm:col-span-2" />
-              <Campo rotulo="Área (m²)" nome="areaM2" inputMode="decimal" placeholder="1250,50" />
-              <Campo
-                rotulo="Horário da pergunta diária"
-                nome="horarioAnuncio"
-                type="time"
-                defaultValue="16:00"
-              />
-              <CampoSelect
-                rotulo="Engenheiro responsável"
-                nome="engenheiroResponsavelId"
-                required
-                vazio="Selecione…"
-                opcoes={engenheiros.map((e) => ({ valor: e.id, rotulo: e.nome }))}
-                className="sm:col-span-2"
-              />
-              <div className="flex flex-wrap items-center gap-3 border-t pt-5 sm:col-span-2">
-                <Button type="submit" className="h-11 px-5">
-                  Criar obra
-                </Button>
-                <Link href="/obras" className={cn(buttonVariants({ variant: "ghost" }), "h-11")}>
-                  Cancelar
-                </Link>
-              </div>
-            </FormularioAcao>
+            <FormularioObra engenheiros={engenheiros.map((e) => ({ valor: e.id, rotulo: e.nome }))} />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </>
   );
 }

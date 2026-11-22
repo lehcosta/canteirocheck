@@ -8,8 +8,9 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        // pede decisão (ex.: aguardando liberação): laranja cheio, texto on-prumo
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/90",
+        // pede decisão (ex.: aguardando liberação): laranja cheio, texto on-prumo (o selo é pequeno demais
+        // para o branco do botão)
+        default: "bg-prumo text-on-prumo [a]:hover:bg-prumo/90",
         secondary: "bg-muted text-muted-foreground [a]:hover:bg-line/60",
         // fora da tolerância, bloqueada, recusada: sempre com ✕ ou a palavra
         destructive: "bg-muted text-divergencia [a]:hover:bg-line/60",

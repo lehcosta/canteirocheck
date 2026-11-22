@@ -20,6 +20,7 @@ import {
 import { schema, type Tx, withTenant } from "@canteirocheck/db";
 import { type ClienteWhatsapp, type ConteudoEntrada, clienteWhatsapp } from "@canteirocheck/whatsapp";
 import { and, eq, inArray } from "drizzle-orm";
+import { responderCheckPorTexto } from "./checks-envio";
 import { type Contexto, ErroDominio } from "./contexto";
 import { aplicarEvento, registrarMedida, type SessaoChecklist } from "./execucoes/conferencia";
 import { carregarPontos, registrosDaRodada, travarExecucao } from "./execucoes/pontos";
@@ -130,6 +131,15 @@ export async function transcreverAudio(
       transcritor.nome,
     );
   });
+  // Áudio de quem tem um check esperando resposta em texto: a transcrição é a resposta.
+  if (m.usuarioId) {
+    const usuarioId = m.usuarioId;
+    const doCheck = await emTransacao(tenantId, async (tx, ef) => {
+      const [u] = await tx.select({ papel: usuario.papel }).from(usuario).where(eq(usuario.id, usuarioId));
+      return u ? responderCheckPorTexto(tx, ef, { tenantId, usuarioId, papel: u.papel }, texto) : null;
+    });
+    if (doCheck) return { status: doCheck.acao };
+  }
   return interpretarMensagem(tenantId, mensagemId);
 }
 

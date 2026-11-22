@@ -38,6 +38,11 @@ describe("padrões", () => {
     expect(lerNivel("NÍVEL +12,40 m")).toEqual({ valor: "12.40", referencia: "NÍVEL" });
     expect(lerNivel("±0,00")).toEqual({ valor: "0.00", referencia: null });
     expect(lerNivel("6,00")).toBeNull(); // sem sinal não é marca de nível
+    // área de ambiente com dois dígitos antes da vírgula também não (o "4" não é sinal)
+    expect(lerNivel("47,65")).toBeNull();
+    expect(lerNivel("145,80")).toBeNull();
+    expect(lerNivel("A12,50")).toBeNull();
+    expect(lerNivel("−1,20")).toEqual({ valor: "-1.20", referencia: null }); // menos tipográfico
   });
   it("pré-filtro de pendência", () => {
     expect(pareceDependencia("PISO A DEFINIR")).toBe(true);

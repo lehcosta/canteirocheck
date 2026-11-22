@@ -325,7 +325,7 @@ function ConferenciaExemplo() {
         </table>
       </div>
       <div aria-hidden className="flex flex-wrap gap-3">
-        <span className="inline-flex h-11 items-center rounded-md bg-prumo px-[18px] text-[15px] font-semibold text-on-prumo">
+        <span className="inline-flex h-11 items-center rounded-md bg-acao px-5 font-heading text-[19px] font-extrabold tracking-[-0.01em] text-on-acao">
           Liberar concretagem
         </span>
         <span className="inline-flex h-11 items-center rounded-md border border-divergencia px-[18px] text-[15px] font-semibold text-divergencia">
@@ -358,9 +358,9 @@ export default function LandingPage() {
             </Link>
             <a
               href="#demonstracao"
-              className="inline-flex h-11 items-center rounded-md bg-primary px-3.5 text-[15px] font-semibold text-primary-foreground sm:px-[18px]"
+              className="inline-flex h-11 items-center rounded-md bg-acao px-3.5 font-heading text-[19px] font-extrabold tracking-[-0.01em] text-on-acao hover:bg-[color-mix(in_oklch,var(--acao),#191816_10%)] sm:px-[18px]"
             >
-              <span className="sm:hidden">Demonstração</span>
+              <span className="sm:hidden">Agendar</span>
               <span className="hidden sm:inline">Agendar demonstração</span>
             </a>
           </div>
@@ -383,14 +383,14 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-3">
                 <a
                   href="#demonstracao"
-                  className="inline-flex h-[52px] items-center gap-2 rounded-md bg-primary px-6 text-base font-semibold text-primary-foreground"
+                  className="inline-flex h-[52px] items-center gap-2 rounded-md bg-acao px-6 font-heading text-[20px] font-extrabold tracking-[-0.01em] text-on-acao hover:bg-[color-mix(in_oklch,var(--acao),#191816_10%)]"
                 >
                   Agendar demonstração
-                  <ArrowRight aria-hidden className="size-[18px]" />
+                  <ArrowRight aria-hidden className="size-5" />
                 </a>
                 <a
                   href="#como-funciona"
-                  className="inline-flex h-[52px] items-center rounded-md border border-concreto bg-card px-6 text-base font-semibold"
+                  className="inline-flex h-[52px] items-center rounded-md border border-concreto bg-card px-6 font-heading text-[20px] font-extrabold tracking-[-0.01em]"
                 >
                   Ver como funciona
                 </a>
@@ -622,10 +622,10 @@ export default function LandingPage() {
                     href={`/?plano=${p.id}#demonstracao`}
                     aria-label={`Quero o plano ${p.nome}`}
                     className={cn(
-                      "inline-flex h-11 items-center justify-center rounded-md px-[18px] text-[15px] font-semibold",
+                      "inline-flex h-11 items-center justify-center rounded-md px-[18px] font-heading text-[19px] font-extrabold tracking-[-0.01em]",
                       p.destaque
                         ? // sobre o grafite o anel de foco usa o laranja de texto do tema escuro
-                          "bg-prumo text-on-prumo hover:bg-[color-mix(in_oklch,var(--prumo),var(--ink)_10%)] focus-visible:outline-[#ff8e57]"
+                          "bg-acao text-on-acao hover:bg-[color-mix(in_oklch,var(--acao),#191816_10%)] focus-visible:outline-[#ff8e57]"
                         : "border border-concreto bg-card text-ink hover:bg-surface",
                     )}
                   >

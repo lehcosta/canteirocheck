@@ -5,6 +5,7 @@ import {
   anuncioDiario,
   avisarPendencia,
   baixarMidia,
+  despacharChecks,
   detectarPendencias,
   enviarMensagemPendente,
   gerarPontosSugeridos,
@@ -83,6 +84,7 @@ subir("execucao", {
 subir("agenda", {
   anuncio_diario: (p) => anuncioDiario(p.tenantId, p.obraId),
   varredura: () => varrerParados(),
+  despachar_checks: () => despacharChecks(),
 });
 subir("relatorios", { gerar_pdf: (p) => gerarRelatorio(p) }, { concorrencia: 2 });
 subir("dwg", { extrair_dwg: (p) => processarExtracao(p.tenantId, p.projetoId) }, { concorrencia: 2 });
@@ -111,6 +113,11 @@ await fila
   .fila("agenda")
   .upsertJobScheduler("varredura", { every: 120_000 }, { name: "varredura", data: {} })
   .catch((e) => log("error", "varredura.agendamento_falhou", { erro: String(e) }));
+// Checks aprovados que chegaram no dia e na hora: a cada 5 minutos.
+await fila
+  .fila("agenda")
+  .upsertJobScheduler("despachar-checks", { every: 300_000 }, { name: "despachar_checks", data: {} })
+  .catch((e) => log("error", "checks.agendamento_falhou", { erro: String(e) }));
 const relogio = setInterval(
   () => sincronizarAgendamentos(fila).catch((e) => log("error", "agenda.falhou", { erro: String(e) })),
   10 * 60 * 1000,

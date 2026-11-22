@@ -26,8 +26,8 @@ Ele imprime uma linha por rota × tema (`à risca` ou `divergente`, blocos diver
 2. **Prévia.** Rode com `--previa`. Ela desenha a conversão no próprio Chrome e compara com o gabarito, sem nenhuma chamada ao Paper.
    _Pronto quando_ toda linha diz `à risca` com 0 blocos. Se alguma diz `divergente`, vá ao passo 4 antes do 3.
 
-3. **Sincronizar.** Rode sem `--previa`. Grava os tokens e as pranchetas no arquivo "Prumo — espelho do app" (páginas Claro e Escuro), exporta cada prancheta do Paper e compara com o gabarito.
-   _Pronto quando_ toda rota × tema do relatório está `à risca`, ou listada com a causa (passo 4).
+3. **Sincronizar.** Rode sem `--previa`. Grava os tokens e as pranchetas no arquivo "Prumo — espelho do app" (páginas Claro e Escuro), exporta cada prancheta do Paper e compara com o gabarito. Cada prancheta no seu lugar: a rota nova entra no fim da fileira e, no fim de cada página, o script desempilha o que encosta em outra prancheta.
+   _Pronto quando_ toda rota × tema do relatório está `à risca`, ou listada com a causa (passo 4), e cada página imprimiu `sem sobreposição` ou as pranchetas que desempilhou.
 
 4. **Divergência.** Para cada linha `divergente`, abra o `diff` (vermelho é pixel divergente, quadrado é bloco reprovado) e recorte a mesma região do gabarito e da prévia ou exportação. Nomeie a causa e corrija em `scripts/conversor.mjs`, seguindo [CONVERSOR.md](CONVERSOR.md). Depois rode de novo só aquela rota com `--rotas`. A correção vai sempre no conversor: cada sincronização regrava a prancheta inteira, então um ajuste feito à mão no Paper some na próxima rodada.
    _Pronto quando_ a rota passa, ou a causa está nomeada como algo que o Paper não desenha.
@@ -46,6 +46,8 @@ O script imprime as chamadas que gastou.
 
 ## Opções
 
-- `--rotas`: templates como aparecem no relatório (`/obras/[obraId]/pontos`). Sem essa opção, entram todas as rotas, e as pranchetas de rotas que sumiram do app são apagadas do Paper.
+- `--rotas`: templates como aparecem no relatório (`/obras/[obraId]/pontos`). Sem essa opção (e sem `--estado`), entram todas as rotas, e as pranchetas de rotas que sumiram do app são apagadas do Paper.
 - `--temas`: `claro`, `escuro` ou os dois (padrão).
+- `--estado '<rota> · <estado>=<url>'`, repetível: um **estado** da rota, que o registro de exemplo não mostra (a obra de exemplo já passou da implantação, por exemplo). Ele é fotografado na URL dada e vira a prancheta "<rota> · <estado>", abaixo da prancheta da rota; os estados de uma rota andam juntos quando o desempilhar os move. A URL aponta para um registro do banco desta worktree, então o estado é uma **foto**: a sincronização completa não o refaz nem o apaga (ele só sai junto com a rota). Para atualizar, rode de novo com o mesmo `--estado`. Com `--estado`, só entram as rotas de `--rotas`.
+- Pranchetas sobrepostas vistas a qualquer hora (fora de uma sincronização): `node .claude/skills/sincronizar-paper/scripts/desempilhar.mjs [--paginas Claro,Escuro] [--previa]`, 2 chamadas por página.
 - Variáveis de ambiente: `PAPER_EMAIL` (entrar com outro usuário), `APP_URL`, `MAILPIT_URL`, `PAPER_BIN`, `PAPER_ARQUIVO` (outro arquivo no Paper, para teste).

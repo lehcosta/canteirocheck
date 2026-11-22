@@ -71,6 +71,14 @@ export const riscoFase = pgTable(
     faseUid: integer("fase_uid").notNull(), // cronograma_tarefa.uid: o mesmo entre versões
     ordem: integer("ordem").notNull(), // 1, 2, 3 dentro da fase → "R1", "R2"…
     nivel: risco("nivel").notNull(),
+    /**
+     * "projeto": nasce do encontro de um trecho do projeto com o cronograma. "sequencia": nasce só do
+     * cronograma, na passagem de uma tarefa para a que depende dela; `projeto_id` fica nulo e
+     * `projeto_trecho` guarda o nome da tarefa anterior.
+     */
+    tipo: text("tipo", { enum: ["projeto", "sequencia"] })
+      .notNull()
+      .default("projeto"),
     titulo: text("titulo").notNull(),
     projetoId: uuid("projeto_id").references(() => projeto.id),
     projetoTrecho: text("projeto_trecho").notNull(),
@@ -165,6 +173,11 @@ export const checkEnvio = pgTable(
     respondidoEm: timestamp("respondido_em", { withTimezone: true }),
     respondidoPorId: uuid("respondido_por_id").references(() => usuario.id),
     foraDoEsperado: integer("fora_do_esperado"),
+    /** As perguntas que foram neste envio, na ordem. null = todas as do check (envio antigo). */
+    perguntaIds: jsonb("pergunta_ids").$type<string[]>(),
+    /** A conversa no WhatsApp: a pergunta que espera resposta agora (ou a foto dela). */
+    aguardandoPerguntaId: uuid("aguardando_pergunta_id").references(() => checkPergunta.id),
+    aguardandoFoto: boolean("aguardando_foto").notNull().default(false),
     criadoEm: criadoEm(),
   },
   (t) => [

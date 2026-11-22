@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, LoaderCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -113,8 +113,22 @@ function Formulario({ plano, outroContato }: { plano?: IdPlano; outroContato: ()
           {estado.erro}
         </p>
       )}
-      <Button type="submit" size="lg" className="w-full" disabled={pendente}>
-        {pendente ? "Enviando…" : "Quero uma demonstração"}
+      {/* enviando: travado, mas no laranja (não no cinza do travado do Button), com o giro */}
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full disabled:border-transparent disabled:bg-primary disabled:text-primary-foreground"
+        disabled={pendente}
+        aria-busy={pendente}
+      >
+        {pendente ? (
+          <>
+            <LoaderCircle aria-hidden className="animate-spin motion-reduce:animate-none" />
+            Enviando…
+          </>
+        ) : (
+          "Quero uma demonstração"
+        )}
       </Button>
       <p className="text-[13px] text-muted-foreground">
         Usamos seus dados só para falar com você sobre o EngCheck.

@@ -1,6 +1,6 @@
 ---
 name: paper-explorer
-description: Estudos de design no Paper para o usuário aprovar, e o executivo do estudo aprovado no app Prumo. Use quando o usuário pedir para explorar, estudar ou ver alternativas, variações ou opções de uma tela, fluxo ou elemento; quando aprovar ou pedir ajuste num estudo ("gostei do A", "mude o B"); ou quando disser que comentou no Paper.
+description: Estudos de design no Paper para o usuário aprovar, e o executivo do estudo aprovado no app Prumo. Use quando o usuário pedir para explorar, estudar ou ver alternativas, variações ou opções de uma tela, fluxo ou elemento; quando aprovar ou pedir ajuste num estudo ("gostei do A", "mude o B"); quando disser que comentou no Paper; ou quando pranchetas aparecerem sobrepostas no Paper.
 ---
 
 # Paper explorer
@@ -17,6 +17,8 @@ Ferramentas, sempre da raiz do repositório: `node .claude/skills/paper-explorer
 - `enviar` grava os estudos no Paper e imprime o link da página.
 - `comentarios`, `resolver`, `aprovar` e `conferir` servem para a volta do usuário ([APROVACAO.md](APROVACAO.md)).
 - A captura da skill `sincronizar-paper` fornece o ponto de partida.
+
+**Cada prancheta no seu lugar**: nenhuma encosta em outra, em nenhuma página do espelho. O `enviar` e o `aprovar` desempilham a página deles no fim e imprimem o que moveram. Ao ver pranchetas sobrepostas (num print do usuário, num screenshot, no `get_basic_info`), arrume antes de seguir com `node .claude/skills/sincronizar-paper/scripts/desempilhar.mjs`: ele move por regra (rota para o fim da fileira, exploração inteira para baixo) e custa 2 chamadas por página. `--previa` lista o que moveria sem mexer.
 
 ## Quando o usuário volta
 
@@ -65,7 +67,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    - **Explorações** — uma tela que o espelho ainda não tem (rota nova): a página "Explorações", com o "atual" junto.
 
    Em ambos ele grava uma legenda e uma linha por estudo, exporta cada prancheta e confere com a prévia. Reenviar substitui as pranchetas da exploração no mesmo lugar e pede aprovação nova.
-   _Pronto quando_ toda prancheta sai `à risca` na conferência. Se a cota do Paper acabou, entregue o comparativo e diga que os estudos ainda não estão no Paper.
+   _Pronto quando_ toda prancheta sai `à risca` na conferência e o `enviar` imprimiu `sem sobreposição` ou as pranchetas que desempilhou. Se a cota do Paper acabou, entregue o comparativo e diga que os estudos ainda não estão no Paper.
 
 7. **Apresentar.** No chat, entregue:
    - o link da página no Paper, impresso pelo `enviar`;
@@ -82,7 +84,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 - O elemento raiz de cada tela é `position:absolute;left:0px;top:0px`, com `width` e `height` em px. Tela do painel é 1440×900. Um elemento solto é o menor quadro que mostre os estados dele; um elemento dentro de uma section é a section inteira (passo 4).
 - Texto é um `<div>` só com texto, com `font-family`, `font-weight`, `font-size` e `line-height` em px. Trecho com outro estilo vai num `<span>`.
 - Cor é sempre token: `var(--color-ink)` ou `color-mix(var(--color-prumo) 10%, transparent)`. Os tokens são os do `globals.css` (`--color-surface`, `--color-surface-raised`, `--color-line`, `--color-ink`, `--color-ink-muted`, `--color-prumo`, `--color-on-prumo`, `--color-divergencia`, `--color-nivel`, `--color-liquido`…). O tema escuro usa os mesmos nomes com o sufixo `-escuro`. O laranja `--color-prumo` é só para ação.
-- O Paper **não desenha `opacity`/`fill-opacity` nem gradiente** (`linear-gradient`, `repeating-linear-gradient`), e a prévia (Chrome) não pega isso — só a conferência do `enviar`. Isso vale também para o executivo: um padrão (grelha, listras) vira SVG com linhas soltas, senão some do espelho. Cor esmaecida é `color-mix` com o fundo (ex.: `color-mix(in oklch, var(--color-liquido) 10%, var(--color-ink))`, opaca, não com `transparent`), e `color-mix` só vale em `background-color` de `<div>`, não em `fill`/`stroke` de `<svg>` — aí, token sólido. Texto que quebra em várias linhas diverge entre Chrome e Paper: num estudo em que o texto não é o alvo (um mockup de fundo, p.ex.), use a silhueta — formas sólidas, sem texto corrido.
+- O Paper **não desenha `opacity`/`fill-opacity` nem gradiente** (`linear-gradient`, `repeating-linear-gradient`), e a prévia (Chrome) não pega isso — só a conferência do `enviar`. Isso vale também para o executivo: um padrão (grelha, listras) vira SVG com linhas soltas, senão some do espelho. Cor esmaecida é `color-mix(var(--token) N%, transparent)`, a forma que o conversor do espelho usa e o Paper desenha. Mistura opaca de dois tokens vai como hex calculado no Chrome: o Paper apaga `color-mix(in oklch, var(--color-prumo) 80%, var(--color-ink))` (o fundo some), e a prévia não pega. `color-mix` só vale em `background-color` de `<div>`; em `fill`/`stroke` de `<svg>`, token sólido. Texto que quebra em várias linhas diverge entre Chrome e Paper: num estudo em que o texto não é o alvo (um mockup de fundo, p.ex.), use a silhueta — formas sólidas, sem texto corrido.
 - Fontes e pesos que a marca carrega:
   - Archivo 700/800 nos títulos;
   - IBM Plex Sans 400/600 no texto;
@@ -92,4 +94,4 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 
 ## Cota do Paper
 
-A `previa` e o `conferir` não gastam cota. O `enviar` gasta umas 3 chamadas por tela e mais umas 10 por envio: uma exploração com o atual e três estudos de uma tela custa umas 25 (no modo projeto de tela cheia sai o atual, umas 22). `comentarios` gasta 2; `resolver`, 1 por comentário. `aprovar` gasta 2 em Explorações/Estados e umas 7 no modo projeto. No plano gratuito a cota é semanal, então itere na prévia e envie uma vez.
+A `previa` e o `conferir` não gastam cota. O `enviar` gasta umas 3 chamadas por tela e mais umas 12 por envio (o desempilhar do fim entra aí): uma exploração com o atual e três estudos de uma tela custa umas 27 (no modo projeto de tela cheia sai o atual, umas 24). `comentarios` gasta 2; `resolver`, 1 por comentário. `aprovar` gasta 2 em Explorações/Estados e umas 9 no modo projeto. No plano gratuito a cota é semanal, então itere na prévia e envie uma vez.
