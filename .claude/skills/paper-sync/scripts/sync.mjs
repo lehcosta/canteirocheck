@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: script local da skill, não roda pelo turbo
-// Espelha o design do app no Paper, à risca: tokens do globals.css e uma prancheta por rota e tema,
+// Espelha o design do app no Paper, à risca: tokens do CSS do app e uma prancheta por rota e tema,
 // com valores medidos no app renderizado. Depois exporta cada prancheta e compara com o gabarito.
 //
 // uso (da raiz do repositório):
@@ -33,10 +33,11 @@ import {
   chromium,
   descobrirRotas,
   entrar,
-  lerFontesNext,
+  IDIOMA,
+  lerFontes,
   lerTokens,
   resolverRota,
-} from "./prumo.mjs";
+} from "./projeto.mjs";
 
 const PAGINAS = { claro: "Claro", escuro: "Escuro" };
 const LARGURA = 1440;
@@ -51,7 +52,7 @@ const { values: opcoes } = parseArgs({
   },
 });
 const TEMAS = opcoes.temas.split(",").map((t) => t.trim());
-const SAIDA = join(tmpdir(), "prumo-paper", new Date().toISOString().replace(/[:.]/g, "-"));
+const SAIDA = join(tmpdir(), "paper-sync", new Date().toISOString().replace(/[:.]/g, "-"));
 mkdirSync(join(SAIDA, "recortes"), { recursive: true });
 
 // ── navegador ────────────────────────────────────────────────────────────────────────────
@@ -59,8 +60,8 @@ async function capturar(page, url, tema, nomeArquivo) {
   await abrirEmRepouso(page, url, tema);
   const gabarito = join(SAIDA, `${nomeArquivo}-gabarito.png`);
   await page.screenshot({ path: gabarito, fullPage: true, animations: "disabled", caret: "hide" });
-  const fontesNext = await lerFontesNext(page);
-  return { gabarito, fontesNext };
+  const fontes = await lerFontes(page);
+  return { gabarito, fontes };
 }
 
 /** Recorta regiões do gabarito (imagens, controles nativos) para o Paper usar como imagem. */
@@ -264,7 +265,7 @@ const novoContexto = () =>
   navegador.newContext({
     viewport: { width: LARGURA, height: ALTURA_JANELA },
     deviceScaleFactor: 1,
-    locale: "pt-BR",
+    locale: IDIOMA,
     reducedMotion: "reduce",
   });
 // cada rota é capturada como quem a vê: anônimo se abre sem login (landing, login), admin se pede login
@@ -291,8 +292,8 @@ try {
       const nomeArquivo = `${rota.replace(/[/[\]\s·]+/g, "_").replace(/^_|_$/g, "") || "inicio"}-${tema}`;
       await anonimo.goto(APP + url, { waitUntil: "networkidle" });
       const quem = new URL(anonimo.url()).pathname === url ? anonimo : page;
-      const { gabarito, fontesNext } = await capturar(quem, url, tema, nomeArquivo);
-      tokens ??= lerTokens(fontesNext);
+      const { gabarito, fontes } = await capturar(quem, url, tema, nomeArquivo);
+      tokens ??= lerTokens(fontes);
       const captura = await quem.evaluate(converterPagina, { cores: tokens.cores });
       writeFileSync(join(SAIDA, `${nomeArquivo}.json`), JSON.stringify(captura, null, 1));
       const caminhos = await recortar(ferramentas, gabarito, captura.recortes, nomeArquivo);

@@ -4,12 +4,14 @@ Referência para corrigir `scripts/conversor.mjs` quando uma tela diverge do gab
 
 ## Captura (`sync.mjs`)
 
-- **Rotas**: uma por `page.tsx` em `apps/web/src/app`, fora `/dev` e `/api`. Cada `[param]` é resolvido pelos links das páginas acima dele, usando o primeiro registro do banco.
-- **Quem vê a rota**: a rota que abre sem login é capturada anônima (landing, login); as demais, como admin.
+O que muda de um projeto para outro vem do adaptador `.claude/paper/projeto.mjs`, carregado por `scripts/projeto.mjs`.
+
+- **Rotas**: uma por `page.tsx` do App Router (`src/app` ou `app` da `pastaApp`), fora as `rotasFora`. Cada `[param]` é resolvido pelos links das páginas acima dele, usando o primeiro registro do banco.
+- **Quem vê a rota**: a rota que abre sem login é capturada anônima (landing, login); as demais, com a sessão do `entrar` do adaptador.
 - **Janela**: 1440×900, com a página inteira na altura. O foco é tirado (o `autofocus` desenharia o anel), o movimento é reduzido e o overlay do Next fica escondido.
-- **Escuro**: classe `dark` no `<html>`. O app não tem alternância global de tema, então o escuro mostra o que os tokens `.dark` do `globals.css` produzem. Seções com `.claro` e `.dark` próprios continuam como no código.
-- **Tokens**, lidos do `globals.css`:
-  - `--color-*` da marca com o nome do app (valor claro) e com o sufixo `-escuro` (valor do `.dark`);
+- **Escuro**: a `classeEscuro` no `<html>`. O escuro mostra o que os tokens do bloco escuro produzem.
+- **Tokens**, lidos do `css` do adaptador, nos blocos dos `seletores` (só cor em hex vira token):
+  - `--color-*` da marca com o nome do app (valor claro) e com o sufixo `-escuro` (valor do bloco escuro);
   - apelidos do shadcn como `var(--color-…)`;
   - `--font-*` resolvidos pelo `next/font` no navegador;
   - `--radius-*`.
@@ -21,7 +23,7 @@ Referência para corrigir `scripts/conversor.mjs` quando uma tela diverge do gab
 - **Flex** vira flex no Paper, com tamanhos explícitos e `flex-shrink: 0`, mas só quando nenhum filho tem margem, `order`, `transform` ou deslocamento relativo. Fora isso (bloco, grid, tabela, margens), os filhos ficam em posição absoluta medida em relação à caixa de padding do pai.
 - **Espaçador do flex**: elemento vazio e sem pintura some, menos quando é item de um flex e tem tamanho: aí ele ocupa lugar (o `flex-1` que empurra o pé de um cartão) e vira uma caixa vazia do tamanho medido.
 - **Alinhamento do flex**: o Chrome 158 devolve `flex-start`/`flex-end` como `flow-start`/`flow-end` no estilo computado. O Paper não conhece esses nomes e põe o item no começo, então o conversor devolve o nome antigo.
-- **Texto**: nós de texto e inlines só de texto viram um nó de texto do Paper. As quebras de linha ficam onde o navegador quebrou: cada palavra é medida, e letra a letra quando a palavra se parte entre linhas. O nó usa `white-space: pre`, e trechos com estilo próprio viram `<span>`. O espaço entre palavras sai no estilo do trecho onde apareceu primeiro, como no CSS: em `Deu <span class="font-mono">3,004</span>`, o espaço é da Plex Sans, não da mono. Um texto truncado com `ellipsis` é cortado onde o navegador corta. Um texto de várias linhas com entrelinha fracionária vira um frame com uma linha por nó, cada uma no topo em que o Chrome a pôs (ver abaixo).
+- **Texto**: nós de texto e inlines só de texto viram um nó de texto do Paper. As quebras de linha ficam onde o navegador quebrou: cada palavra é medida, e letra a letra quando a palavra se parte entre linhas. O nó usa `white-space: pre`, e trechos com estilo próprio viram `<span>`. O espaço entre palavras sai no estilo do trecho onde apareceu primeiro, como no CSS: em `Deu <span class="font-mono">3,004</span>`, o espaço é da fonte do texto, não da mono. Um texto truncado com `ellipsis` é cortado onde o navegador corta. Um texto de várias linhas com entrelinha fracionária vira um frame com uma linha por nó, cada uma no topo em que o Chrome a pôs (ver abaixo).
 - **Célula de tabela só com texto**: não vira o próprio nó de texto, como os outros elementos sem caixa. A célula centra o texto na altura da linha, então vira um frame e o texto é medido dentro dela.
 - **Posição vertical do texto**: o `Range` mede o glifo, mas o Paper posiciona pela caixa da linha, então o topo sobe o meio-entrelinha.
 - **Recorte**: `img`, `canvas`, `video`, `iframe`, `select` e inputs não textuais viram recorte do gabarito alinhado à grade de pixels (`paper-asset://`).
@@ -45,8 +47,8 @@ Nenhum bloco de 32×32 px pode ter mais de 5% de pixels divergentes. Um pixel é
 ## O que as outras skills usam daqui
 
 - Cada captura grava, além do `.json`, um `<rota>-<tema>.html`: o frame "página" no dialeto do Paper, com as imagens em `paper-asset://`. Esse arquivo é o ponto de partida das explorações.
-- O `paper-explorer` importa `scripts/paper.mjs`, `scripts/prumo.mjs` e `scripts/comparar.mjs`. O `abrirEmRepouso` do `prumo.mjs` prepara tanto o gabarito do espelho quanto a conferência do executivo de um estudo; mudar o repouso muda as duas provas.
-- A `paper-critique` importa `scripts/prumo.mjs` (login, rotas e tokens).
+- O `paper-explorer` importa `scripts/paper.mjs`, `scripts/projeto.mjs` e `scripts/comparar.mjs`. O `abrirEmRepouso` do `projeto.mjs` prepara tanto o gabarito do espelho quanto a conferência do executivo de um estudo; mudar o repouso muda as duas provas.
+- A `paper-critique` importa `scripts/projeto.mjs` (login, rotas e tokens).
 - Depois de mexer num desses módulos, rode as três skills: a prévia da sincronização, a prévia de uma exploração e a medição de uma rota.
 - O conversor nomeia as camadas de botão e link como `layer-name="botão"` e `"link"`; a crítica reconhece esses nomes como controle na tela estática.
 - As duas skills dividem o mesmo arquivo no Paper. A sincronização só apaga pranchetas `/...` nas páginas "Claro" e "Escuro". As explorações ficam na página "Explorações", com nomes que nunca começam com `/`.

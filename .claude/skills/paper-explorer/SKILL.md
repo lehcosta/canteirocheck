@@ -1,6 +1,6 @@
 ---
 name: paper-explorer
-description: Estudos de design no Paper para o usuário aprovar, e o executivo do estudo aprovado no app Prumo. Use quando o usuário pedir para explorar, estudar ou ver alternativas, variações ou opções de uma tela, fluxo ou elemento; quando aprovar ou pedir ajuste num estudo ("gostei do A", "mude o B"); quando disser que comentou no Paper; ou quando pranchetas aparecerem sobrepostas no Paper.
+description: Estudos de design no Paper para o usuário aprovar, e o executivo do estudo aprovado no app. Use quando o usuário pedir para explorar, estudar ou ver alternativas, variações ou opções de uma tela, fluxo ou elemento; quando aprovar ou pedir ajuste num estudo ("gostei do A", "mude o B"); quando disser que comentou no Paper; ou quando pranchetas aparecerem sobrepostas no Paper.
 ---
 
 # Paper explorer
@@ -8,6 +8,8 @@ description: Estudos de design no Paper para o usuário aprovar, e o executivo d
 Explorar é abrir o leque de **estudos** do mesmo alvo, cada um apostando num **partido**: a ideia central que organiza a tela, dita numa frase. O que separa um estudo do outro é o partido; trocar só cor ou espaçamento não gera estudo novo.
 
 Como na obra: **estudo**, **aprovação**, **executivo**. Os estudos vão para o Paper, e o usuário aprova um no chat ou num comentário na prancheta. O estudo aprovado é só o caminho feliz: os outros estados dele passam pela skill `paper-states`, e só então vem o executivo, a implementação no app.
+
+**O projeto** está em `.claude/paper/PROJETO.md`: a marca, onde mora o código, os comandos de prova e o domínio. Leia-o antes do passo 1.
 
 A marca é fixa: cores, fontes e raios vêm dos tokens do app. O espaço de exploração é estrutura, hierarquia, sequência e linguagem. Paleta, "mood" e brief (o guia do Paper pede isso para design novo) só entram se o usuário pedir para explorar a própria marca.
 
@@ -35,7 +37,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    Se o pedido não trouxer a pergunta, deduza do domínio e escreva. Pergunte ao usuário só quando o próprio alvo for ambíguo.
    _Pronto quando_ as quatro linhas estão escritas e a pergunta não cita nenhuma solução.
 
-2. **Ponto de partida.** Crie a pasta `.claude/skills/paper-explorer/exploracoes/<nome>/`. Ela fica fora do git e guarda a exploração até a aprovação, que pode chegar dias depois.
+2. **Ponto de partida.** Crie a pasta `.claude/paper/exploracoes/<nome>/`. Ela fica fora do git e guarda a exploração até a aprovação, que pode chegar dias depois.
    - Capture o alvo com `node .claude/skills/paper-sync/scripts/sync.mjs --previa --rotas '<rota>' --temas claro` (0 chamadas ao Paper). Copie como `atual.html` o `<rota>-claro.html` da pasta que esta rodada imprimiu na linha `relatório:`. Cada rodada cria uma pasta nova, e uma pasta antiga traz a tela de antes.
    - Num fluxo, capture um passo por arquivo: `atual-1.html`, `atual-2.html`…
    - Numa tela nova ou num elemento sem rota, capture a rota mais próxima. O HTML dela é o vocabulário: barra lateral, cabeçalho, botões, selos, tabela.
@@ -83,12 +85,9 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 - Só estilo inline. O layout é feito com flex, padding e gap; posição absoluta serve para sobrepor. O Paper não desenha margin, grid, `<table>` nem `display: inline`, e a prévia barra esses quatro.
 - O elemento raiz de cada tela é `position:absolute;left:0px;top:0px`, com `width` e `height` em px. Tela do painel é 1440×900. Um elemento solto é o menor quadro que mostre os estados dele; um elemento dentro de uma section é a section inteira (passo 4).
 - Texto é um `<div>` só com texto, com `font-family`, `font-weight`, `font-size` e `line-height` em px. Trecho com outro estilo vai num `<span>`.
-- Cor é sempre token: `var(--color-ink)` ou `color-mix(var(--color-prumo) 10%, transparent)`. Os tokens são os do `globals.css` (`--color-surface`, `--color-surface-raised`, `--color-line`, `--color-ink`, `--color-ink-muted`, `--color-prumo`, `--color-on-prumo`, `--color-divergencia`, `--color-nivel`, `--color-liquido`…). O tema escuro usa os mesmos nomes com o sufixo `-escuro`. O laranja `--color-prumo` é só para ação.
-- O Paper **não desenha `opacity`/`fill-opacity` nem gradiente** (`linear-gradient`, `repeating-linear-gradient`), e a prévia (Chrome) não pega isso — só a conferência do `enviar`. Isso vale também para o executivo: um padrão (grelha, listras) vira SVG com linhas soltas, senão some do espelho. Cor esmaecida é `color-mix(var(--token) N%, transparent)`, a forma que o conversor do espelho usa e o Paper desenha. Mistura opaca de dois tokens vai como hex calculado no Chrome: o Paper apaga `color-mix(in oklch, var(--color-prumo) 80%, var(--color-ink))` (o fundo some), e a prévia não pega. `color-mix` só vale em `background-color` de `<div>`; em `fill`/`stroke` de `<svg>`, token sólido. Texto que quebra em várias linhas diverge entre Chrome e Paper: num estudo em que o texto não é o alvo (um mockup de fundo, p.ex.), use a silhueta — formas sólidas, sem texto corrido.
-- Fontes e pesos que a marca carrega:
-  - Archivo 700/800 nos títulos;
-  - IBM Plex Sans 400/600 no texto;
-  - IBM Plex Mono 500 em números e medidas.
+- Cor é sempre token: `var(--color-<nome>)` ou `color-mix(var(--color-<nome>) 10%, transparent)`. Os tokens e a regra de cada um (a cor de ação, as de estado) estão no `PROJETO.md`. O tema escuro usa os mesmos nomes com o sufixo `-escuro`.
+- O Paper **não desenha `opacity`/`fill-opacity` nem gradiente** (`linear-gradient`, `repeating-linear-gradient`), e a prévia (Chrome) não pega isso — só a conferência do `enviar`. Isso vale também para o executivo: um padrão (grelha, listras) vira SVG com linhas soltas, senão some do espelho. Cor esmaecida é `color-mix(var(--token) N%, transparent)`, a forma que o conversor do espelho usa e o Paper desenha. Mistura opaca de dois tokens vai como hex calculado no Chrome: o Paper apaga `color-mix(in oklch, var(--color-a) 80%, var(--color-b))` (o fundo some), e a prévia não pega. `color-mix` só vale em `background-color` de `<div>`; em `fill`/`stroke` de `<svg>`, token sólido. Texto que quebra em várias linhas diverge entre Chrome e Paper: num estudo em que o texto não é o alvo (um mockup de fundo, p.ex.), use a silhueta — formas sólidas, sem texto corrido.
+- Fontes e pesos: só os que a marca carrega, listados no `PROJETO.md`. A prévia acusa o que ficar fora.
 - Ícone é `<svg>` inline com `stroke` ou `fill` por token. Imagem local é `<img src="paper-asset:///caminho/absoluto.png">`; a `previa` copia para a pasta da exploração as imagens que estão fora dela.
 - Botão leva `layer-name="botão"` e link leva `layer-name="link"`. São os nomes que o conversor do espelho usa e que a crítica reconhece como controle.
 
