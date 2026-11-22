@@ -15,7 +15,7 @@ As ferramentas são as da paper-explorer, `node .claude/skills/paper-explorer/sc
 
 1. **Base.** A base é a tela no caminho feliz:
    - o estudo aprovado, quando a lista vem depois de uma aprovação na paper-explorer;
-   - senão, a captura da rota: rode `node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs --previa --rotas '<rota>' --temas claro` e copie o `<rota>-claro.html` da pasta impressa em `relatório:`.
+   - senão, a captura da rota: rode `node .claude/skills/paper-sync/scripts/sync.mjs --previa --rotas '<rota>' --temas claro` e copie o `<rota>-claro.html` da pasta impressa em `relatório:`.
 
    Crie a pasta `.claude/skills/paper-states/estados/<nome>/` (fora do git) e ponha a base nela como `base.html`.
    _Pronto quando_ a base está na pasta e você leu o PNG dela.

@@ -2,7 +2,7 @@
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: script local da skill, não roda pelo turbo
 // Estudos de uma tela, fluxo ou elemento: desenha no Chrome para criticar (sem cota do Paper), grava no
 // Paper para o usuário aprovar, e confere o executivo. Se a rota já está no espelho, a exploração — tela cheia
-// ou elemento — desenha na página "Claro", abaixo da prancheta da rota (modo projeto), como o sincronizar-paper;
+// ou elemento — desenha na página "Claro", abaixo da prancheta da rota (modo projeto), como o paper-sync;
 // só uma tela que o espelho ainda não tem vai para "Explorações".
 //
 // uso (da raiz do repositório), com <pasta> = .claude/skills/paper-explorer/exploracoes/<nome>:
@@ -17,7 +17,7 @@
 // <pasta> tem o exploracao.json e um .html por tela (formato em FORMATO.md).
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { CRITERIO, comparar } from "../../sincronizar-paper/scripts/comparar.mjs";
+import { CRITERIO, comparar } from "../../paper-sync/scripts/comparar.mjs";
 import {
   ARQUIVO,
   acharArquivo,
@@ -28,7 +28,7 @@ import {
   Paper,
   relatoDesempilhar,
   sincronizarTokens,
-} from "../../sincronizar-paper/scripts/paper.mjs";
+} from "../../paper-sync/scripts/paper.mjs";
 import {
   APP,
   abrirEmRepouso,
@@ -38,7 +38,7 @@ import {
   lerFontesNext,
   lerTokens,
   resolverRota,
-} from "../../sincronizar-paper/scripts/prumo.mjs";
+} from "../../paper-sync/scripts/prumo.mjs";
 
 const ESPACO = 80;
 const ESPACO_LINHAS = 200;
@@ -94,7 +94,7 @@ function gravarManifesto(m) {
   writeFileSync(join(PASTA, "exploracao.json"), `${JSON.stringify(conteudo, null, 1)}\n`);
 }
 
-/** Página clara do espelho, onde cada rota do app tem a sua prancheta (como no sincronizar-paper). */
+/** Página clara do espelho, onde cada rota do app tem a sua prancheta (como no paper-sync). */
 const ESPELHO_CLARO = "Claro";
 
 /** Página do Paper: estudos em "Explorações", conjuntos de estados em "Estados". */
@@ -104,7 +104,7 @@ const paginaDe = (m) => (m.tipo === "estados" ? "Estados" : "Explorações");
  * Onde a exploração mora no espelho e como a aprovação se comporta:
  * - "estados": página "Estados" (paper-states).
  * - "projeto": a `rota` já tem prancheta no espelho. As variações são desenhadas na página "Claro", abaixo
- *   dela, como o sincronizar-paper desenha cada rota — seja a tela cheia ou um elemento dela. `substitui` é
+ *   dela, como o paper-sync desenha cada rota — seja a tela cheia ou um elemento dela. `substitui` é
  *   true só na tela cheia (sem `ancora`, uma tela por variação): ao aprovar, a aprovada toma o lugar da rota.
  *   Num elemento ou fluxo (substitui false), a aprovação apenas limpa a exploração do projeto.
  * - "explor": uma tela que o espelho ainda não tem (rota nova) — página "Explorações".
@@ -585,7 +585,7 @@ async function aprovarProjeto(paper, manifesto, id, { fileId, pageId, rota, subs
     throw new Error(`as pranchetas de ${id} não estão no Paper: rode enviar`);
   if (substitui) {
     const alvo = pranchetas.find((a) => a.name === rota);
-    if (!alvo) throw new Error(`a rota ${rota} não está no espelho Claro: rode o sincronizar-paper`);
+    if (!alvo) throw new Error(`a rota ${rota} não está no espelho Claro: rode o paper-sync`);
     const v = manifesto.variacoes.find((x) => x.id === id);
     const html = readFileSync(join(PASTA, v.telas[0]), "utf8");
     const { largura, altura } = tamanho(html);
@@ -606,8 +606,8 @@ async function aprovarProjeto(paper, manifesto, id, { fileId, pageId, rota, subs
   gravarManifesto(manifesto);
   console.log(
     substitui
-      ? `aprovado: ${id} — a rota ${rota} recebeu a variação no espelho Claro (mock) e a exploração saiu.\no Escuro fica para o executivo: implemente no app e rode o sincronizar-paper.`
-      : `aprovado: ${id} — a exploração saiu do projeto. Implemente o elemento no app (o executivo) e rode o sincronizar-paper.`,
+      ? `aprovado: ${id} — a rota ${rota} recebeu a variação no espelho Claro (mock) e a exploração saiu.\no Escuro fica para o executivo: implemente no app e rode o paper-sync.`
+      : `aprovado: ${id} — a exploração saiu do projeto. Implemente o elemento no app (o executivo) e rode o paper-sync.`,
   );
 }
 

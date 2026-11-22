@@ -19,7 +19,7 @@ import {
   lerFontesNext,
   lerTokens,
   resolverRota,
-} from "../../sincronizar-paper/scripts/prumo.mjs";
+} from "../../paper-sync/scripts/prumo.mjs";
 import { medirPagina } from "./medidor.mjs";
 
 const LENTES = [

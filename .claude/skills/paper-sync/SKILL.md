@@ -1,5 +1,5 @@
 ---
-name: sincronizar-paper
+name: paper-sync
 description: Espelha no Paper, à risca, o design do app Prumo (tokens do globals.css e uma prancheta por rota, nos temas claro e escuro) e prova a fidelidade de cada prancheta contra o gabarito.
 disable-model-invocation: true
 ---
@@ -10,10 +10,10 @@ O app é a fonte e o Paper é **espelho**. **À risca**: posição, tamanho, cor
 
 Aqui o Paper é espelho, não prancheta de criação: o brief, a paleta e a revisão de "qualidade de design" do guia do Paper ficam de fora. A única referência visual é o gabarito.
 
-O trabalho pesado é do `scripts/sincronizar.mjs` (da raiz do repositório):
+O trabalho pesado é do `scripts/sync.mjs` (da raiz do repositório):
 
 ```bash
-node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs [--previa] [--rotas '/login,/obras/[obraId]'] [--temas claro,escuro]
+node .claude/skills/paper-sync/scripts/sync.mjs [--previa] [--rotas '/login,/obras/[obraId]'] [--temas claro,escuro]
 ```
 
 Ele imprime uma linha por rota × tema (`à risca` ou `divergente`, blocos divergentes, % de pixels) e o caminho do `relatorio.json`, que traz para cada linha o `gabarito`, a `previa`/`paper`, o `diff` e os `primeirosBlocos` divergentes.
@@ -49,5 +49,5 @@ O script imprime as chamadas que gastou.
 - `--rotas`: templates como aparecem no relatório (`/obras/[obraId]/pontos`). Sem essa opção (e sem `--estado`), entram todas as rotas, e as pranchetas de rotas que sumiram do app são apagadas do Paper.
 - `--temas`: `claro`, `escuro` ou os dois (padrão).
 - `--estado '<rota> · <estado>=<url>'`, repetível: um **estado** da rota, que o registro de exemplo não mostra (a obra de exemplo já passou da implantação, por exemplo). Ele é fotografado na URL dada e vira a prancheta "<rota> · <estado>", abaixo da prancheta da rota; os estados de uma rota andam juntos quando o desempilhar os move. A URL aponta para um registro do banco desta worktree, então o estado é uma **foto**: a sincronização completa não o refaz nem o apaga (ele só sai junto com a rota). Para atualizar, rode de novo com o mesmo `--estado`. Com `--estado`, só entram as rotas de `--rotas`.
-- Pranchetas sobrepostas vistas a qualquer hora (fora de uma sincronização): `node .claude/skills/sincronizar-paper/scripts/desempilhar.mjs [--paginas Claro,Escuro] [--previa]`, 2 chamadas por página.
+- Pranchetas sobrepostas vistas a qualquer hora (fora de uma sincronização): `node .claude/skills/paper-sync/scripts/desempilhar.mjs [--paginas Claro,Escuro] [--previa]`, 2 chamadas por página.
 - Variáveis de ambiente: `PAPER_EMAIL` (entrar com outro usuário), `APP_URL`, `MAILPIT_URL`, `PAPER_BIN`, `PAPER_ARQUIVO` (outro arquivo no Paper, para teste).

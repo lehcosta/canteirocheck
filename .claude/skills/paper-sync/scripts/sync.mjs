@@ -4,7 +4,7 @@
 // com valores medidos no app renderizado. Depois exporta cada prancheta e compara com o gabarito.
 //
 // uso (da raiz do repositório):
-//   node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs [--rotas /login,/obras] [--temas claro,escuro] [--previa]
+//   node .claude/skills/paper-sync/scripts/sync.mjs [--rotas /login,/obras] [--temas claro,escuro] [--previa]
 //     [--estado '/obras/[obraId] · passo 2=/obras/<id>' ...]
 // --previa: desenha a conversão no próprio Chrome e compara com o gabarito, sem nenhuma chamada ao Paper.
 // --estado: um estado da rota, fotografado na URL dada; a prancheta "<rota> · <estado>" fica abaixo da

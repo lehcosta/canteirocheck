@@ -4,7 +4,7 @@
 // pranchetas uma sobre a outra. Custa 2 chamadas por página (1 se a página já está limpa) e mais umas 3.
 //
 // uso (da raiz do repositório):
-//   node .claude/skills/sincronizar-paper/scripts/desempilhar.mjs [--paginas Claro,Escuro,Explorações,Estados] [--previa]
+//   node .claude/skills/paper-sync/scripts/desempilhar.mjs [--paginas Claro,Escuro,Explorações,Estados] [--previa]
 // --previa: só lista o que moveria (1 chamada por página, nenhuma mudança).
 import { parseArgs } from "node:util";
 import { acharArquivo, desempilhar, Paper, planoDesempilhar, relatoDesempilhar } from "./paper.mjs";

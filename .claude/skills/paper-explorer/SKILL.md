@@ -16,9 +16,9 @@ Ferramentas, sempre da raiz do repositório: `node .claude/skills/paper-explorer
 - `previa` desenha no Chrome, confere e monta o comparativo. Não gasta cota do Paper.
 - `enviar` grava os estudos no Paper e imprime o link da página.
 - `comentarios`, `resolver`, `aprovar` e `conferir` servem para a volta do usuário ([APROVACAO.md](APROVACAO.md)).
-- A captura da skill `sincronizar-paper` fornece o ponto de partida.
+- A captura da skill `paper-sync` fornece o ponto de partida.
 
-**Cada prancheta no seu lugar**: nenhuma encosta em outra, em nenhuma página do espelho. O `enviar` e o `aprovar` desempilham a página deles no fim e imprimem o que moveram. Ao ver pranchetas sobrepostas (num print do usuário, num screenshot, no `get_basic_info`), arrume antes de seguir com `node .claude/skills/sincronizar-paper/scripts/desempilhar.mjs`: ele move por regra (rota para o fim da fileira, exploração inteira para baixo) e custa 2 chamadas por página. `--previa` lista o que moveria sem mexer.
+**Cada prancheta no seu lugar**: nenhuma encosta em outra, em nenhuma página do espelho. O `enviar` e o `aprovar` desempilham a página deles no fim e imprimem o que moveram. Ao ver pranchetas sobrepostas (num print do usuário, num screenshot, no `get_basic_info`), arrume antes de seguir com `node .claude/skills/paper-sync/scripts/desempilhar.mjs`: ele move por regra (rota para o fim da fileira, exploração inteira para baixo) e custa 2 chamadas por página. `--previa` lista o que moveria sem mexer.
 
 ## Quando o usuário volta
 
@@ -36,7 +36,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    _Pronto quando_ as quatro linhas estão escritas e a pergunta não cita nenhuma solução.
 
 2. **Ponto de partida.** Crie a pasta `.claude/skills/paper-explorer/exploracoes/<nome>/`. Ela fica fora do git e guarda a exploração até a aprovação, que pode chegar dias depois.
-   - Capture o alvo com `node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs --previa --rotas '<rota>' --temas claro` (0 chamadas ao Paper). Copie como `atual.html` o `<rota>-claro.html` da pasta que esta rodada imprimiu na linha `relatório:`. Cada rodada cria uma pasta nova, e uma pasta antiga traz a tela de antes.
+   - Capture o alvo com `node .claude/skills/paper-sync/scripts/sync.mjs --previa --rotas '<rota>' --temas claro` (0 chamadas ao Paper). Copie como `atual.html` o `<rota>-claro.html` da pasta que esta rodada imprimiu na linha `relatório:`. Cada rodada cria uma pasta nova, e uma pasta antiga traz a tela de antes.
    - Num fluxo, capture um passo por arquivo: `atual-1.html`, `atual-2.html`…
    - Numa tela nova ou num elemento sem rota, capture a rota mais próxima. O HTML dela é o vocabulário: barra lateral, cabeçalho, botões, selos, tabela.
    - No `exploracao.json`, a `rota` diz onde o executivo vai morar. Num elemento, a `ancora` é o seletor do trecho onde o estudo começa — **a section que contém o elemento**, não o elemento solto, para comparar em contexto ([FORMATO.md](FORMATO.md)).
@@ -62,7 +62,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
    Corrija e rode de novo.
    _Pronto quando_ a prévia sai sem erro, cada aviso foi corrigido ou explicado, nenhum estudo tem quebra na medição da crítica, cada PNG foi lido depois da última edição e o comparativo mostra opções que se distinguem de longe.
 
-6. **Enviar.** Rode `enviar`. Ele põe a exploração no projeto, igual o sincronizar-paper desenha as rotas:
+6. **Enviar.** Rode `enviar`. Ele põe a exploração no projeto, igual o paper-sync desenha as rotas:
    - **Modo projeto** — a `rota` já tem prancheta no espelho: os estudos vão para a página "Claro", **abaixo da prancheta da rota**, seja a tela cheia ou um elemento dela. Na tela cheia o "atual" não é redesenhado (a prancheta da rota já é ele); no elemento, o "atual" vai junto.
    - **Explorações** — uma tela que o espelho ainda não tem (rota nova): a página "Explorações", com o "atual" junto.
 

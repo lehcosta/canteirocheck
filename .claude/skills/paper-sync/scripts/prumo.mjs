@@ -1,5 +1,5 @@
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: script local da skill, não roda pelo turbo
-// Peças do projeto que as skills do Paper compartilham (sincronizar-paper e paper-explorer):
+// Peças do projeto que as skills do Paper compartilham (paper-sync e paper-explorer):
 // caminhos do repositório, .env, o Chrome do Playwright e os tokens do globals.css.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";

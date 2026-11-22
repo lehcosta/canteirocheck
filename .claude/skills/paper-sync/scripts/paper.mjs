@@ -33,7 +33,7 @@ export class Paper {
     await p.#pedir("initialize", {
       protocolVersion: "2025-06-18",
       capabilities: {},
-      clientInfo: { name: "sincronizar-paper", version: "1" },
+      clientInfo: { name: "paper-sync", version: "1" },
     });
     p.#proc.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
     return p;

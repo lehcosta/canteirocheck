@@ -2,7 +2,7 @@
 
 Referência para corrigir `scripts/conversor.mjs` quando uma tela diverge do gabarito.
 
-## Captura (`sincronizar.mjs`)
+## Captura (`sync.mjs`)
 
 - **Rotas**: uma por `page.tsx` em `apps/web/src/app`, fora `/dev` e `/api`. Cada `[param]` é resolvido pelos links das páginas acima dele, usando o primeiro registro do banco.
 - **Quem vê a rota**: a rota que abre sem login é capturada anônima (landing, login); as demais, como admin.

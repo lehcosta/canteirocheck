@@ -29,7 +29,7 @@ O usuário volta de três jeitos: aprova, pede ajuste, ou diz que comentou no Pa
    - Num conjunto de estados, prove cada estado com `conferir <pasta> <id>`. Antes, ponha o app nele: a `rota` do estado, um registro no banco, outro papel com `PAPER_EMAIL=<email>`, um erro forçado. O estado que não dá para reproduzir se prova pelo código (`arquivo:linha`) e vai para o relato.
    - A crítica da rota viva: `node .claude/skills/criticar-tela/scripts/medir.mjs --rota '<rota>'`, e também com `--largura 390` se a rota é pública (landing, login).
    - Lint e tipos: `pnpm exec biome check <arquivos>` e `pnpm exec tsc --noEmit -p apps/web`.
-   - O espelho: `node .claude/skills/sincronizar-paper/scripts/sincronizar.mjs --rotas '<rota>'`.
+   - O espelho: `node .claude/skills/paper-sync/scripts/sync.mjs --rotas '<rota>'`.
 
    Commit só se o usuário pedir.
    _Pronto quando_:
