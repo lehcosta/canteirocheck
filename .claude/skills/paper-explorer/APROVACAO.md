@@ -1,6 +1,6 @@
 # Aprovação e executivo
 
-O usuário volta de três jeitos: aprova, pede ajuste, ou diz que comentou no Paper. Ele volta a uma exploração de estudos (`.claude/skills/paper-explorer/exploracoes/<nome>/`) ou a um conjunto de estados da `paper-states` (`.claude/skills/paper-states/estados/<nome>/`).
+O usuário volta de três jeitos: aprova, pede ajuste, ou diz que comentou no Paper. Ele volta a uma exploração de estudos (`.claude/paper/exploracoes/<nome>/`) ou a um conjunto de estados da `paper-states` (`.claude/paper/estados/<nome>/`).
 
 1. **Ler a resposta.** Quando a mensagem do chat nomeia o que foi aprovado ("gostei do A", "os estados estão ok"), ela basta. Leia os comentários quando o usuário disser que comentou, ou quando falar do Paper sem dizer o que aprovou: `explorar.mjs comentarios <pasta>`. Ele lista os comentários abertos da página, com a prancheta de cada um quando dá para saber, e o comentário inteiro em JSON.
    Classifique cada resposta e cada comentário como aprovação, ajuste (pede mudança) ou pergunta.
@@ -23,12 +23,12 @@ O usuário volta de três jeitos: aprova, pede ajuste, ou diz que comentou no Pa
 4. **Estados.** O estudo aprovado é o caminho feliz, um estado entre vinte. Antes do executivo, siga a skill `paper-states` com o estudo como base: a lista dos estados em palavras, aprovada, e depois os estados desenhados e aprovados. Num conjunto de estados já aprovado, este passo está feito.
    _Pronto quando_ o conjunto de estados do estudo tem `aprovado: todos`.
 
-5. **Executivo.** Implemente o que foi aprovado em `apps/web`, com os componentes de `components/ui` e `components/` e as classes dos tokens: o estudo e os estados dele juntos, ou só os estados quando a tela já existe. O conteúdo é o das telas aprovadas. O **dado novo** entra só se o usuário o confirmou; senão fica de fora e vai para o relato. Teste no navegador o que a tela parada não mostra: movimento, estados de controle e a tela no celular.
+5. **Executivo.** Implemente o que foi aprovado no app, com os componentes e as classes dos tokens da seção "Código" do `.claude/paper/PROJETO.md`: o estudo e os estados dele juntos, ou só os estados quando a tela já existe. O conteúdo é o das telas aprovadas. O **dado novo** entra só se o usuário o confirmou; senão fica de fora e vai para o relato. Teste no navegador o que a tela parada não mostra: movimento, estados de controle e a tela no celular.
    Depois, prove:
    - `explorar.mjs conferir <pasta>` fotografa a `rota` em repouso e compara com o estudo aprovado. Num elemento, a foto começa na `ancora`.
-   - Num conjunto de estados, prove cada estado com `conferir <pasta> <id>`. Antes, ponha o app nele: a `rota` do estado, um registro no banco, outro papel com `PAPER_EMAIL=<email>`, um erro forçado. O estado que não dá para reproduzir se prova pelo código (`arquivo:linha`) e vai para o relato.
+   - Num conjunto de estados, prove cada estado com `conferir <pasta> <id>`. Antes, ponha o app nele: a `rota` do estado, um registro no banco, outro papel (como entrar com outro usuário está no `PROJETO.md`), um erro forçado. O estado que não dá para reproduzir se prova pelo código (`arquivo:linha`) e vai para o relato.
    - A crítica da rota viva: `node .claude/skills/paper-critique/scripts/medir.mjs --rota '<rota>'`, e também com `--largura 390` se a rota é pública (landing, login).
-   - Lint e tipos: `pnpm exec biome check <arquivos>` e `pnpm exec tsc --noEmit -p apps/web`.
+   - Lint e tipos: os comandos do `PROJETO.md`.
    - O espelho: `node .claude/skills/paper-sync/scripts/sync.mjs --rotas '<rota>'`.
 
    Commit só se o usuário pedir.

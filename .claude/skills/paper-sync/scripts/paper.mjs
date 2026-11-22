@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
+import { ARQUIVO } from "./projeto.mjs";
 
 const BINARIO = process.env.PAPER_BIN ?? join(homedir(), ".paper/bin/paper");
 
@@ -215,11 +216,11 @@ export const relatoDesempilhar = (pagina, mudancas) =>
 
 // ── o arquivo do espelho ────────────────────────────────────────────────────────────────────
 /**
- * Um arquivo só para as duas skills: os tokens são do arquivo. Páginas "Claro" e "Escuro" são do
- * espelho (pranchetas com nome de rota, "/..."); "Explorações" é do paper-explorer, cujas pranchetas
- * nunca começam com "/" (a sincronização apaga as "/..." órfãs).
+ * Um arquivo só para as skills (o nome vem do adaptador do projeto): os tokens são do arquivo. Páginas
+ * "Claro" e "Escuro" são do espelho (pranchetas com nome de rota, "/..."); "Explorações" é do
+ * paper-explorer, cujas pranchetas nunca começam com "/" (a sincronização apaga as "/..." órfãs).
  */
-export const ARQUIVO = process.env.PAPER_ARQUIVO ?? "Prumo — espelho do app";
+export { ARQUIVO };
 
 /** Acha o arquivo no time ativo do Paper (abertos, raiz e pastas) ou cria. */
 export async function acharArquivo(paper) {

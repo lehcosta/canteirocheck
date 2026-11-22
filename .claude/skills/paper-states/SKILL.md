@@ -1,6 +1,6 @@
 ---
 name: paper-states
-description: Estados de uma tela do Prumo, listados em palavras e aprovados antes do desenho, depois desenhados no Paper e implementados. Use quando o usuário pedir os estados de uma tela (vazio, carregando, erro, sem permissão…), quando uma tela nova for desenhada, ou quando a paper-explorer aprovar um estudo.
+description: Estados de uma tela do app, listados em palavras e aprovados antes do desenho, depois desenhados no Paper e implementados. Use quando o usuário pedir os estados de uma tela (vazio, carregando, erro, sem permissão…), quando uma tela nova for desenhada, ou quando a paper-explorer aprovar um estudo.
 ---
 
 # Paper states
@@ -11,13 +11,15 @@ Um estado é o que a tela mostra numa situação real, dito numa frase, mais o *
 
 As ferramentas são as da paper-explorer, `node .claude/skills/paper-explorer/scripts/explorar.mjs <comando> <pasta>`, com um manifesto de estados ([FORMATO.md](../paper-explorer/FORMATO.md#conjunto-de-estados)). O desenho segue o [dialeto do Paper](../paper-explorer/SKILL.md#dialeto-do-paper).
 
+**O projeto** está em `.claude/paper/PROJETO.md`: a marca, o código e o domínio (papéis, status, os estados que só ele tem). Leia-o antes do passo 1.
+
 ## Passos
 
 1. **Base.** A base é a tela no caminho feliz:
    - o estudo aprovado, quando a lista vem depois de uma aprovação na paper-explorer;
    - senão, a captura da rota: rode `node .claude/skills/paper-sync/scripts/sync.mjs --previa --rotas '<rota>' --temas claro` e copie o `<rota>-claro.html` da pasta impressa em `relatório:`.
 
-   Crie a pasta `.claude/skills/paper-states/estados/<nome>/` (fora do git) e ponha a base nela como `base.html`.
+   Crie a pasta `.claude/paper/estados/<nome>/` (fora do git) e ponha a base nela como `base.html`.
    _Pronto quando_ a base está na pasta e você leu o PNG dela.
 
 2. **Inventário.** Levante os estados no código da tela e no domínio:
@@ -25,7 +27,7 @@ As ferramentas são as da paper-explorer, `node .claude/skills/paper-explorer/sc
    - os vizinhos da rota: `loading.tsx`, `error.tsx`, `not-found.tsx`, `redirect`;
    - cada formulário e cada ação: enviando, erro de validação, falha do servidor, sucesso;
    - quem vê: cada papel de usuário e o que muda para ele;
-   - as famílias de [ESTADOS.md](ESTADOS.md).
+   - as famílias de [ESTADOS.md](ESTADOS.md) e a seção "Domínio" do `PROJETO.md`.
 
    Para cada estado, anote o nome, o que a tela mostra, quando acontece e se o código já trata (`arquivo:linha`) ou não.
    _Pronto quando_ toda condição do código da tela virou estado ou foi descartada com motivo, e toda família de ESTADOS.md tem estado ou "não se aplica" com motivo.

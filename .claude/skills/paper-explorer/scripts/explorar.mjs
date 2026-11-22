@@ -5,7 +5,7 @@
 // ou elemento — desenha na página "Claro", abaixo da prancheta da rota (modo projeto), como o paper-sync;
 // só uma tela que o espelho ainda não tem vai para "Explorações".
 //
-// uso (da raiz do repositório), com <pasta> = .claude/skills/paper-explorer/exploracoes/<nome>:
+// uso (da raiz do repositório), com <pasta> = .claude/paper/exploracoes/<nome> (estados: .claude/paper/estados/<nome>):
 //   explorar.mjs previa <pasta>                  desenha, confere o dialeto e a marca, monta o comparativo
 //   explorar.mjs enviar <pasta>                  grava os estudos no Paper e imprime o link da página
 //   explorar.mjs comentarios <pasta>             comentários abertos da página "Explorações"
@@ -35,10 +35,13 @@ import {
   chromium,
   descobrirRotas,
   entrar,
-  lerFontesNext,
+  IDIOMA,
+  LEGENDA,
+  lerFontes,
   lerTokens,
+  PAGINA_BASE,
   resolverRota,
-} from "../../paper-sync/scripts/prumo.mjs";
+} from "../../paper-sync/scripts/projeto.mjs";
 
 const ESPACO = 80;
 const ESPACO_LINHAS = 200;
@@ -279,8 +282,8 @@ async function comparativo(page, manifesto, destino) {
       (
         v,
       ) => `<div style="display:flex;gap:24px;align-items:flex-start;padding:24px 0;border-top:1px solid #dad6cd">
-        <div style="width:280px;flex-shrink:0;font-family:'IBM Plex Sans';color:#191816">
-          <div style="font-family:Archivo;font-weight:800;font-size:28px">${esc(v.id)}</div>
+        <div style="width:280px;flex-shrink:0;${ESTILO.texto};color:#191816">
+          <div style="${ESTILO.titulo};font-size:28px">${esc(v.id)}</div>
           <div style="font-size:16px;line-height:22px;margin-top:6px">${esc(tituloDe(v))}</div>
           <div style="font-size:13px;color:#57544d;margin-top:8px">${esc(apoioDe(v))}</div>
         </div>
@@ -289,14 +292,14 @@ async function comparativo(page, manifesto, destino) {
     )
     .join("");
   // na página do app, onde as fontes da marca já estão carregadas
-  await page.goto(`${APP}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${APP}${PAGINA_BASE}`, { waitUntil: "networkidle" });
   await page.evaluate(
     (conteudo) => {
       document.body.innerHTML = `<div id="comparativo" style="padding:32px;background:#f4f3ef;width:max-content">${conteudo}</div>`;
       return document.fonts.ready;
     },
-    `<div style="font-family:Archivo;font-weight:800;font-size:36px;color:#191816">${esc(manifesto.nome)}</div>
-      <div style="font-family:'IBM Plex Sans';font-size:18px;color:#57544d;margin:8px 0 16px;max-width:1200px">${esc(manifesto.pergunta)}</div>
+    `<div style="${ESTILO.titulo};font-size:36px;color:#191816">${esc(manifesto.nome)}</div>
+      <div style="${ESTILO.texto};font-size:18px;color:#57544d;margin:8px 0 16px;max-width:1200px">${esc(manifesto.pergunta)}</div>
       ${linhas}`,
   );
   await page.locator("#comparativo").screenshot({ path: destino });
@@ -304,28 +307,45 @@ async function comparativo(page, manifesto, destino) {
 
 // ── Paper ────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Fontes e cores da legenda e do comparativo: as do adaptador (`legenda`), senão a primeira fonte dos tokens
+ * e cores fixas, que o Paper desenha em qualquer projeto.
+ */
+let ESTILO;
+function estiloLegenda(tokens) {
+  const familia = tokens.paper.find((t) => t.type === "fontFamily")?.value ?? "Inter";
+  return {
+    titulo: `font-family:'${familia}';font-weight:700`,
+    texto: `font-family:'${familia}';font-weight:400`,
+    cor: "#191816",
+    apoio: "#57544d",
+    fundo: "#ffffff",
+    ...LEGENDA,
+  };
+}
+
 function legenda(manifesto) {
   const itens = manifesto.variacoes
     .map(
       (v) => `<div style="display:flex;gap:16px;width:1040px">
-        <div style="width:96px;flex-shrink:0;font-family:Archivo;font-weight:800;font-size:24px;line-height:32px;color:var(--color-ink)">${esc(v.id)}</div>
+        <div style="width:96px;flex-shrink:0;${ESTILO.titulo};font-size:24px;line-height:32px;color:${ESTILO.cor}">${esc(v.id)}</div>
         <div style="width:928px;flex-shrink:0;display:flex;flex-direction:column;gap:4px">
-          <div style="font-family:'IBM Plex Sans';font-weight:400;font-size:18px;line-height:28px;color:var(--color-ink)">${esc(tituloDe(v))}</div>
-          <div style="font-family:'IBM Plex Sans';font-weight:400;font-size:14px;line-height:20px;color:var(--color-ink-muted)">${esc(apoioDe(v))}</div>
+          <div style="${ESTILO.texto};font-size:18px;line-height:28px;color:${ESTILO.cor}">${esc(tituloDe(v))}</div>
+          <div style="${ESTILO.texto};font-size:14px;line-height:20px;color:${ESTILO.apoio}">${esc(apoioDe(v))}</div>
         </div>
       </div>`,
     )
     .join("");
-  return `<div layer-name="legenda" style="position:absolute;left:0px;top:0px;width:1120px;display:flex;flex-direction:column;gap:24px;padding:40px;background-color:var(--color-surface-raised)">
-    <div style="font-family:Archivo;font-weight:800;font-size:40px;line-height:44px;color:var(--color-ink)">${esc(manifesto.nome)}</div>
-    <div style="width:1040px;font-family:'IBM Plex Sans';font-weight:400;font-size:18px;line-height:28px;color:var(--color-ink-muted)">${esc(manifesto.pergunta)}</div>
+  return `<div layer-name="legenda" style="position:absolute;left:0px;top:0px;width:1120px;display:flex;flex-direction:column;gap:24px;padding:40px;background-color:${ESTILO.fundo}">
+    <div style="${ESTILO.titulo};font-size:40px;line-height:44px;color:${ESTILO.cor}">${esc(manifesto.nome)}</div>
+    <div style="width:1040px;${ESTILO.texto};font-size:18px;line-height:28px;color:${ESTILO.apoio}">${esc(manifesto.pergunta)}</div>
     ${itens}
   </div>`;
 }
 
 /** Altura real da legenda, medida no Chrome: o texto dos partidos quebra em quantas linhas precisar. */
 async function medirLegenda(page, html, vars) {
-  await page.goto(`${APP}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${APP}${PAGINA_BASE}`, { waitUntil: "networkidle" });
   return page.evaluate(
     async ({ html, vars }) => {
       document.body.innerHTML = `<div style="position:relative;${vars}">${html}</div>`;
@@ -635,7 +655,7 @@ async function conferir(navegador, ferramentas, manifesto, idPedido) {
   const contexto = await navegador.newContext({
     viewport: { width: largura, height: largura < 600 ? 844 : 900 },
     deviceScaleFactor: 1,
-    locale: "pt-BR",
+    locale: IDIOMA,
     reducedMotion: "reduce",
   });
   try {
@@ -697,13 +717,14 @@ const navegador = await chromium.launch({ channel: process.env.PW_CHANNEL ?? "ch
 try {
   const contexto = await navegador.newContext({
     deviceScaleFactor: 1,
-    locale: "pt-BR",
+    locale: IDIOMA,
     reducedMotion: "reduce",
   });
   const page = await contexto.newPage();
   const ferramentas = await contexto.newPage();
-  await page.goto(`${APP}/login`, { waitUntil: "networkidle" });
-  const tokens = lerTokens(await lerFontesNext(page));
+  await page.goto(`${APP}${PAGINA_BASE}`, { waitUntil: "networkidle" });
+  const tokens = lerTokens(await lerFontes(page));
+  ESTILO = estiloLegenda(tokens);
   const vars = tokens.paper
     .filter((t) => t.type === "color")
     .map((t) => `${t.name}:${t.value}`)
@@ -718,7 +739,7 @@ try {
       const html = readFileSync(join(PASTA, c.arquivo), "utf8");
       c.png = join(PASTA, c.arquivo.replace(/\.html$/, ".png"));
       c.avisos.push(...(await desenhar(page, html, vars, c.png)));
-      await page.goto(`${APP}/login`, { waitUntil: "networkidle" });
+      await page.goto(`${APP}${PAGINA_BASE}`, { waitUntil: "networkidle" });
     }
     for (const c of checagens) {
       const estado = c.erros.length ? "ERRO" : c.avisos.length ? "aviso" : "ok";

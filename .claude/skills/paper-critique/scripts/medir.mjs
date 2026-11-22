@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: script local da skill, não roda pelo turbo
 // biome-ignore-all lint/performance/useDomNodeTextContent: innerText é o texto como a pessoa vê
-// Mede uma tela do Prumo nas 8 lentes da crítica e junta as provas: foto, foto semicerrada,
+// Mede uma tela do app nas 8 lentes da crítica e junta as provas: foto, foto semicerrada,
 // estados de cada controle, recortes de cada achado e um relatório por lente.
 //
 // uso (da raiz do repositório):
@@ -12,14 +12,17 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
+  ACENTO,
   APP,
   chromium,
   descobrirRotas,
   entrar,
-  lerFontesNext,
+  IDIOMA,
+  lerFontes,
   lerTokens,
+  PAGINA_BASE,
   resolverRota,
-} from "../../paper-sync/scripts/prumo.mjs";
+} from "../../paper-sync/scripts/projeto.mjs";
 import { medirPagina } from "./medidor.mjs";
 
 const LENTES = [
@@ -50,7 +53,7 @@ const nome =
   (op.rota ?? op.html.split("/").at(-1)).replace(/[/[\]. ]+/g, "_").replace(/^_|_$/g, "") || "inicio";
 const SAIDA = join(
   tmpdir(),
-  "prumo-critica",
+  "paper-critique",
   `${nome}-${LARGURA}-${new Date().toISOString().replace(/[:.]/g, "-")}`,
 );
 mkdirSync(join(SAIDA, "achados"), { recursive: true });
@@ -71,7 +74,7 @@ const contexto = (extra = {}) =>
   navegador.newContext({
     viewport: { width: LARGURA, height: LARGURA < 600 ? 844 : 900 }, // celular: a janela de um iPhone
     deviceScaleFactor: 1,
-    locale: "pt-BR",
+    locale: IDIOMA,
     ...extra,
   });
 
@@ -95,7 +98,7 @@ try {
     await page.goto(APP + url, { waitUntil: "networkidle" });
   } else {
     page = pAnon;
-    await page.goto(`${APP}/login`, { waitUntil: "networkidle" });
+    await page.goto(`${APP}${PAGINA_BASE}`, { waitUntil: "networkidle" });
     const corpo = readFileSync(resolve(op.html), "utf8")
       .replace(
         /paper-asset:\/\/([^"')\s]+)/g,
@@ -110,11 +113,11 @@ try {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1200); // o que chega depois do networkidle também conta como shift
 
-  const fontesNext = await lerFontesNext(page);
-  const tokens = lerTokens(fontesNext);
+  const fontes = await lerFontes(page);
+  const tokens = lerTokens(fontes);
   const rgb = (h) => [1, 3, 5].map((i) => Number.parseInt(h.slice(i, i + 2), 16));
   const acentos = tokens.paper
-    .filter((t) => /^--color-prumo(-escuro)?$/.test(t.name))
+    .filter((t) => t.name === ACENTO || t.name === `${ACENTO}-escuro`)
     .map((t) => rgb(t.value));
   const raios = tokens.paper.filter((t) => t.type === "radius").map((t) => Number.parseFloat(t.value));
   const familias = tokens.paper.filter((t) => t.type === "fontFamily").map((t) => t.value);
@@ -139,6 +142,7 @@ try {
     raios,
     familias,
     estatica: Boolean(op.html),
+    idioma: IDIOMA,
   });
   // ── Estabilidade: shifts do carregamento ────────────────────────────────────────────────
   if (op.rota) {

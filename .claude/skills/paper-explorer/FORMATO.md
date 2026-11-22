@@ -3,7 +3,7 @@
 ## Pasta
 
 ```
-.claude/skills/paper-explorer/exploracoes/<nome>/   fora do git (.gitignore da skill)
+.claude/paper/exploracoes/<nome>/   fora do git (.gitignore de .claude/paper)
   exploracao.json      manifesto (abaixo)
   atual.html           ponto de partida, copiado da captura do paper-sync
   a.html, b-1.html…    uma tela por arquivo, no dialeto do Paper
@@ -37,13 +37,13 @@
 - `nome`: prefixo das pranchetas no Paper, com até 30 caracteres. O Paper corta nome de camada em 50, e um nome cortado não seria achado no reenvio. Nunca começa com `/`, porque a sincronização do espelho apaga pranchetas `/...` órfãs. O `explorar.mjs` recusa um nome fora dessas regras.
 - `variacoes`: os estudos. O `atual` vem primeiro, e mais pelo menos três. Cada estudo tem `id`, `partido` e `telas`; os que não são o atual também levam `eixo`.
 - `telas`: uma é tela ou elemento; várias, em ordem, formam um fluxo (uma linha no Paper).
-- `rota`: a rota do app onde o estudo aprovado vai morar, como no relatório do espelho (`/obras/[obraId]`). O `conferir` a fotografa; numa rota com `[param]` ou que pede login, ele entra como admin.
+- `rota`: a rota do app onde o estudo aprovado vai morar, como no relatório do espelho (`/obras/[obraId]`). O `conferir` a fotografa; numa rota com `[param]` ou que pede login, ele entra com o `entrar` do adaptador.
 - `ancora`: só num elemento. É o seletor CSS do trecho da página onde o estudo começa (`#demonstracao`); o `conferir` fotografa a partir do topo dele, com a altura do estudo. Sem `ancora`, a foto é a página inteira. Num fluxo, o `conferir` compara a primeira tela; os outros passos se provam no navegador.
 - Gravados pelos comandos, não à mão: `paper` (arquivo, página e link, pelo `enviar`) e `aprovado` (o id, pelo `aprovar`; um reenvio o apaga).
 
 ## Conjunto de estados
 
-A skill `paper-states` usa o mesmo `exploracao.json`, na pasta `.claude/skills/paper-states/estados/<nome>/`, com `"tipo": "estados"` e a lista em `estados` no lugar de `variacoes`:
+A skill `paper-states` usa o mesmo `exploracao.json`, na pasta `.claude/paper/estados/<nome>/`, com `"tipo": "estados"` e a lista em `estados` no lugar de `variacoes`:
 
 ```json
 {
@@ -64,11 +64,11 @@ A skill `paper-states` usa o mesmo `exploracao.json`, na pasta `.claude/skills/p
 - `rota` num estado: a URL que abre a tela nele, quando existe; senão vale a `rota` do manifesto.
 - No Paper, os estados vão para a página "Estados".
 - `aprovar <pasta> todos` aprova o conjunto inteiro e marca todas as pranchetas com ✓.
-- `conferir <pasta> <id>` prova um estado. O banco, o papel do usuário (`PAPER_EMAIL=<email>`) ou um erro forçado são preparados antes, à mão.
+- `conferir <pasta> <id>` prova um estado. O banco, o papel do usuário (como trocar está no `PROJETO.md`) ou um erro forçado são preparados antes, à mão.
 
 ## No Paper
 
-A exploração vai para o arquivo "Prumo — espelho do app" (os tokens são do arquivo), na página "Explorações". As páginas "Claro" e "Escuro" são do espelho.
+A exploração vai para o arquivo do projeto no Paper (`arquivoPaper` do adaptador; os tokens são do arquivo), na página "Explorações". As páginas "Claro" e "Escuro" são do espelho.
 
 - Pranchetas: `<nome> · legenda` e `<nome> · <id> · <n>`. A legenda mostra a pergunta e o partido de cada estudo; abaixo dela vem uma linha por estudo, com as telas da esquerda para a direita.
 - Aprovado: as pranchetas do estudo aprovado ganham ` ✓` no fim do nome (`login-direita · A · 1 ✓`).
@@ -92,7 +92,7 @@ Os pesos aceitos são os que o app carrega de fato (`document.fonts`), não uma 
 `explorar.mjs` importa de `.claude/skills/paper-sync/scripts/`:
 
 - `paper.mjs`: cliente MCP, arquivo, páginas, tokens e o desempilhar das pranchetas no Paper;
-- `prumo.mjs`: caminhos, `.env`, tokens do `globals.css`, login, rotas e a tela em repouso (`abrirEmRepouso`, a mesma do gabarito do espelho);
+- `projeto.mjs`: carrega o adaptador `.claude/paper/projeto.mjs` — caminhos, `.env`, tokens do CSS, login, rotas, a página base, o estilo da legenda e a tela em repouso (`abrirEmRepouso`, a mesma do gabarito do espelho);
 - `comparar.mjs`: conferência por blocos.
 
 Mudar um desses módulos afeta as duas skills: rode a prévia de cada uma depois de mexer. O próprio `explorar.mjs` também serve à `paper-states`: depois de mexer nele, rode a prévia de uma exploração e a de um conjunto de estados.

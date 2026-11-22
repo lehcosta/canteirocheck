@@ -2,7 +2,7 @@
 // Medições de uma tela, rodando DENTRO da página (page.evaluate): a função é serializada, então fica
 // autocontida. Devolve inventários e achados por lente; cada achado aponta um elemento marcado com
 // data-critica, que o medir.mjs usa para forçar estados e recortar a prova.
-export function medirPagina({ cores, acentos, raios, familias, estatica }) {
+export function medirPagina({ cores, acentos, raios, familias, estatica, idioma = "pt-BR" }) {
   const achados = [];
   let seq = 0;
   const r1 = (n) => Math.round(n * 10) / 10;
@@ -419,10 +419,14 @@ export function medirPagina({ cores, acentos, raios, familias, estatica }) {
     achar("texto", sugestao, els.length > 1 ? `${titulo} (${els.length}×)` : titulo, els[0]);
   }
   const corpo = textoDe(document.body);
-  for (const [re, msg] of [
+  // os formatos de data, número e hora valem para o português; noutro idioma fica só o valor técnico
+  const formatosPt = [
     [/\b\d{4}-\d{2}-\d{2}\b/, "data no formato ISO (aaaa-mm-dd); em pt-BR é dd/mm/aaaa"],
     [/\b\d+\.\d+\s?(cm|mm|m|kg|t|%|m²|m³)\b/, "número com ponto decimal; em pt-BR é vírgula"],
     [/\b\d{1,2}:\d{2}\s?(AM|PM)\b/i, "hora em AM/PM; em pt-BR é 24h"],
+  ];
+  for (const [re, msg] of [
+    ...(idioma.startsWith("pt") ? formatosPt : []),
     [/\b(undefined|null|NaN|\[object Object\])\b/, "valor técnico vazando para a tela"],
   ]) {
     const m = re.exec(corpo);

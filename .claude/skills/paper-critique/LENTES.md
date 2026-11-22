@@ -1,6 +1,6 @@
 # As oito lentes
 
-Para cada lente: o que o olho pergunta (a medição não responde), o que a medição traz e a correção típica neste código. A marca (tokens, fontes, laranja só para ação) está no `globals.css` e no README do design system.
+Para cada lente: o que o olho pergunta (a medição não responde), o que a medição traz e a correção típica. A marca (tokens, fontes, a cor de ação, raios, componentes) está no `.claude/paper/PROJETO.md`; a correção usa os nomes de lá.
 
 ## Hierarquia e contenção (HIE)
 
@@ -9,8 +9,8 @@ Para cada lente: o que o olho pergunta (a medição não responde), o que a medi
   - Existe uma ação principal por janela?
   - O que dá para tirar sem perda: borda, caixa, rótulo repetido, segundo destaque?
   - Algum destaque chama atenção para algo que não pede ação?
-- **A medição traz:** primárias na mesma janela; laranja (`--color-prumo`) fora de ação; as primeiras leituras (maior corpo × peso); a tipografia em uso.
-- **Correção típica:** rebaixar o segundo primário para `variant="outline"` ou `ghost`; sinalizar estado com `--color-divergencia`, `--color-nivel` ou neutros em vez de laranja; tirar a caixa e deixar o espaço separar.
+- **A medição traz:** primárias na mesma janela; a cor de ação (o `acento` do adaptador) fora de ação; as primeiras leituras (maior corpo × peso); a tipografia em uso.
+- **Correção típica:** rebaixar o segundo primário para `variant="outline"` ou `ghost`; sinalizar estado com as cores de estado da marca ou neutros, em vez da cor de ação; tirar a caixa e deixar o espaço separar.
 
 ## Espaço (ESP)
 
@@ -45,7 +45,7 @@ Para cada lente: o que o olho pergunta (a medição não responde), o que a medi
 - **No celular (`--largura 390`)** a pessoa usa o dedo: "sem resposta ao mouse" vira acabamento, e alvo abaixo de 44px vira atrito, mesmo acima de 24.
 - **Correção típica:**
   - estado `hover:` com fundo ou sublinhado;
-  - foco: o `:focus-visible` global do `globals.css` só some quando alguém escreve `outline-none`, então procure por ele;
+  - foco: o anel costuma sumir porque alguém escreveu `outline-none` sem pôr outro anel no `focus-visible:`, então procure por ele;
   - `aria-label` em botão só com ícone;
   - aumentar o alvo com padding em vez de aumentar o ícone.
 
@@ -60,17 +60,17 @@ Para cada lente: o que o olho pergunta (a medição não responde), o que a medi
   - borda de campo contra o fundo (3:1);
   - cores fora dos tokens;
   - a paleta em uso.
-- **Correção típica:** passar o texto para `--color-ink` ou `--color-ink-muted`; em selo sobre fundo tingido, escurecer o texto (`--color-prumo-text`) ou clarear o fundo; trocar a cor literal pelo token.
+- **Correção típica:** passar o texto para o token de texto ou de texto secundário; em selo sobre fundo tingido, escurecer o texto ou clarear o fundo; trocar a cor literal pelo token.
 
 ## Texto (TXT)
 
 - **O olho pergunta:**
   - O rótulo diz o que acontece ("Liberar concretagem", não "Confirmar")?
-  - O vocabulário é o da obra (conferência, execução, tolerância)?
-  - Números e datas estão no formato brasileiro?
+  - O vocabulário é o do domínio?
+  - Números e datas estão no formato do idioma do app?
   - A mensagem de erro diz o que fazer?
-- **A medição traz:** texto abaixo de 12px; caixa alta sem espaçamento entre letras; texto cortado sem forma de ler o resto; texto vazando; linha longa (mais de 90 caracteres); entrelinha apertada; palavra sozinha na última linha de título; data ISO, ponto decimal, AM/PM; `undefined` ou `null` na tela.
-- **Correção típica:** `title` ou tooltip no texto truncado (ou deixar quebrar); `tracking-wider` na caixa alta; `max-w-prose` no parágrafo; `text-wrap: balance` no título; formatar com `Intl` em pt-BR.
+- **A medição traz:** texto abaixo de 12px; caixa alta sem espaçamento entre letras; texto cortado sem forma de ler o resto; texto vazando; linha longa (mais de 90 caracteres); entrelinha apertada; palavra sozinha na última linha de título; em português, data ISO, ponto decimal e AM/PM; `undefined` ou `null` na tela.
+- **Correção típica:** `title` ou tooltip no texto truncado (ou deixar quebrar); `tracking-wider` na caixa alta; `max-w-prose` no parágrafo; `text-wrap: balance` no título; formatar com `Intl` no idioma do app.
 
 ## Consistência (CON)
 
@@ -79,7 +79,7 @@ Para cada lente: o que o olho pergunta (a medição não responde), o que a medi
   - A mesma coisa tem o mesmo nome em todo lugar?
   - Os ícones têm o mesmo tamanho e traço?
 - **A medição traz:** fonte fora da marca; peso que a marca não carrega (negrito sintetizado, ou outro peso no lugar); raio fora dos tokens; botões quase iguais; o inventário de variantes e ícones.
-- **Correção típica:** usar o componente de `components/ui` em vez de um botão feito à mão; usar um peso carregado (Archivo 700/800, Plex Sans 400/600, Plex Mono 500); trocar o raio pelo token (`rounded-sm`/`md`/`2xl`).
+- **Correção típica:** usar o componente da biblioteca do app em vez de um botão feito à mão; usar um peso carregado; trocar o raio pelo token (pesos e raios no `PROJETO.md`).
 
 ## Movimento (MOV)
 
