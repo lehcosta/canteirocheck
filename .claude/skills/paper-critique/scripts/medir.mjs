@@ -5,8 +5,8 @@
 // estados de cada controle, recortes de cada achado e um relatório por lente.
 //
 // uso (da raiz do repositório):
-//   node .claude/skills/criticar-tela/scripts/medir.mjs --rota '/obras/[obraId]' [--largura 1440]
-//   node .claude/skills/criticar-tela/scripts/medir.mjs --html <arquivo.html>   (tela estática do paper-explorer)
+//   node .claude/skills/paper-critique/scripts/medir.mjs --rota '/obras/[obraId]' [--largura 1440]
+//   node .claude/skills/paper-critique/scripts/medir.mjs --html <arquivo.html>   (tela estática do paper-explorer)
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";

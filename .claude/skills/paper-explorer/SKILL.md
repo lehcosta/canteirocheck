@@ -57,7 +57,7 @@ Se ele aprova, pede ajuste ou diz que comentou no Paper, siga [APROVACAO.md](APR
 5. **Prévia e crítica.** Rode `previa`. Ela checa o dialeto e a marca: erro bloqueia; aviso se corrige ou se explica. Depois:
    - Leia cada PNG em tamanho real. O partido aparece em três segundos? Hierarquia, alinhamento e texto estão limpos?
    - Leia o `comparativo.png`. Se dois estudos parecem o mesmo, redesenhe o mais fraco com um partido mais radical.
-   - Meça cada estudo com a crítica: `node .claude/skills/criticar-tela/scripts/medir.mjs --html <pasta>/<tela>.html`. Corrija todo achado de quebra. O atual é a tela convertida, com artefatos da conversão; quem quiser criticá-lo usa a rota viva.
+   - Meça cada estudo com a crítica: `node .claude/skills/paper-critique/scripts/medir.mjs --html <pasta>/<tela>.html`. Corrija todo achado de quebra. O atual é a tela convertida, com artefatos da conversão; quem quiser criticá-lo usa a rota viva.
 
    Corrija e rode de novo.
    _Pronto quando_ a prévia sai sem erro, cada aviso foi corrigido ou explicado, nenhum estudo tem quebra na medição da crítica, cada PNG foi lido depois da última edição e o comparativo mostra opções que se distinguem de longe.

@@ -46,7 +46,7 @@ Nenhum bloco de 32×32 px pode ter mais de 5% de pixels divergentes. Um pixel é
 
 - Cada captura grava, além do `.json`, um `<rota>-<tema>.html`: o frame "página" no dialeto do Paper, com as imagens em `paper-asset://`. Esse arquivo é o ponto de partida das explorações.
 - O `paper-explorer` importa `scripts/paper.mjs`, `scripts/prumo.mjs` e `scripts/comparar.mjs`. O `abrirEmRepouso` do `prumo.mjs` prepara tanto o gabarito do espelho quanto a conferência do executivo de um estudo; mudar o repouso muda as duas provas.
-- A `criticar-tela` importa `scripts/prumo.mjs` (login, rotas e tokens).
+- A `paper-critique` importa `scripts/prumo.mjs` (login, rotas e tokens).
 - Depois de mexer num desses módulos, rode as três skills: a prévia da sincronização, a prévia de uma exploração e a medição de uma rota.
 - O conversor nomeia as camadas de botão e link como `layer-name="botão"` e `"link"`; a crítica reconhece esses nomes como controle na tela estática.
 - As duas skills dividem o mesmo arquivo no Paper. A sincronização só apaga pranchetas `/...` nas páginas "Claro" e "Escuro". As explorações ficam na página "Explorações", com nomes que nunca começam com `/`.

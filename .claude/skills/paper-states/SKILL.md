@@ -37,7 +37,7 @@ As ferramentas são as da paper-explorer, `node .claude/skills/paper-explorer/sc
 4. **Desenhar.** Com a lista aprovada, incluindo os cortes e acréscimos do usuário:
    - faça um `.html` por estado a partir da base, trocando só o que o estado muda;
    - escreva o `exploracao.json` de estados, com um item por estado. Quando o estado se abre por URL (`/login?erro=link`), ponha a `rota` dele;
-   - rode `previa` e meça cada estado com a crítica (`node .claude/skills/criticar-tela/scripts/medir.mjs --html <pasta>/<estado>.html`), como no passo 5 da [paper-explorer](../paper-explorer/SKILL.md).
+   - rode `previa` e meça cada estado com a crítica (`node .claude/skills/paper-critique/scripts/medir.mjs --html <pasta>/<estado>.html`), como no passo 5 da [paper-explorer](../paper-explorer/SKILL.md).
 
    _Pronto quando_ todo estado aprovado tem tela, a prévia sai sem erro, nenhum estado tem quebra na crítica e cada PNG foi lido depois da última edição.
 

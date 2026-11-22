@@ -1,5 +1,5 @@
 ---
-name: criticar-tela
+name: paper-critique
 description: Critica uma tela do Prumo como a pessoa vai vê-la, em oito lentes (hierarquia e contenção, espaço, estabilidade, interação, contraste e cor, texto, consistência, movimento), cada achado com prova e correção.
 disable-model-invocation: true
 ---
@@ -29,8 +29,8 @@ O veredito de cada lente é a pior gravidade dos achados dela; uma lente sem ach
 2. **Medir.** Rode da raiz do repositório:
 
    ```bash
-   node .claude/skills/criticar-tela/scripts/medir.mjs --rota '/obras/[obraId]' [--largura 1440]
-   node .claude/skills/criticar-tela/scripts/medir.mjs --html <arquivo.html>
+   node .claude/skills/paper-critique/scripts/medir.mjs --rota '/obras/[obraId]' [--largura 1440]
+   node .claude/skills/paper-critique/scripts/medir.mjs --html <arquivo.html>
    ```
 
    A rota abre como a pessoa a vê: anônima quando é pública, como admin quando pede login, com os dados do banco da worktree. O script imprime a pasta da medição, que tem:
